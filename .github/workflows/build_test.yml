@@ -5,23 +5,32 @@ on:
     inputs:
       env_var_name_1:
         required: false
+        type: string
       env_var_name_2:
         required: false
+        type: string
       env_var_name_3:
         required: false
+        type: string
       env_var_name_4:
         required: false
+        type: string
     secrets:
       env_var_value_1:
         required: false
+        type: string
       env_var_value_2:
         required: false
+        type: string
       env_var_value_3:
         required: false
+        type: string
       env_var_value_4:
         required: false
+        type: string
       badge_service_api_key:
         required: true
+        type: string
 
 jobs:
   build:
