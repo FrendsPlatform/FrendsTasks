@@ -39,24 +39,24 @@ jobs:
         dotnet-version: '6.0.x'
 
     - name: Set env var 1
-      if: ${{ input.env_var_name_1 != '' }}
+      if: ${{ inputs.env_var_name_1 != '' }}
       run: |
-        echo "${{ input.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
+        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
         
     - name: Set env var 2
-      if: ${{ input.env_var_name_2 != '' }}
+      if: ${{ inputs.env_var_name_2 != '' }}
       run: |
-        echo "${{ input.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
+        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
         
     - name: Set env var 3
-      if: ${{ input.env_var_name_3 != '' }}
+      if: ${{ inputs.env_var_name_3 != '' }}
       run: |
-        echo "${{ input.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
+        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
         
     - name: Set env var 4
-      if: ${{ input.env_var_name_4 != '' }}
+      if: ${{ inputs.env_var_name_4 != '' }}
       run: |
-        echo "${{ input.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
         
 
     - name: Build
