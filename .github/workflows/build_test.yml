@@ -83,4 +83,4 @@ jobs:
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
 
     - name: Push NuGet package to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.TASKS_TEST_FEED_API_KEY }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.TASKS_TEST_FEED_API_KEY }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks-test/symbols/api/v2/package
