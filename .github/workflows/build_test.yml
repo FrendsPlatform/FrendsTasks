@@ -1,0 +1,83 @@
+name: build_test.yml
+
+on:
+  push:
+    workflow_call:
+      inputs:
+        env_var_name_1:
+          required: false
+        env_var_name_2:
+          required: false
+        env_var_name_3:
+          required: false
+        env_var_name_4:
+          required: false
+      secrets:
+        env_var_value_1:
+          required: false
+        env_var_value_2:
+          required: false
+        env_var_value_3:
+          required: false
+        env_var_value_4:
+          required: false
+        badge_service_api_key:
+          required: true
+
+jobs:
+  build:
+    name: Build on windows-latest
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Set env var 1
+      if: ${{ input.env_var_name_1 != '' }}
+      run: |
+        echo "${{ input.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 2
+      if: ${{ input.env_var_name_2 != '' }}
+      run: |
+        echo "${{ input.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 3
+      if: ${{ input.env_var_name_3 != '' }}
+      run: |
+        echo "${{ input.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 4
+      if: ${{ input.env_var_name_4 != '' }}
+      run: |
+        echo "${{ input.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+        
+
+    - name: Build
+      run: dotnet build
+    
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      
+    - name: Pack release version of task
+      run: dotnet pack --configuration Release --include-source
+      
+    - name: Save coverage results
+      id: vars
+      shell: pwsh
+      run: |
+        $badgeKey = "${{ github.repository }}|${{ github.ref_name }}"
+        $apiKey = "${{ secrets.badge_service_api_key }}"
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = try { ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value } catch { 0 }
+        $coverageInt = [int]($coverage * 100)
+        $json = @{key=$badgeKey;displayName='Coverage';value=[string]$coverageInt+"%"} | convertto-json
+        $headers = @{'x-api-key'=$apiKey}
+        $badgeKey
+        Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
+
+    #- name: Push NuGet package to the testfeed
+    #  run: dotnet nuget push Frends.Community.Email\bin\Release\Frends.Community.Email.*.nupkg  --api-key ${{ secrets.COMMUNITY_FEED_API_KEY }} --source https://www.myget.org/F/frends-community-test/api/v2/package --symbol-source https://www.myget.org/F/frends-community-test/symbols/api/v2/package
