@@ -29,8 +29,8 @@ jobs:
     ##########################################################################################################
     # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
     ##########################################################################################################
-     - name: Push NuGet package to the (prod) feed
-       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
+    - name: Push NuGet package to the (prod) feed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
 
     #####################################################################
     # Create release - disabled for now since we have multiple versions #
