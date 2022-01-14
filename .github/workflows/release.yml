@@ -35,14 +35,18 @@ jobs:
     #####################################################################
     # Create release - disabled for now since we have multiple versions #
     #####################################################################
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.sha }}
-        release_name: Release ${{ github.sha }}
+        tag_name: release-${{ steps.date.outputs.date }}
+        release_name: Release ${{ steps.date.outputs.date }}
         body: |
           You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
         draft: false
