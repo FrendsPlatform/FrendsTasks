@@ -1,4 +1,4 @@
-name: build_test.yml
+name: build_main.yml
 
 on:
   workflow_call:
@@ -26,12 +26,10 @@ on:
         required: false
       badge_service_api_key:
         required: true
-      test_feed_api_key:
-        required: true
 
 jobs:
   build:
-    name: Build on windows-latest
+    name: ReleaseTheTask
     runs-on: windows-latest
     
     steps:
@@ -40,6 +38,9 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
     - name: Set env var 1
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
@@ -60,7 +61,9 @@ jobs:
       run: |
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
         
-
+    ###############################
+    # Build, test, report results #
+    ###############################
     - name: Build
       run: dotnet build
     
@@ -84,6 +87,5 @@ jobs:
         $badgeKey
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
 
-    # This will push all the packages it can find
-    - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks-test/symbols/api/v2/package
+    ### WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
+    ### USE release.yml TO CREATE THE RELEASE AND PUSH    ###

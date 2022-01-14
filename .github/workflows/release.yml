@@ -1,0 +1,49 @@
+name: build_main.yml
+
+on:
+  workflow_call:
+    secrets:
+      feed_api_key:
+        required: true
+
+jobs:
+  build:
+    name: ReleaseTheTask
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    ###############################
+    # Build, test, report results #
+    ###############################
+    - name: Build
+      run: dotnet build
+
+    - name: Pack release version of task
+      run: dotnet pack --configuration Release --include-source
+      
+    ##########################################################################################################
+    # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
+    ##########################################################################################################
+     - name: Push NuGet package to the (prod) feed
+       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
+
+    #####################################################################
+    # Create release - disabled for now since we have multiple versions #
+    #####################################################################
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.sha }}
+        release_name: Release ${{ github.sha }}
+        body: |
+          You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
+        draft: false
+        prerelease: false
