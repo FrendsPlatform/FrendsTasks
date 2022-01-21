@@ -15,6 +15,9 @@ on:
       env_var_name_4:
         required: false
         type: string
+      workdir:
+        required: false
+        type: string
     secrets:
       env_var_value_1:
         required: false
@@ -60,18 +63,31 @@ jobs:
       if: ${{ inputs.env_var_name_4 != '' }}
       run: |
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $env:GITHUB_ENV
         
     ###############################
     # Build, test, report results #
     ###############################
     - name: Build
       run: dotnet build
+      working-directory: "${{ env.workdir }}"
     
     - name: Test
       run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
+      working-directory: "${{ env.workdir }}"
       
     - name: Save coverage results
       id: vars
@@ -86,6 +102,7 @@ jobs:
         $headers = @{'x-api-key'=$apiKey}
         $badgeKey
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
+      working-directory: "${{ env.workdir }}"
 
     ### WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
     ### USE release.yml TO CREATE THE RELEASE AND PUSH    ###

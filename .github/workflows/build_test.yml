@@ -15,6 +15,9 @@ on:
       env_var_name_4:
         required: false
         type: string
+      workdir:
+        required: false
+        type: string
     secrets:
       env_var_value_1:
         required: false
@@ -59,16 +62,29 @@ jobs:
       if: ${{ inputs.env_var_name_4 != '' }}
       run: |
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $env:GITHUB_ENV
         
 
     - name: Build
       run: dotnet build
+      working-directory: "${{ env.workdir }}"
     
     - name: Test
       run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
+      working-directory: "${{ env.workdir }}"
       
     - name: Save coverage results
       id: vars
@@ -83,7 +99,9 @@ jobs:
         $headers = @{'x-api-key'=$apiKey}
         $badgeKey
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
+      working-directory: "${{ env.workdir }}"
 
     # This will push all the packages it can find
     - name: Push NuGet package(s) to the testfeed
       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks-test/symbols/api/v2/package
+      working-directory: "${{ env.workdir }}"
