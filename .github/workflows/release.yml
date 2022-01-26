@@ -1,7 +1,11 @@
-name: build_main.yml
+name: release.yml
 
 on:
   workflow_call:
+    inputs:
+        workdir:
+          required: false
+          type: string
     secrets:
       feed_api_key:
         required: true
@@ -16,6 +20,19 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
+
+    ############################################################################
+    # Set working directory either to default or to provided working directory #
+    ############################################################################
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $env:GITHUB_ENV
 
     ###############################
     # Build, test, report results #
