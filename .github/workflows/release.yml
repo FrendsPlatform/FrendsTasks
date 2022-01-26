@@ -1,7 +1,11 @@
-name: build_main.yml
+name: release.yml
 
 on:
   workflow_call:
+    inputs:
+        workdir:
+          required: false
+          type: string
     secrets:
       feed_api_key:
         required: true
@@ -17,20 +21,36 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    ############################################################################
+    # Set working directory either to default or to provided working directory #
+    ############################################################################
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $env:GITHUB_ENV
+
     ###############################
     # Build, test, report results #
     ###############################
     - name: Build
       run: dotnet build
+      working-directory: "${{ env.workdir }}"
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
+      working-directory: "${{ env.workdir }}"
       
     ##########################################################################################################
     # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
     ##########################################################################################################
     - name: Push NuGet package to the (prod) feed
       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
+      working-directory: "${{ env.workdir }}"
 
     #####################################################################
     # Create release - disabled for now since we have multiple versions #
