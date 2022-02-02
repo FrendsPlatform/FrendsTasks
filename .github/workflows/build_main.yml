@@ -32,7 +32,7 @@ on:
 
 jobs:
   build:
-    name: ReleaseTheTask
+    name: Build main branch
     runs-on: windows-latest
     
     steps:
