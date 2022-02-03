@@ -91,6 +91,9 @@ jobs:
       shell: pwsh
       run: |
         $badgeKey = "${{ github.repository }}|${{ github.ref_name }}"
+        if (!(${{ env.workdir }} -eq '.')) {
+          $badgeKey = "${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
+        }
         $apiKey = "${{ secrets.badge_service_api_key }}"
         Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
         [double] $coverage = try { ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value } catch { 0 }
