@@ -97,11 +97,9 @@ jobs:
         $apiKey = "${{ secrets.badge_service_api_key }}"
         if (!("${{ env.workdir }}" -eq '.')) {
           $badgeKey = "${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
-          Get-ChildItem -Path "./${{ env.workdir }}" -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        } else {
-          Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
         }
-        [double] $coverage = try { ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value } catch { 0 }
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
         $coverageInt = [int]($coverage * 100)
         $json = @{key=$badgeKey;displayName='Coverage';value=[string]$coverageInt+"%"} | convertto-json
         $headers = @{'x-api-key'=$apiKey}
