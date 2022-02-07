@@ -1,0 +1,95 @@
+name: build_main.yml
+
+on:
+  workflow_call:
+    inputs:
+      env_var_name_1:
+        required: false
+        type: string
+      env_var_name_2:
+        required: false
+        type: string
+      env_var_name_3:
+        required: false
+        type: string
+      env_var_name_4:
+        required: false
+        type: string
+      task_name:
+        required: true
+        type: string
+    secrets:
+      env_var_value_1:
+        required: false
+      env_var_value_2:
+        required: false
+      env_var_value_3:
+        required: false
+      env_var_value_4:
+        required: false
+      badge_service_api_key:
+        required: true
+
+jobs:
+  build:
+    name: Build main branch
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
+    - name: Set env var 1
+      if: ${{ inputs.env_var_name_1 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 2
+      if: ${{ inputs.env_var_name_2 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 3
+      if: ${{ inputs.env_var_name_3 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 4
+      if: ${{ inputs.env_var_name_4 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+        
+    ###############################
+    # Build, test, report results #
+    ###############################
+    - name: Build
+      run: dotnet build
+    
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      
+    - name: Pack release version of task
+      run: dotnet pack --configuration Release --include-source
+      
+    - name: Save coverage results
+      id: vars
+      shell: pwsh
+      run: |
+        $badgeKey = "${{ github.repository }}|${{ inputs.task_name }}|${{ github.ref_name }}"
+        $apiKey = "${{ secrets.badge_service_api_key }}"
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
+        $coverageInt = [int]($coverage * 100)
+        $json = @{key=$badgeKey;displayName='Coverage';value=[string]$coverageInt+"%"} | convertto-json
+        $headers = @{'x-api-key'=$apiKey}
+        $badgeKey
+        Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
+
+
+    ### WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
+    ### USE release.yml TO CREATE THE RELEASE AND PUSH    ###
