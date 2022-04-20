@@ -18,6 +18,9 @@ on:
       workdir:
         required: false
         type: string
+      prebuild_command:
+        required: false
+        type: string
     secrets:
       env_var_value_1:
         required: false
@@ -43,6 +46,9 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
     - name: Set env var 1
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
@@ -73,7 +79,16 @@ jobs:
       run: |
         echo "workdir=." >> $env:GITHUB_ENV
         
+    ###############################
+    # Run prebuild command        #
+    ###############################
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
 
+    ###############################
+    # Build, test, report results #
+    ###############################
     - name: Build
       run: dotnet build
       working-directory: "${{ env.workdir }}"
