@@ -52,6 +52,7 @@ jobs:
     - name: Set env var 1
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_1 }}"
         echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
         
     - name: Set env var 2
