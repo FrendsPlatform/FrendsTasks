@@ -18,6 +18,9 @@ on:
       workdir:
         required: false
         type: string
+      prebuild_command:
+        required: false
+        type: string
     secrets:
       env_var_value_1:
         required: false
@@ -43,24 +46,31 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
     - name: Set env var 1
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_1 }}"
         echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
         
     - name: Set env var 2
       if: ${{ inputs.env_var_name_2 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_2 }}"
         echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
         
     - name: Set env var 3
       if: ${{ inputs.env_var_name_3 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_3 }}"
         echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
         
     - name: Set env var 4
       if: ${{ inputs.env_var_name_4 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
 
     - name: Set working directory if provided
@@ -73,7 +83,16 @@ jobs:
       run: |
         echo "workdir=." >> $env:GITHUB_ENV
         
+    ###############################
+    # Run prebuild command        #
+    ###############################
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
 
+    ###############################
+    # Build, test, report results #
+    ###############################
     - name: Build
       run: dotnet build
       working-directory: "${{ env.workdir }}"
