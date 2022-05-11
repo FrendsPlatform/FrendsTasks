@@ -1,0 +1,136 @@
+name: linux_build_test.yml
+
+on:
+  workflow_call:
+    inputs:
+      env_var_name_1:
+        required: false
+        type: string
+      env_var_name_2:
+        required: false
+        type: string
+      env_var_name_3:
+        required: false
+        type: string
+      env_var_name_4:
+        required: false
+        type: string
+      workdir:
+        required: false
+        type: string
+      prebuild_command:
+        required: false
+        type: string
+    secrets:
+      env_var_value_1:
+        required: false
+      env_var_value_2:
+        required: false
+      env_var_value_3:
+        required: false
+      env_var_value_4:
+        required: false
+      badge_service_api_key:
+        required: true
+      test_feed_api_key:
+        required: true
+
+jobs:
+  build:
+    name: Build on ubuntu-latest
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
+    - name: Set env var 1
+      if: ${{ inputs.env_var_name_1 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_1 }}"
+        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 2
+      if: ${{ inputs.env_var_name_2 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_2 }}"
+        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 3
+      if: ${{ inputs.env_var_name_3 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_3 }}"
+        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
+        
+    - name: Set env var 4
+      if: ${{ inputs.env_var_name_4 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_4 }}"
+        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $env:GITHUB_ENV
+
+    ###############################
+    # Install required tools      #
+    ###############################
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet -y
+        
+    ###############################
+    # Run prebuild command        #
+    ###############################
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
+
+    ###############################
+    # Build, test, report results #
+    ###############################
+    - name: Build
+      run: dotnet build
+      working-directory: "${{ env.workdir }}"
+    
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
+      
+    - name: Pack release version of task
+      run: dotnet pack --configuration Release --include-source
+      working-directory: "${{ env.workdir }}"
+      
+    - name: Save coverage results
+      id: vars
+      run: |
+        badgeKey="${{ github.repository }}|${{ github.ref_name }}"
+        apiKey="${{ secrets.badge_service_api_key }}"
+        if [ "${{ env.workdir }}" != '.' ]; then
+          badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
+        fi
+        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
+        mv $pathToCoverageFile .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        coverage=${coverage/./,}
+        coverageInt="$((100 * $coverage))"
+        json="{key=$badgeKey;displayName='Coverage';value=$coverageInt%}"
+        curl -X POST -H "x-api-key: $apiKey" -H "Content-Type: application/json" -d $json https://app-github-custom-badges.azurewebsites.net/Badge
+      working-directory: "${{ env.workdir }}"
+
+    # This will push all the packages it can find
+    - name: Push NuGet package(s) to the testfeed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks-test/symbols/api/v2/package
+      working-directory: "${{ env.workdir }}"
