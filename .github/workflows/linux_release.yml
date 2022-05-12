@@ -1,0 +1,123 @@
+name: linux_release.yml
+
+on:
+  workflow_call:
+    inputs:
+      env_var_name_1:
+        required: false
+        type: string
+      env_var_name_2:
+        required: false
+        type: string
+      env_var_name_3:
+        required: false
+        type: string
+      env_var_name_4:
+        required: false
+        type: string
+      workdir:
+        required: false
+        type: string
+      prebuild_command:
+        required: false
+        type: string
+    secrets:
+      env_var_value_1:
+        required: false
+      env_var_value_2:
+        required: false
+      env_var_value_3:
+        required: false
+      env_var_value_4:
+        required: false
+      feed_api_key:
+        required: true
+
+jobs:
+  build:
+    name: ReleaseTheTask
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
+    - name: Set env var 1
+      if: ${{ inputs.env_var_name_1 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 2
+      if: ${{ inputs.env_var_name_2 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 3
+      if: ${{ inputs.env_var_name_3 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
+        
+    - name: Set env var 4
+      if: ${{ inputs.env_var_name_4 != '' }}
+      run: |
+        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $GITHUB_ENV
+        
+    ###############################
+    # Run prebuild command        #
+    ###############################
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
+
+    ###############################
+    # Build, test, report results #
+    ###############################
+    - name: Build
+      run: dotnet build
+      working-directory: "${{ env.workdir }}"
+
+    - name: Pack release version of task
+      run: dotnet pack --configuration Release --include-source
+      working-directory: "${{ env.workdir }}"
+      
+    ##########################################################################################################
+    # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
+    ##########################################################################################################
+    - name: Push NuGet package to the (prod) feed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
+      working-directory: "${{ env.workdir }}"
+
+    #####################################################################
+    # Create release - disabled for now since we have multiple versions #
+    #####################################################################
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-${{ steps.date.outputs.date }}
+        release_name: Release ${{ steps.date.outputs.date }}
+        body: |
+          You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
+        draft: false
+        prerelease: false
