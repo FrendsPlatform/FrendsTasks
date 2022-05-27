@@ -83,6 +83,7 @@ jobs:
     - name: Run prebuild command
       if: ${{ inputs.prebuild_command != '' }}
       run: ${{ inputs.prebuild_command }}
+      working-directory: "${{ env.workdir }}"
 
     ###############################
     # Build, test, report results #
