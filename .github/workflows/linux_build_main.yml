@@ -50,21 +50,25 @@ jobs:
     - name: Set env var 1
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_1 }}"
         echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
         
     - name: Set env var 2
       if: ${{ inputs.env_var_name_2 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_2 }}"
         echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
         
     - name: Set env var 3
       if: ${{ inputs.env_var_name_3 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_3 }}"
         echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
         
     - name: Set env var 4
       if: ${{ inputs.env_var_name_4 != '' }}
       run: |
+        echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
 
     - name: Set working directory if provided
