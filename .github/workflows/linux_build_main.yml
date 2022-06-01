@@ -1,4 +1,4 @@
-name: release.yml
+name: linux_build_main.yml
 
 on:
   workflow_call:
@@ -30,13 +30,13 @@ on:
         required: false
       env_var_value_4:
         required: false
-      feed_api_key:
+      badge_service_api_key:
         required: true
 
 jobs:
   build:
-    name: ReleaseTheTask
-    runs-on: windows-latest
+    name: Build main branch
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v1
@@ -51,33 +51,43 @@ jobs:
       if: ${{ inputs.env_var_name_1 != '' }}
       run: |
         echo "::add-mask::${{ secrets.env_var_value_1 }}"
-        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
+        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
         
     - name: Set env var 2
       if: ${{ inputs.env_var_name_2 != '' }}
       run: |
         echo "::add-mask::${{ secrets.env_var_value_2 }}"
-        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
+        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
         
     - name: Set env var 3
       if: ${{ inputs.env_var_name_3 != '' }}
       run: |
         echo "::add-mask::${{ secrets.env_var_value_3 }}"
-        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
+        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
         
     - name: Set env var 4
       if: ${{ inputs.env_var_name_4 != '' }}
       run: |
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
-        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
       run: |
-        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+
     - name: Set working directory to default if not provided
       if: ${{ inputs.workdir == '' }}
       run: |
-        echo "workdir=." >> $env:GITHUB_ENV
+        echo "workdir=." >> $GITHUB_ENV
+
+    ###############################
+    # Install required tools      #
+    ###############################
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet -y
         
     ###############################
     # Run prebuild command        #
@@ -86,41 +96,39 @@ jobs:
       if: ${{ inputs.prebuild_command != '' }}
       run: ${{ inputs.prebuild_command }}
       working-directory: "${{ env.workdir }}"
-
+      
     ###############################
     # Build, test, report results #
     ###############################
     - name: Build
       run: dotnet build
       working-directory: "${{ env.workdir }}"
-
+    
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
+      
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
       
-    ##########################################################################################################
-    # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
-    ##########################################################################################################
-    - name: Push NuGet package to the (prod) feed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source https://www.myget.org/F/frends-tasks/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks/symbols/api/v2/package --skip-duplicate
+    - name: Save coverage results
+      id: vars
+      shell: pwsh
+      run: |
+        badgeKey="${{ github.repository }}|${{ github.ref_name }}"
+        apiKey="${{ secrets.badge_service_api_key }}"
+        if [ "${{ env.workdir }}" != '.' ]; then
+          badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
+        fi
+        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
+        mv $pathToCoverageFile .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        coverage=${coverage/./,}
+        coverageInt="$((100 * $coverage))"
+        json='{"key":"$badgeKey","displayName":"Coverage","value":"$coverageInt%"}'
+        curl -X POST -H "x-api-key: $apiKey" -H "Content-Type: application/json" -d $json https://app-github-custom-badges.azurewebsites.net/Badge
       working-directory: "${{ env.workdir }}"
 
-    #####################################################################
-    # Create release - disabled for now since we have multiple versions #
-    #####################################################################
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: release-${{ steps.date.outputs.date }}
-        release_name: Release ${{ steps.date.outputs.date }}
-        body: |
-          You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
-        draft: false
-        prerelease: false
+    ### WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
+    ### USE release.yml TO CREATE THE RELEASE AND PUSH    ###
