@@ -123,9 +123,9 @@ jobs:
         pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
         mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        coverage=${coverage/./,}
-        coverageInt="$((100 * $coverage))"
-        json='{"key":"$badgeKey","displayName":"Coverage","value":"$coverageInt%"}'
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        json="{\"key\":\"$badgeKey\",\"displayName\":\"Coverage\",\"value\":\"$coverageInt%\"}"
         curl -X POST -H "x-api-key: $apiKey" -H "Content-Type: application/json" -d $json https://app-github-custom-badges.azurewebsites.net/Badge
       working-directory: "${{ env.workdir }}"
 
