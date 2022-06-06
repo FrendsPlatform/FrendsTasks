@@ -114,7 +114,6 @@ jobs:
       
     - name: Save coverage results
       id: vars
-      shell: pwsh
       run: |
         badgeKey="${{ github.repository }}|${{ github.ref_name }}"
         apiKey="${{ secrets.badge_service_api_key }}"
