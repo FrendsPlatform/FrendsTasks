@@ -126,5 +126,5 @@ jobs:
 
     # This will push all the packages it can find
     - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package --symbol-source https://www.myget.org/F/frends-tasks-test/symbols/api/v2/package
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package
       working-directory: "${{ env.workdir }}"
