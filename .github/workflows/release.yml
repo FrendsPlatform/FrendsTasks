@@ -123,18 +123,15 @@ jobs:
       working-directory: "${{ env.workdir }}"
       shell: pwsh
       
-    - name: Echo test
-      run: echo "${{ steps.date.outputs.date }} / ${{ steps.package_name.outputs.package_name }}"
-
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: release-${{ steps.date.outputs.date }}
-    #     release_name: Release ${{ steps.date.outputs.date }}
-    #     body: |
-    #       You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
-    #     draft: false
-    #     prerelease: false
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
+        release_name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
+        body: |
+          You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
+        draft: false
+        prerelease: false
