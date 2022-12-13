@@ -35,6 +35,9 @@ on:
       test_feed_api_key:
         required: true
 
+env:
+  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+
 jobs:
   build:
     name: Build on windows-latest
@@ -124,7 +127,12 @@ jobs:
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
       working-directory: "${{ env.workdir }}"
 
-    # This will push all the packages it can find
+    # This will push all the packages it can find to myget (to be deprecated)
     - name: Push NuGet package(s) to the testfeed
       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package
+      working-directory: "${{ env.workdir }}"
+      
+    # This will push all the packages it can find
+    - name: Push NuGet package(s) to the testfeed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }}
       working-directory: "${{ env.workdir }}"
