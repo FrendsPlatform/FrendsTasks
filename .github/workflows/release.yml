@@ -139,6 +139,6 @@ jobs:
         tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
         release_name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
         body: |
-          You can install the task via frends UI Task View or you can find the NuGet package from https://www.myget.org/F/frends-tasks/api/v2
+          You can install the task via frends UI Task View or you can find the NuGet package from https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
         draft: false
         prerelease: false
