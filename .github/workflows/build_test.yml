@@ -127,12 +127,7 @@ jobs:
         Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
       working-directory: "${{ env.workdir }}"
 
-    # This will push all the packages it can find to myget (to be deprecated)
-    - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package
-      working-directory: "${{ env.workdir }}"
-      
-    # This will push all the packages it can find
-    - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.azure_devops_token }} --source ${{ env.azure_artifacts_feed_url }}
+    # This will push all the packages it can find to myget
+    - name: Push NuGet package(s) to the test feed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }}
       working-directory: "${{ env.workdir }}"
