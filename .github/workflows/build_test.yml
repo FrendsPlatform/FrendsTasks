@@ -134,5 +134,5 @@ jobs:
       
     # This will push all the packages it can find
     - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.AZURE_DEVOPS_TOKEN }} --source ${{ env.AZURE_ARTIFACTS_FEED_URL }}
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.azure_devops_token }} --source ${{ env.azure_artifacts_feed_url }}
       working-directory: "${{ env.workdir }}"
