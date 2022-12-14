@@ -35,6 +35,9 @@ on:
       test_feed_api_key:
         required: true
 
+env:
+  azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+
 jobs:
   build:
     name: Build on windows-latest
@@ -45,6 +48,9 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
+        source-url: ${{ env.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }} 
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
@@ -125,6 +131,6 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     # This will push all the packages it can find
-    - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package
+    - name: Push NuGet package(s) to the test feed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate
       working-directory: "${{ env.workdir }}"
