@@ -109,7 +109,7 @@ jobs:
     # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
     ##########################################################################################################
     - name: Push NuGet package(s) to the prod feed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.feed_api_key }} --source ${{ env.azure_artifacts_feed_url }}
       working-directory: "${{ env.workdir }}"
 
     #####################################################################
