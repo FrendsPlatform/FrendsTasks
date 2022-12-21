@@ -36,7 +36,6 @@ on:
 
 env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
-  azure_artifacts_symbol_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main-symbols/nuget/v3/index.json
 
 jobs:
   build:
