@@ -15,6 +15,9 @@ on:
       env_var_name_4:
         required: false
         type: string
+      env_var_name_5:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
@@ -29,6 +32,8 @@ on:
       env_var_value_3:
         required: false
       env_var_value_4:
+        required: false
+      env_var_value_5:
         required: false
       badge_service_api_key:
         required: true
@@ -78,6 +83,12 @@ jobs:
       run: |
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+
+    - name: Set env var 5
+      if: ${{ inputs.env_var_name_5 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_5 }}"
+        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $env:GITHUB_ENV
 
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
