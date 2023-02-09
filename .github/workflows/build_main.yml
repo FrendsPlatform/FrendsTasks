@@ -121,6 +121,23 @@ jobs:
     - name: Test
       run: dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
+
+    - name: Get Line Rate from output
+      id: get_line_rate
+      shell: pwsh
+      run: |
+        $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
+        Write-Output $covreport.FullName
+        [xml]$covxml = Get-Content -Path $covreport.FullName
+        $lineRate = $covxml.coverage.'line-rate'
+        Write-Output "::set-output name=lineRate::$lineRate"
+
+    - name: Check coverage tolerance
+      if: ${{ steps.get_line_rate.outputs.lineRate < 0.8 }}
+      uses: actions/github-script@v3
+      with:
+        script: |
+            core.setFailed('Coverage test below tolerance')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
