@@ -49,9 +49,25 @@ env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
 
 jobs:
+  lint:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        working-directory: "${{ env.workdir }}"
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_CSHARP: true
   build:
     name: Build on windows-latest
     runs-on: windows-latest
+    needs: lint
     
     steps:
     - uses: actions/checkout@v1
@@ -146,7 +162,7 @@ jobs:
       with:
         script: |
             core.setFailed('Coverage test below tolerance')
-      
+
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
