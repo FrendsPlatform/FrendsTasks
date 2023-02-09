@@ -58,7 +58,6 @@ jobs:
           fetch-depth: 0
       - name: Lint Code Base
         uses: github/super-linter@v4
-        working-directory: "${{ env.workdir }}"
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main
