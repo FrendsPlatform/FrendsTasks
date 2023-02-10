@@ -21,9 +21,6 @@ on:
       env_var_name_6:
         required: false
         type: string
-      lint_ignore:
-        required: false
-        type: string
       workdir:
         required: false
         type: string
@@ -63,7 +60,6 @@ jobs:
           DEFAULT_BRANCH: main
           OUTPUT_DETAILS: detailed
           VALIDATE_CSHARP: true
-          VALIDATE_GITLEAKS: true
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}"
 
