@@ -21,6 +21,9 @@ on:
       env_var_name_6:
         required: false
         type: string
+      lint_ingnore:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
