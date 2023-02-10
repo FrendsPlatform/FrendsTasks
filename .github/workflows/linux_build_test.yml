@@ -24,7 +24,7 @@ on:
       workdir:
         required: false
         type: string
-      lint_ingnore:
+      lint_ignore:
         required: false
         type: string
       prebuild_command:
