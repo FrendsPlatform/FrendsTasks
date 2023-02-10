@@ -52,7 +52,7 @@ jobs:
           VALIDATE_CSHARP: true
           VALIDATE_GITLEAKS: true
           IGNORE_GITIGNORED_FILES: true
-          DEFAULT_WORKSPACE: "${{ inputs.workdir }}"
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}"
 
   build:
     name: Build on ubuntu-latest
