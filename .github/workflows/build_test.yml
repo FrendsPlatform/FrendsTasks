@@ -49,7 +49,8 @@ env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
 
 jobs:
-  Code Quality Check:
+  CodeQualityCheck:
+    name: Code Quality Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
