@@ -15,6 +15,12 @@ on:
       env_var_name_4:
         required: false
         type: string
+      env_var_name_5:
+        required: false
+        type: string
+      env_var_name_6:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
@@ -30,6 +36,10 @@ on:
         required: false
       env_var_value_4:
         required: false
+      env_var_value_5:
+        required: false
+      env_var_value_6:
+        required: false
       badge_service_api_key:
         required: true
       test_feed_api_key:
@@ -39,6 +49,21 @@ env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
 
 jobs:
+  Code Quality Check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    
+    - name: Lint Code Base
+      uses: github/super-linter@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BRANCH: main
+        OUTPUT_DETAILS: detailed
+        VALIDATE_CSHARP: true
+        IGNORE_GITIGNORED_FILES: true
+        FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}"
+
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
