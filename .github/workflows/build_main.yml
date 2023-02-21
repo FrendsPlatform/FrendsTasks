@@ -137,7 +137,7 @@ jobs:
       uses: actions/github-script@v3
       with:
         script: |
-            core.setFailed('Coverage test below tolerance')
+            core.setFailed('Test coverage ${{steps.get_line_rate.outputs.lineRate * 100}}% was not in the tolerance 80%')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
