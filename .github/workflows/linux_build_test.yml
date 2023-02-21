@@ -150,13 +150,16 @@ jobs:
         Write-Output $covreport.FullName
         [xml]$covxml = Get-Content -Path $covreport.FullName
         $lineRate = $covxml.coverage.'line-rate' * 100
+        echo "Test coverage $lineRate"
         echo "{lineRate}={$lineRate}" >> $GITHUB_OUTPUT
         echo "{lineRate}={$lineRate}" >> $GITHUB_STATE
 
     - name: Check coverage tolerance
-      if: ${{ steps.get_line_rate.outputs.lineRate }} < 80
+      env: 
+        lineRate: ${{ steps.get_line_rate.outputs.lineRate }}
+      if:  $lineRate < 80
       run: |
-          echo "::error title=Test coverage check failed:: Expected 80 % but was {steps.get_line_rate.outputs.lineRate} %"
+          echo "::error title=Test coverage check failed:: Expected 80 % but was $lineRate %"
           exit 1
       
     - name: Pack release version of task
