@@ -149,14 +149,14 @@ jobs:
         $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
         Write-Output $covreport.FullName
         [xml]$covxml = Get-Content -Path $covreport.FullName
-        lineRate = $covxml.coverage.line-rate * 100
+        $lineRate = $covxml.coverage.'line-rate' * 100
         echo "Test coverage $lineRate"
-        echo "lineRate=$lineRate" >> $GITHUB_OUTPUT
+        echo "lineRateOutput=$lineRate" >> $GITHUB_OUTPUT
 
     - name: Check coverage tolerance
-      if:  ${{ steps.get_line_rate.outputs.lineRate < 80 }}
+      if:  ${{ steps.get_line_rate.outputs.lineRateOutput < 80 }}
       run: |
-          echo "::error title=Test coverage check failed:: Expected 80 % but was ${{ steps.get_line_rate.outputs.lineRate }} %"
+          echo "::error title=Test coverage check failed:: Expected 80 % but was ${{ steps.get_line_rate.outputs.lineRateOutput }} %"
           exit 1
       
     - name: Pack release version of task
