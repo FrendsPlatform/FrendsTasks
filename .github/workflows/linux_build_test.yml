@@ -159,7 +159,7 @@ jobs:
       uses: actions/github-script@v3
       with:
         script: |
-            core.setFailed('Test coverage failed')
+            core.setFailed('${steps.get_line_rate.outputs.lineRate}')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
