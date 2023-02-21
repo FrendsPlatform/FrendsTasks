@@ -150,14 +150,16 @@ jobs:
         Write-Output $covreport.FullName
         [xml]$covxml = Get-Content -Path $covreport.FullName
         $lineRate = $covxml.coverage.'line-rate' * 100
-        Write-Output "::set-output name=lineRate::$lineRate"
+        echo "{lineRate}={$lineRate}" >> $GITHUB_OUTPUT
+        echo "{lineRate}={$lineRate}" >> $GITHUB_STATE
+
 
     - name: Check coverage tolerance
       if: ${{ steps.get_line_rate.outputs.lineRate < 80}}
       uses: actions/github-script@v3
       with:
         script: |
-            core.setFailed("Test coverage failed")
+            core.setFailed('Test coverage failed')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
