@@ -153,13 +153,11 @@ jobs:
         echo "{lineRate}={$lineRate}" >> $GITHUB_OUTPUT
         echo "{lineRate}={$lineRate}" >> $GITHUB_STATE
 
-
     - name: Check coverage tolerance
-      if: ${{ steps.get_line_rate.outputs.lineRate < 80}}
-      uses: actions/github-script@v3
-      with:
-        script: |
-            core.setFailed('${steps.get_line_rate.outputs.lineRate}')
+      if: ${{ steps.get_line_rate.outputs.lineRate }} < 80
+      run: |
+          echo "::error title=Test coverage check failed:: Expected 80 % but was {steps.get_line_rate.outputs.lineRate} %"
+          exit 1
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
