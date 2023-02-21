@@ -149,16 +149,15 @@ jobs:
         $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
         Write-Output $covreport.FullName
         [xml]$covxml = Get-Content -Path $covreport.FullName
-        $lineRate = $covxml.coverage.'line-rate'
+        $lineRate = $covxml.coverage.'line-rate' * 100
         Write-Output "::set-output name=lineRate::$lineRate"
 
     - name: Check coverage tolerance
-      if: ${{ steps.get_line_rate.outputs.lineRate < 0.8 }}
+      if: ${{ steps.get_line_rate.outputs.lineRate < 80}}
       uses: actions/github-script@v3
       with:
         script: |
-            const coveragePercent = $steps.get_line_rate.outputs.lineRate * 100
-            core.setFailed('Test coverage ${coveragePercent} % was not in the tolerance 80 %')
+            core.setFailed('Test coverage ${steps.get_line_rate.outputs.lineRate} % was not in the tolerance 80 %')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
