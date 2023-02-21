@@ -159,7 +159,7 @@ jobs:
       if: ${{ steps.get_line_rate.outputs.lineRate < 0.8 }}
       uses: actions/github-script@v3
       with:
-        run: |
+        script: |
             coveragePercent = $(echo "$steps.get_line_rate.outputs.lineRate * 100" | bc -l)
             core.setFailed('Test coverage $coveragePercent % was not in the tolerance 80 %')
 
