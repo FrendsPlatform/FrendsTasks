@@ -144,6 +144,8 @@ jobs:
 
     - name: Check coverage tolerance
       run: |
+        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
+        mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
@@ -163,8 +165,6 @@ jobs:
         if [ "${{ env.workdir }}" != '.' ]; then
           badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         fi
-        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
-        mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
