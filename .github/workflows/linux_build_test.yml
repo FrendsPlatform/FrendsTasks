@@ -156,7 +156,8 @@ jobs:
     - name: Check coverage tolerance
       if:  ${{ steps.get_line_rate.outputs.lineRateOutput < 80 }}
       run: |
-          echo "::error title=Test coverage check failed:: Expected 80 % but was ${{ steps.get_line_rate.outputs.lineRateOutput }} %"
+          lineRate=${{ steps.get_line_rate.outputs.lineRateOutput }}
+          echo "::error title=Test coverage check failed:: Expected 80 % but was $lineRate %"
           exit 1
       
     - name: Pack release version of task
