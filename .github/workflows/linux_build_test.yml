@@ -158,7 +158,7 @@ jobs:
       with:
         run: |
             coveragePercent = $(echo "$steps.get_line_rate.outputs.lineRate * 100" | bc -l)
-            core.setFailed('Test coverage ${{coveragePercent}}% was not in the tolerance 80%')
+            core.setFailed('Test coverage $coveragePercent % was not in the tolerance 80 %')
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
