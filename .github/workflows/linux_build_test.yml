@@ -143,13 +143,12 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     - name: Check coverage tolerance
-      shell: pwsh
       run: |
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
-        if [ coverageInt < 80 ]
-          echo "::error title=Test coverage check failed:: Expected 80 % but was coverageInt %"
+        if [ $coverageInt < 80 ]; then
+          echo "::error title=Test coverage check failed:: Expected 80 % but was $coverageInt %"
           exit 1
       
     - name: Pack release version of task
