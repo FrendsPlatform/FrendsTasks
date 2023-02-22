@@ -159,7 +159,7 @@ jobs:
     - name: Check Code Coverage
       uses: 5monkeys/cobertura-action@master
       with:
-        path: "${{ coverageReport }}"
+        path: "${{ env.coverageReport }}"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         minimum_coverage: 80
       
