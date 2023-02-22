@@ -153,21 +153,20 @@ jobs:
     - name: Test
       run: |
         dotnet test --collect:"XPlat Code Coverage"
-        coverageReport=$(find . -name "coverage.cobertura.xml")
-        mv $coverageReport .
-        echo "report=$(find . -name "coverage.cobertura.xml")" >> $GITHUB_ENV
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
-      uses: 5monkeys/cobertura-action@master
-      with:
-#       path: "${{ env.report }}"
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        minimum_coverage: 80
-        fail_below_threshold: true
-        show_class_names: true
-        show_line: true
-        report_name: coverage.cobertura.xml
+      id: get_line_rate
+      run: |
+        coverageReport=$(find . -name "coverage.cobertura.xml")
+        mv $coverageReport .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if [ coverageInt > 80 ]; then
+          echo "Test coverage $coveragePercent % was not in the tolerance 80 %"
+          exit 1
+        fi
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source

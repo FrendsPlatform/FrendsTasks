@@ -145,23 +145,19 @@ jobs:
       run: dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
 
-    - name: Get Line Rate from output
+    - name: Check Code Coverage
       id: get_line_rate
       shell: pwsh
       run: |
-        $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
-        Write-Output $covreport.FullName
-        [xml]$covxml = Get-Content -Path $covreport.FullName
-        $lineRate = $covxml.coverage.'line-rate'
-        Write-Output "::set-output name=lineRate::$lineRate"
-
-    - name: Check coverage tolerance
-      if: ${{ steps.get_line_rate.outputs.lineRate < 0.8 }}
-      uses: actions/github-script@v3
-      with:
-        script: |
-            const coveragePercent = $steps.get_line_rate.outputs.lineRate * 100
-            core.setFailed('Test coverage ${coveragePercent} % was not in the tolerance 80 %')
+        coverageReport=$(find . -name "coverage.cobertura.xml")
+        mv $coverageReport .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if [ coverageInt > 80 ]; then
+          echo "Test coverage $coveragePercent % was not in the tolerance 80 %"
+          exit 1
+        fi
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
