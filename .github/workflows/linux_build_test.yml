@@ -64,7 +64,7 @@ jobs:
         VALIDATE_CSHARP: true
         IGNORE_GITIGNORED_FILES: true
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}"
-
+  
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
@@ -154,23 +154,12 @@ jobs:
       run: dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
 
-    - name: Check coverage tolerance
-      run: |
-        badgeKey="${{ github.repository }}|${{ github.ref_name }}"
-        apiKey="${{ secrets.badge_service_api_key }}"
-        if [ "${{ env.workdir }}" != '.' ]; then
-          badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
-        fi
-        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
-        mv $pathToCoverageFile .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        coverageInt=$(printf "%.0f" $covPercent)
-        if [ $covPercent < 80 ]; then
-          echo "::error title=Test coverage check failed:: Expected 80 % but was $coverageInt %"
-          exit 1
-        fi
-      working-directory: "${{ env.workdir }}"
+    - name: Check Code Coverage
+    - uses: 5monkeys/cobertura-action@master
+      with:
+        path: $(find . -name "coverage.cobertura.xml")
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        minimum_coverage: 80
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
