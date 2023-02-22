@@ -154,10 +154,11 @@ jobs:
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
-        if [ coverageInt > 80 ]; then
+        if (coverageInt > 80 ) 
+        {
           echo "Test coverage $covPercent % was not in the tolerance 80 %"
           exit 1
-        fi
+        }
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
