@@ -162,7 +162,11 @@ jobs:
         path: "${{ env.coverageReport }}"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         minimum_coverage: 80
-      
+        fail_below_thresfold: true
+        show_class_names: true
+        show_line: true
+      working-directory: "${{ env.workdir }}"
+
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
