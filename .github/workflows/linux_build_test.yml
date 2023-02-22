@@ -157,7 +157,6 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
-      working-directory: "${{ env.workdir }}"
       uses: 5monkeys/cobertura-action@master
       with:
         path: "${{ env.coverageReport }}"
@@ -166,6 +165,7 @@ jobs:
         fail_below_thresfold: true
         show_class_names: true
         show_line: true
+        working-directory: "${{ env.workdir }}"
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
