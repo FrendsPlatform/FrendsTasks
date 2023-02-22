@@ -153,16 +153,15 @@ jobs:
     - name: Test
       run: |
         dotnet test --collect:"XPlat Code Coverage"
-        echo "coverageReport=$(find . -name "coverage.cobertura.xml")" >> $GITHUB_ENV
+        coverageReport=$(find . -name "coverage.cobertura.xml")
+        mv $coverageReport .
+        echo "report=$(find . -name "coverage.cobertura.xml")" >> $GITHUB_ENV
       working-directory: "${{ env.workdir }}"
-
-    - name: temp
-      run: pwd
 
     - name: Check Code Coverage
       uses: 5monkeys/cobertura-action@master
       with:
-        path: "${{ env.coverageReport }}"
+        path: "${{ env.report }}"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         minimum_coverage: 80
         fail_below_threshold: true
@@ -182,8 +181,6 @@ jobs:
         if [ "${{ env.workdir }}" != '.' ]; then
           badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         fi
-        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
-        mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
