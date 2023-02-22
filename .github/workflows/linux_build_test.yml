@@ -105,6 +105,18 @@ jobs:
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
 
+    - name: Set env var 5
+      if: ${{ inputs.env_var_name_5 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_5 }}"
+        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $GITHUB_ENV
+
+    - name: Set env var 6
+      if: ${{ inputs.env_var_name_6 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_6 }}"
+        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $GITHUB_ENV
+
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
       run: |
@@ -144,12 +156,17 @@ jobs:
 
     - name: Check coverage tolerance
       run: |
+        badgeKey="${{ github.repository }}|${{ github.ref_name }}"
+        apiKey="${{ secrets.badge_service_api_key }}"
+        if [ "${{ env.workdir }}" != '.' ]; then
+          badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
+        fi
         pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
         mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
-        if [ $coverageInt < 80 ]; then
+        if [ $covPercent < 80 ]; then
           echo "::error title=Test coverage check failed:: Expected 80 % but was $coverageInt %"
           exit 1
         fi
@@ -167,6 +184,8 @@ jobs:
         if [ "${{ env.workdir }}" != '.' ]; then
           badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         fi
+        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
+        mv $pathToCoverageFile .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
