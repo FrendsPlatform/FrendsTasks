@@ -151,12 +151,10 @@ jobs:
       run: |
         Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
         [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
-        echo "$coverage"
         $coverageInt = [int]($coverage * 100)
-        echo "$coverageInt"
         if ($coverageInt -lt 80 ) 
         {
-          echo "Test coverage $covPercent % was not in the tolerance 80 %"
+          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
           exit 1
         }
 
