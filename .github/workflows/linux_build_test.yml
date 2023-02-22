@@ -151,13 +151,15 @@ jobs:
       working-directory: "${{ env.workdir }}"
     
     - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage"
+      run: |
+        dotnet test --collect:"XPlat Code Coverage"
+        echo "coverageReport=$(find . -name "coverage.cobertura.xml")" >> $GITHUB_ENV
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
       uses: 5monkeys/cobertura-action@master
       with:
-        path: $(find . -name "coverage.cobertura.xml")
+        path: "${{ coverageReport }}"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         minimum_coverage: 80
       
