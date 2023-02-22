@@ -155,7 +155,7 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
-    - uses: 5monkeys/cobertura-action@master
+      uses: 5monkeys/cobertura-action@master
       with:
         path: $(find . -name "coverage.cobertura.xml")
         repo_token: ${{ secrets.GITHUB_TOKEN }}
