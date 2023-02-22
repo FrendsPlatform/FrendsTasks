@@ -152,6 +152,7 @@ jobs:
         if [ $coverageInt < 80 ]; then
           echo "::error title=Test coverage check failed:: Expected 80 % but was $coverageInt %"
           exit 1
+      working-directory: "${{ env.workdir }}"
       
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
