@@ -149,13 +149,9 @@ jobs:
       id: get_line_rate
       shell: pwsh
       run: |
-        coverageReport=$(find . -name "coverage.cobertura.xml")
-        mv $coverageReport .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        echo "$covPercent"
-        coverageInt=$(printf "%.0f" $covPercent)
-        echo "$coverageInt"
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
+        $coverageInt = [int]($coverage * 100)
         if (coverageInt > 80 ) 
         {
           echo "Test coverage $covPercent % was not in the tolerance 80 %"
