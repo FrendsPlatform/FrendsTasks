@@ -156,16 +156,19 @@ jobs:
         echo "coverageReport=$(find . -name "coverage.cobertura.xml")" >> $GITHUB_ENV
       working-directory: "${{ env.workdir }}"
 
+    - name: temp
+      run: pwd
+
     - name: Check Code Coverage
       uses: 5monkeys/cobertura-action@master
       with:
         path: "${{ env.coverageReport }}"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         minimum_coverage: 80
-        fail_below_thresfold: true
+        fail_below_threshold: true
         show_class_names: true
         show_line: true
-        working-directory: "${{ env.workdir }}"
+        report_name: coverage.cobertura.xml
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
