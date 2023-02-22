@@ -163,14 +163,14 @@ jobs:
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
-        if [ $coverageInt < 80 ]; then
-          echo "Test coverage $covPercent% was not in the tolerance 80%"
-          echo "### Code Coverage Check" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% was not in the tolerance 80%" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        fi
         echo "### Code Coverage" >> $GITHUB_STEP_SUMMARY
         echo "## Code coverage: $covPercent%" >> $GITHUB_STEP_SUMMARY
+        if [ $coverageInt < 80 ]; then
+          echo "Test coverage $covPercent% was not in the tolerance 80%"
+          echo "### Code Coverage Check" > $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% was not in the tolerance 80%" > $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
