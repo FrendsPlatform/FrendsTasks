@@ -154,7 +154,7 @@ jobs:
         echo "$coverage"
         $coverageInt = [int]($coverage * 100)
         echo "$coverageInt"
-        if ($coverageInt < 80 ) 
+        if ($coverageInt -lt 80 ) 
         {
           echo "Test coverage $covPercent % was not in the tolerance 80 %"
           exit 1
