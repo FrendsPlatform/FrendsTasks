@@ -166,7 +166,7 @@ jobs:
     - name: Print Step summary
       shell: bash
       run: |
-        echo ${{ step.check_code_coverage.summary }} >> GITHUB_STEP_SUMMARY
+        echo ${{ summary }} >> GITHUB_STEP_SUMMARY
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
