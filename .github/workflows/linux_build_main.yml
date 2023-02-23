@@ -15,6 +15,12 @@ on:
       env_var_name_4:
         required: false
         type: string
+      env_var_name_5:
+        required: false
+        type: string
+      env_var_name_6:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
@@ -29,6 +35,10 @@ on:
       env_var_value_3:
         required: false
       env_var_value_4:
+        required: false
+      env_var_value_5:
+        required: false
+      env_var_value_6:
         required: false
       badge_service_api_key:
         required: true
@@ -70,6 +80,18 @@ jobs:
       run: |
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+
+    - name: Set env var 5
+      if: ${{ inputs.env_var_name_5 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_5 }}"
+        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $GITHUB_ENV
+
+    - name: Set env var 6
+      if: ${{ inputs.env_var_name_6 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_6 }}"
+        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $GITHUB_ENV
 
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
@@ -126,7 +148,7 @@ jobs:
           echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
           echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
