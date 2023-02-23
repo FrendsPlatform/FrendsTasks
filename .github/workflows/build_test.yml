@@ -165,7 +165,7 @@ jobs:
         }
         else 
         {
-          $summary="The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
+          echo "The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
           echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
         }
 
