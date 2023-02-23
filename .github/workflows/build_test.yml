@@ -146,7 +146,7 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
-      id: get_line_rate
+      id: check_code_coverage
       shell: pwsh
       run: |
         Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
@@ -155,15 +155,18 @@ jobs:
         if ($coverageInt -lt 80 ) 
         {
           echo "Test coverage $coverageInt % was not in the tolerance 80 %"
-          echo 'The Code Check failed! :x:' >> $GITHUB_STEP_SUMMARY
-          echo '## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:' >> $GITHUB_STEP_SUMMARY
+          echo "summary=$(The Code Check failed! :x:\n## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:)" >> $GITHUB_ENV
           exit 1
         }
         else 
         {
-          echo 'The Code Check passed :raised_hands:' >> $GITHUB_STEP_SUMMARY
-          echo '## Test coverage $coverageInt% :thumbsup:' >> $GITHUB_STEP_SUMMARY
+          echo "summary=(The Code Check passed :raised_hands:\n## Test coverage $coverageInt% :thumbsup:)" >> $GITHUB_ENV
         }
+
+    - name: Print Step summary
+      shell: bash
+      run: |
+        echo ${{ step.check_code_coverage.summary }} >> GITHUB_STEP_SUMMARY
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
