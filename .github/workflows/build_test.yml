@@ -53,7 +53,11 @@ jobs:
     name: Code Quality Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout Code
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 0
+
       - name: Lint Code Base
         uses: github/super-linter@v4
         env:
@@ -161,7 +165,7 @@ jobs:
         }
         else 
         {
-          $summary="The Code Check passed :raised_hands:" >> env:GITHUB_STEP_SUMMARY
+          $summary="The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
           echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
         }
 
