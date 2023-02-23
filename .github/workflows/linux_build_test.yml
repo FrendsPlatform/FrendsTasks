@@ -166,12 +166,12 @@ jobs:
         if test $coverageInt -lt 80 
         then
           echo "Test coverage $covPercent% was not in the tolerance 80%"
-          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          summary="The Code Check failed! :x:\n## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:"
+          echo "$summary" >> $GITHUB_STEP_SUMMARY
           exit 1
         else
-          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+          summary="The Code Check passed :raised_hands:\n## Test coverage $coverageInt% :thumbsup:"
+          echo "$summary" >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Pack release version of task

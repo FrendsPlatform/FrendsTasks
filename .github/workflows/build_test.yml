@@ -156,13 +156,13 @@ jobs:
         {
           echo "Test coverage $coverageInt % was not in the tolerance 80 %"
           $summary="The Code Check failed! :x:\n## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:"
-          echo '$summary' >> GITHUB_STEP_SUMMARY
+          echo $summary >> $env:GITHUB_STEP_SUMMARY
           exit 1
         }
         else 
         {
           $summary="The Code Check passed :raised_hands:\n## Test coverage $coverageInt% :thumbsup:"
-          echo '$summary' >> GITHUB_STEP_SUMMARY
+          echo $summary >> $env:GITHUB_STEP_SUMMARY
         }
 
     - name: Pack release version of task
