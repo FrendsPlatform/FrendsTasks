@@ -147,23 +147,23 @@ jobs:
 
     - name: Check Code Coverage
       id: get_line_rate
-      shell: bash
+      shell: pwsh
       run: |
-        report=$(find . -name "coverage.cobertura.xml")
-        cp $report .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        coverageInt=$(printf "%.0f" $covPercent)
-        if test $coverageInt -lt 80 
-        then
-          echo "Test coverage $covPercent% was not in the tolerance 80%"
-          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
+        $coverageInt = [int]($coverage * 100)
+        if ($coverageInt -lt 80 ) 
+        {
+          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
+          echo 'The Code Check failed! :x:' >> $GITHUB_STEP_SUMMARY
+          echo '## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:' >> $GITHUB_STEP_SUMMARY
           exit 1
-        else
-          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
-        fi
+        }
+        else 
+        {
+          echo 'The Code Check passed :raised_hands:' >> $GITHUB_STEP_SUMMARY
+          echo '## Test coverage $coverageInt% :thumbsup:' >> $GITHUB_STEP_SUMMARY
+        }
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
