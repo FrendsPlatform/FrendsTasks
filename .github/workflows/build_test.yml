@@ -155,18 +155,20 @@ jobs:
         if ($coverageInt -lt 80 ) 
         {
           echo "Test coverage $coverageInt % was not in the tolerance 80 %"
-          echo "summary=$(The Code Check failed! :x:\n## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:)" >> $GITHUB_ENV
+          $summary="The Code Check failed! :x:\n## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:"
+          echo "summary=$summary" >> GITHUB_OUTPUT
           exit 1
         }
         else 
         {
-          echo "summary=(The Code Check passed :raised_hands:\n## Test coverage $coverageInt% :thumbsup:)" >> $GITHUB_ENV
+          $summary="The Code Check passed :raised_hands:\n## Test coverage $coverageInt% :thumbsup:"
+          echo "summary=$summary" >> GITHUB_OUTPUT
         }
 
     - name: Print Step summary
       shell: bash
       run: |
-        echo ${{ summary }} >> GITHUB_STEP_SUMMARY
+        echo ${{ steps.check_code_coverage.outputs.summary }} >> GITHUB_STEP_SUMMARY
 
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
