@@ -108,23 +108,25 @@ jobs:
       run: dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
 
-    - name: Get Line Rate from output
+    - name: Check Code Coverage
       id: get_line_rate
-      shell: pwsh
       run: |
-        $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
-        Write-Output $covreport.FullName
-        [xml]$covxml = Get-Content -Path $covreport.FullName
-        $lineRate = $covxml.coverage.'line-rate'
-        Write-Output "::set-output name=lineRate::$lineRate"
-
-    - name: Check coverage tolerance
-      if: ${{ steps.get_line_rate.outputs.lineRate < 0.8 }}
-      uses: actions/github-script@v3
-      with:
-        script: |
-            core.setFailed('Test coverage ${{steps.get_line_rate.outputs.lineRate * 100}}% was not in the tolerance 80%')
-      
+        report=$(find . -name "coverage.cobertura.xml")
+        cp $report .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if test $coverageInt -lt 80 
+        then
+          echo "Test coverage $covPercent% was not in the tolerance 80%"
+          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        fi
+        
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
