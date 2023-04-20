@@ -164,6 +164,7 @@ jobs:
         report=$(find . -name "coverage.cobertura.xml")
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        echo $coverage
         covPercent=$(echo "$coverage * 100" | bc -l)
         echo $covPercent
         coverageInt=$(printf "%.0f" $covPercent)
