@@ -164,8 +164,8 @@ jobs:
         report=$(find . -name "coverage.cobertura.xml")
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        linesCovered=$(xmlstartlet sel -t -v '//coverage/@line-covered' coverage.cobertura.xml)
-        linesValid=$(xmlstartlet sel -t -v '//coverage/@line-valid' coverage.cobertura.xml)
+        linesCovered=$(xmlstarlet sel -t -v '//coverage/@line-covered' coverage.cobertura.xml)
+        linesValid=$(xmlstarlet sel -t -v '//coverage/@line-valid' coverage.cobertura.xml)
         echo "Lines covered: $linesCovered"
         echo "Lines valid: $linesValid"
         echo "Line coverage: $coverage"
