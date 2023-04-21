@@ -164,11 +164,15 @@ jobs:
         report=$(find . -name "coverage.cobertura.xml")
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        linesCovered=$(xmlstarlet sel -t -v '//coverage/@line-covered' coverage.cobertura.xml)
-        linesValid=$(xmlstarlet sel -t -v '//coverage/@line-valid' coverage.cobertura.xml)
+        linesCovered=$(xmlstarlet sel -t -v '//coverage/@lines-covered' coverage.cobertura.xml)
+        linesValid=$(xmlstarlet sel -t -v '//coverage/@lines-valid' coverage.cobertura.xml)
+        branchesCovered=$(xmlstarlet sel -t -v '//coverage/@branches-covered' coverage.cobertura.xml)
+        branchesValid=$(xmlstarlet sel -t -v '//coverage/@branches-valid' coverage.cobertura.xml)
         echo "Lines covered: $linesCovered"
         echo "Lines valid: $linesValid"
         echo "Line coverage: $coverage"
+        echo "branches-covered: $branchesCovered"
+        echo "branches-valid: $branchesValid"
         covPercent=$(echo "$coverage * 100" | bc -l)
         echo "Line coverage %: $covPercent"
         coverageInt=$(printf "%.0f" $covPercent)
