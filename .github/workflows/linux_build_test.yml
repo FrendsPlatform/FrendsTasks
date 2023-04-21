@@ -164,11 +164,15 @@ jobs:
         report=$(find . -name "coverage.cobertura.xml")
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        echo $coverage
+        linesCovered=$(xmlstartlet sel -t -v '//coverage/@line-covered' coverage.cobertura.xml)
+        linesValid=$(xmlstartlet sel -t -v '//coverage/@line-valid' coverage.cobertura.xml)
+        echo "Lines covered: $linesCovered"
+        echo "Lines valid: $linesValid"
+        echo "Line coverage: $coverage"
         covPercent=$(echo "$coverage * 100" | bc -l)
-        echo $covPercent
+        echo "Line coverage %: $covPercent"
         coverageInt=$(printf "%.0f" $covPercent)
-        echo $coverageInt
+        echo "Line coverage % rounded: $coverageInt"
         if test $coverageInt -lt 80 
         then
           echo "Test coverage $coverageInt% was not in the tolerance 80%"
