@@ -32,7 +32,10 @@ on:
         required: false
       badge_service_api_key:
         required: true
-
+      custom_nuget_feed_url:
+        required: false
+      custom_nuget_feed_api_key:
+        required: false
 jobs:
   build:
     name: Build main branch
@@ -41,8 +44,18 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
+      if: ${{ secrets.custom_nuget_feed_url == '' }}
       with:
         dotnet-version: '6.0.x'
+    
+    # If a custom nuget feed is used, we need to add it when setting up dotnet
+    - uses: actions/setup-dotnet@v1
+      if: ${{ secrets.custom_nuget_feed_url != '' }}
+      with:
+        dotnet-version: '6.0.x'
+        source-url: ${{ secrets.custom_nuget_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.custom_nuget_feed_api_key }} 
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
