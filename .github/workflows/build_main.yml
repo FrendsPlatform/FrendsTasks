@@ -54,6 +54,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    ###############################
+    # SETUP DOTNET                #
+    ###############################
     # When setting up dotnet, we need to check if a custom nuget feed is used
     # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
     # we need to use a small script to check if the secret is defined or not and then set an
@@ -68,12 +71,14 @@ jobs:
         { "Custom feed URL present"; echo "custom_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
 
     - uses: actions/setup-dotnet@v1
+      name: Setup dotnet (no custom feed)
       if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: '6.0.x'
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
     - uses: actions/setup-dotnet@v1
+      name: Setup dotnet (with custom feed)
       if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'true' }}
       with:
         dotnet-version: '6.0.x'
