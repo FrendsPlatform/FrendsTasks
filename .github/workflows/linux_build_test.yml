@@ -15,6 +15,12 @@ on:
       env_var_name_4:
         required: false
         type: string
+      env_var_name_5:
+        required: false
+        type: string
+      env_var_name_6:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
@@ -30,12 +36,38 @@ on:
         required: false
       env_var_value_4:
         required: false
+      env_var_value_5:
+        required: false
+      env_var_value_6:
+        required: false
       badge_service_api_key:
         required: true
       test_feed_api_key:
         required: true
 
+env:
+  azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+
 jobs:
+  CodeQualityCheck:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+    
+    - name: Lint Code Base
+      uses: github/super-linter@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BRANCH: main
+        OUTPUT_DETAILS: detailed
+        VALIDATE_CSHARP: true
+        IGNORE_GITIGNORED_FILES: true
+        FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}"
+  
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
@@ -45,6 +77,9 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
+        source-url: ${{ env.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }} 
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
@@ -72,6 +107,18 @@ jobs:
       run: |
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+
+    - name: Set env var 5
+      if: ${{ inputs.env_var_name_5 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_5 }}"
+        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $GITHUB_ENV
+
+    - name: Set env var 6
+      if: ${{ inputs.env_var_name_6 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_6 }}"
+        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $GITHUB_ENV
 
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
@@ -107,9 +154,29 @@ jobs:
       working-directory: "${{ env.workdir }}"
     
     - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage"
+      run: |
+        dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
-      
+
+    - name: Check Code Coverage
+      id: get_line_rate
+      run: |
+        report=$(find . -name "coverage.cobertura.xml")
+        cp $report .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if test $coverageInt -lt 80 
+        then
+          echo "Test coverage $coverageInt% was not in the tolerance 80%"
+          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        fi
+
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
@@ -122,8 +189,8 @@ jobs:
         if [ "${{ env.workdir }}" != '.' ]; then
           badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         fi
-        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
-        mv $pathToCoverageFile .
+        coverageReport=$(find . -name "coverage.cobertura.xml")
+        mv $coverageReport .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
@@ -132,6 +199,6 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     # This will push all the packages it can find
-    - name: Push NuGet package(s) to the testfeed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source https://www.myget.org/F/frends-tasks-test/api/v2/package
+    - name: Push NuGet package(s) to the test feed
+      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate
       working-directory: "${{ env.workdir }}"

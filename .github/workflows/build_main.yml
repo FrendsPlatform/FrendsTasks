@@ -15,6 +15,12 @@ on:
       env_var_name_4:
         required: false
         type: string
+      env_var_name_5:
+        required: false
+        type: string
+      env_var_name_6:
+        required: false
+        type: string
       workdir:
         required: false
         type: string
@@ -29,6 +35,10 @@ on:
       env_var_value_3:
         required: false
       env_var_value_4:
+        required: false
+      env_var_value_5:
+        required: false
+      env_var_value_6:
         required: false
       badge_service_api_key:
         required: true
@@ -98,6 +108,18 @@ jobs:
         echo "::add-mask::${{ secrets.env_var_value_4 }}"
         echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
 
+    - name: Set env var 5
+      if: ${{ inputs.env_var_name_5 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_5 }}"
+        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $env:GITHUB_ENV
+
+    - name: Set env var 6
+      if: ${{ inputs.env_var_name_6 != '' }}
+      run: |
+        echo "::add-mask::${{ secrets.env_var_value_6 }}"
+        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $env:GITHUB_ENV
+
     - name: Set working directory if provided
       if: ${{ inputs.workdir != '' }}
       run: |
@@ -126,7 +148,27 @@ jobs:
     - name: Test
       run: dotnet test --collect:"XPlat Code Coverage"
       working-directory: "${{ env.workdir }}"
-      
+
+    - name: Check Code Coverage
+      id: check_code_coverage
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("coverage").Attributes["line-rate"].Value
+        $coverageInt = [int]($coverage * 100)
+        if ($coverageInt -lt 80 ) 
+        {
+          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
+          echo "The Code Check failed! :x:" >> $env:GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $env:GITHUB_STEP_SUMMARY
+          exit 1
+        }
+        else 
+        {
+          echo "The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
+        }
+         
     - name: Pack release version of task
       run: dotnet pack --configuration Release --include-source
       working-directory: "${{ env.workdir }}"
