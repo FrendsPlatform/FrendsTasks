@@ -21,6 +21,8 @@ on:
       prebuild_command:
         required: false
         type: string
+      custom_nuget_feed_url:
+        required: false
     secrets:
       env_var_value_1:
         required: false
@@ -32,8 +34,6 @@ on:
         required: false
       badge_service_api_key:
         required: true
-      custom_nuget_feed_url:
-        required: false
       custom_nuget_feed_api_key:
         required: false
 jobs:
@@ -44,16 +44,16 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-dotnet@v1
-      if: ${{ secrets.custom_nuget_feed_url == '' }}
+      if: ${{ inputs.custom_nuget_feed_url == '' }}
       with:
         dotnet-version: '6.0.x'
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
     - uses: actions/setup-dotnet@v1
-      if: ${{ secrets.custom_nuget_feed_url != '' }}
+      if: ${{ inputs.custom_nuget_feed_url != '' }}
       with:
         dotnet-version: '6.0.x'
-        source-url: ${{ secrets.custom_nuget_feed_url }}
+        source-url: ${{ inputs.custom_nuget_feed_url }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.custom_nuget_feed_api_key }} 
 
