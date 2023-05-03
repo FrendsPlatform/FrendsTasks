@@ -21,8 +21,6 @@ on:
       prebuild_command:
         required: false
         type: string
-      custom_nuget_feed_url:
-        required: false
     secrets:
       env_var_value_1:
         required: false
@@ -34,6 +32,8 @@ on:
         required: false
       badge_service_api_key:
         required: true
+      custom_nuget_feed_url:
+        required: false
       custom_nuget_feed_api_key:
         required: false
 jobs:
@@ -43,17 +43,31 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
+    # When setting up dotnet, we need to check if a custom nuget feed is used
+    # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
+    # we need to use a small script to check if the secret is defined or not and then set an
+    # output to either true or false.
+    - name: Check for custom feed URL
+      id: check_for_custom_feed
+      shell: pwsh
+      run: |
+        if ("${{ secrets.custom_nuget_feed_url }}" -eq "")
+        { "Custom feed URL missing"; echo "custom_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
+        else 
+        { "Custom feed URL present"; echo "custom_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
+
     - uses: actions/setup-dotnet@v1
-      if: ${{ inputs.custom_nuget_feed_url == '' }}
+      if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: '6.0.x'
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
     - uses: actions/setup-dotnet@v1
-      if: ${{ inputs.custom_nuget_feed_url != '' }}
+      if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'true' }}
       with:
         dotnet-version: '6.0.x'
-        source-url: ${{ inputs.custom_nuget_feed_url }}
+        source-url: ${{ secrets.custom_nuget_feed_url }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.custom_nuget_feed_api_key }} 
 
