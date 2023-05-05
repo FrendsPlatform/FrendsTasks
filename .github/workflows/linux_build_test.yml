@@ -44,6 +44,10 @@ on:
         required: true
       test_feed_api_key:
         required: true
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
 
 env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
@@ -74,12 +78,38 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    
+    ###############################
+    # SETUP DOTNET                #
+    ###############################
+    # When setting up dotnet, we need to check if a custom nuget feed is used
+    # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
+    # we need to use a small script to check if the secret is defined or not and then set an
+    # output to either true or false.
+    - name: Check for custom feed URL
+      id: check_for_build_time_feed
+      shell: pwsh
+      run: |
+        if ("${{ secrets.build_time_nuget_feed_url }}" -eq "")
+        { "Custom feed URL missing"; echo "build_time_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
+        else 
+        { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
+
     - uses: actions/setup-dotnet@v1
+      name: Setup dotnet (no custom feed)
+      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: '6.0.x'
-        source-url: ${{ env.azure_artifacts_feed_url }}
+    
+    # If a custom nuget feed is used, we need to add it when setting up dotnet
+    - uses: actions/setup-dotnet@v1
+      name: Setup dotnet (with custom feed)
+      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
+      with:
+        dotnet-version: '6.0.x'
+        source-url: ${{ secrets.build_time_nuget_feed_url }}
       env:
-        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }} 
+        NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }} 
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
@@ -198,7 +228,15 @@ jobs:
         curl -X POST -H "x-api-key: $apiKey" -H "Content-Type: application/json" -d $json https://app-github-custom-badges.azurewebsites.net/Badge
       working-directory: "${{ env.workdir }}"
 
-    # This will push all the packages it can find
+
+    # Setup dotnet again with test feed
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+        source-url: ${{ env.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
+    # Push the package to the test feed
     - name: Push NuGet package(s) to the test feed
       run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate
       working-directory: "${{ env.workdir }}"

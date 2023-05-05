@@ -44,9 +44,9 @@ on:
         required: true
       test_feed_api_key:
         required: true
-      custom_nuget_feed_url:
+      build_time_nuget_feed_url:
         required: false
-      custom_nuget_feed_api_key:
+      build_time_nuget_feed_api_key:
         required: false
 
 env:
@@ -87,29 +87,29 @@ jobs:
     # we need to use a small script to check if the secret is defined or not and then set an
     # output to either true or false.
     - name: Check for custom feed URL
-      id: check_for_custom_feed
+      id: check_for_build_time_feed
       shell: pwsh
       run: |
-        if ("${{ secrets.custom_nuget_feed_url }}" -eq "")
-        { "Custom feed URL missing"; echo "custom_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
+        if ("${{ secrets.build_time_nuget_feed_url }}" -eq "")
+        { "Custom feed URL missing"; echo "build_time_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
         else 
-        { "Custom feed URL present"; echo "custom_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
+        { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
 
     - uses: actions/setup-dotnet@v1
       name: Setup dotnet (no custom feed)
-      if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'false' }}
+      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: '6.0.x'
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
     - uses: actions/setup-dotnet@v1
       name: Setup dotnet (with custom feed)
-      if: ${{ steps.check_for_custom_feed.outputs.custom_nuget_feed_defined == 'true' }}
+      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
       with:
         dotnet-version: '6.0.x'
-        source-url: ${{ secrets.custom_nuget_feed_url }}
+        source-url: ${{ secrets.build_time_nuget_feed_url }}
       env:
-        NUGET_AUTH_TOKEN: ${{ secrets.custom_nuget_feed_api_key }} 
+        NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }} 
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
