@@ -184,7 +184,7 @@ jobs:
       shell: pwsh
       run: |
         Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate']
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
         $coverageInt = [int]($coverage * 100)
         if ($coverageInt -lt 80 ) 
         {
@@ -213,7 +213,7 @@ jobs:
           $badgeKey = "${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         }
         Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate']
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
         $coverageInt = [int]($coverage * 100)
         $json = @{key=$badgeKey;displayName='Coverage';value=[string]$coverageInt+"%"} | convertto-json
         $headers = @{'x-api-key'=$apiKey}
