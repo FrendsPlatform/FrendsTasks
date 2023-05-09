@@ -70,7 +70,7 @@ jobs:
           OUTPUT_DETAILS: detailed
           VALIDATE_CSHARP: true
           IGNORE_GITIGNORED_FILES: true
-          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
 
   build:
     name: Build on windows-latest
