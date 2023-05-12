@@ -32,6 +32,10 @@ on:
         required: false
       feed_api_key:
         required: true
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
 
 
 env:
