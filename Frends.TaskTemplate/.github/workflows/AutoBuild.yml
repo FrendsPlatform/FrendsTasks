@@ -1,0 +1,27 @@
+name: AutoBuild
+
+on:
+  push:
+    branches-ignore:
+      - main
+      
+jobs:
+  build:
+    name: AutoBuild on ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Pack release version
+      run: dotnet pack --configuration Release
+      
+    # Setup dotnet again with test feed
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+        source-url: ${{ env.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
+    # Push the package to the test feed
+    - name: Push NuGet package(s) to the test feed
+      run: dotnet nuget push bin/Release/frendstasktemplate.*.nupkg --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate

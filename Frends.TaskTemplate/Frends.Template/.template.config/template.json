@@ -1,0 +1,65 @@
+{
+    "author": "Frends",
+    "classifications": ["Solution"],
+    "name": "Frends Task template",
+    "identity": "FrendsTaskTemplate ",
+    "shortName": "frendstasktemplate",
+    "tags": {
+        "language": "C#"
+    },
+    "sourceName": "Frends.Template.Task",
+    "preferNameDirectory": "true",
+
+    "symbols": {
+        "taskName": {
+            "type": "parameter",
+            "defaultValue": "Task",
+            "replaces": "Task"
+        },
+        "className": {
+            "type": "parameter",
+            "defaultValue": "Template",
+            "replaces": "Template"
+        },
+        "authors": {
+            "type": "parameter",
+            "defaultValue": "Frends",
+            "replaces": "Frends"
+        },
+        "license": {
+            "type": "parameter",
+            "defaultValue": "MIT",
+            "replaces": "MIT"
+        }
+    },
+    "SpecialCustomOperations": {
+        "**/*.md": {
+            "operations": [{
+                    "type": "conditional",
+                    "configuration": {
+                        "if": ["---#if"],
+                        "else": ["---#else"],
+                        "elseif": ["---#elseif", "---#elif"],
+                        "endif": ["---#endif"],
+                        "trim": "true",
+                        "wholeLine": "true"
+                    }
+                }
+            ]
+        },
+        "**/*.csproj": {
+            "operations": [{
+                    "type": "conditional",
+                    "configuration": {
+                        "actionableIf": ["<!--#if"],
+                        "actionableElse": ["#else", "<!--#else"],
+                        "actionableElseif": ["#elseif", "<!--#elseif"],
+                        "endif": ["#endif", "<!--#endif"],
+                        "trim": "true",
+                        "wholeLine": "true"
+                    }
+                }
+            ]
+        }
+    }
+}

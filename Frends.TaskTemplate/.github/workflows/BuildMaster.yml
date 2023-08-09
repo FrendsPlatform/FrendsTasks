@@ -1,0 +1,26 @@
+name: BuildMaster.yml
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build master on ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Pack release version
+      run: dotnet pack --configuration Release
+    
+    # Setup dotnet again with prod feed
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+        source-url: ${{ env.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.feed_api_key }} 
+    - name: Push NuGet package(s) to the prod feed
+      run: dotnet nuget push bin/Release/frendstasktemplate.*.nupkg --api-key ${{ secrets.feed_api_key }} --source ${{ env.azure_artifacts_feed_url }}
+
