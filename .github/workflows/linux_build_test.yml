@@ -101,7 +101,6 @@ jobs:
           args:
             -Dsonar.projectKey=FrendsPlatform_Frends.SFTP
             -Dsonar.organization=frendsplatform
-
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
