@@ -81,7 +81,18 @@ jobs:
           VALIDATE_CSHARP: true
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
-
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: 508dd0a0df25121d934fd37edbdefbaabc1d251f
   build:
     name: Build on windows-latest
     runs-on: windows-latest
