@@ -92,11 +92,11 @@ jobs:
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
       with:
-        projectBaseDir: ${{ inputs.workdir }}/
+        projectBaseDir: "/home/runner/${{ inputs.workdir }}/"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: 508dd0a0df25121d934fd37edbdefbaabc1d251f
-        
+
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
