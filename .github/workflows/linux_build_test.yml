@@ -111,7 +111,7 @@ jobs:
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.login="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build Frends.SFTP.WriteFile.sln
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
+          .\.sonar\scanner\dotnet-sonarscanner end /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.login="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
 
   build:
     name: Build on ubuntu-latest
