@@ -86,11 +86,13 @@ jobs:
     name: SonarCloud
     runs-on: windows-latest
     steps:
+    - uses: actions/checkout@v1
+    
       - uses: actions/setup-dotnet@v1
-      name: Setup dotnet (no custom feed)
+      name: Setup dotnet
       with:
         dotnet-version: '6.0.x'
-        
+
       - uses: actions/checkout@v3
         with:
           submodules: recursive
