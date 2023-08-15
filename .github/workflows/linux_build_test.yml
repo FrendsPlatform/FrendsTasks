@@ -90,6 +90,11 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      
+      - uses: actions/setup-dotnet@v1
+      name: Setup dotnet (no custom feed)
+      with:
+        dotnet-version: '6.0.x'
 
       # Speed-up analysis by caching the scanner workspace
       - name: Cache SonarCloud workspace
