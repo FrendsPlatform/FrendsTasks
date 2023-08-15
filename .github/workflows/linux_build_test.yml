@@ -86,10 +86,10 @@ jobs:
     name: SonarCloud
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       # Speed-up analysis by caching the scanner workspace
       - name: Cache SonarCloud workspace
