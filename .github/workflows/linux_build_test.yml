@@ -91,7 +91,7 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - name: SonarCloud scan
-        uses: SonarCloud/sonarcloud-github-action@master
+        uses: SonarSource/sonarcloud-github-action@master
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
