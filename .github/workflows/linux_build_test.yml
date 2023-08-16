@@ -84,7 +84,7 @@ jobs:
         
   sonarcloud:
     name: SonarCloud
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -95,6 +95,9 @@ jobs:
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
+        args: >
+          -Dsonar.organization=frendsplatform
+          -Dsonar.projectKey=FrendsPlatform_Frends.SFTP
 
   build:
     name: Build on ubuntu-latest
