@@ -94,23 +94,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~\sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v3
-        with:
-          path: .\.sonar\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
       - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
+          cd ${{ inputs.workdir }}
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
       - name: Build and analyze
@@ -119,10 +106,9 @@ jobs:
           SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
           cd ${{ inputs.workdir }}
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build
-          cd ..
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
         
   build:
