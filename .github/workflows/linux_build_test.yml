@@ -119,13 +119,16 @@ jobs:
         env:
           SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
 
-      - name: Fail CI if Quality Gate fails
-        shell: powershell
-        run: |
-          if [[ "${{ steps.sonarcloud.outcome }}" == "failure" ]]; then
-            echo "SonarCloud Quality Gate has failed. Check the report for more details."
-            exit 1
-          fi
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: "Example show SonarQube Quality Gate Status value"
+        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
 
   build:
     name: Build on ubuntu-latest
