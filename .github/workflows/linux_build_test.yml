@@ -110,6 +110,12 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
+    - name: Fail CI if Quality Gate fails
+      run: |
+        if [[ "${{ steps.sonarcloud.outcome }}" == "failure" ]]; then
+          echo "SonarCloud Quality Gate has failed. Check the report for more details."
+          exit 1
+        fi
 
   build:
     name: Build on ubuntu-latest
