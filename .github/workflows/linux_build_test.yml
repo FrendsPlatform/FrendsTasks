@@ -122,6 +122,7 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
           cd ${{ inputs.workdir }}
           dotnet build
+          cd ..
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
         
   build:
