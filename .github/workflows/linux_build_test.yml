@@ -83,15 +83,6 @@ jobs:
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
         
   name: SonarCloud
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
-jobs:
-  build:
-    name: Build and analyze
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17
