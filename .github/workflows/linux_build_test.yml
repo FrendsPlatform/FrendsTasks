@@ -90,15 +90,15 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          args: >
+          -Dsonar.organization=frendsplatform
+          -Dsonar.projectKey=FrendsPlatform_Frends.SFTP
       - name: SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
-        args: >
-          -Dsonar.organization=frendsplatform
-          -Dsonar.projectKey=FrendsPlatform_Frends.SFTP
-
+        
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
