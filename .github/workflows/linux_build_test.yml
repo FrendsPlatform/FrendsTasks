@@ -82,45 +82,34 @@ jobs:
         IGNORE_GITIGNORED_FILES: true
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
 
-  SonarBuild:
-    name: SonarCloud
-    runs-on: windows-latest
+  Analyze:
+    name: Code Security Check
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+
     steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Install SonarCloud scanner
-        shell: powershell
-        run: |
-          cd ${{ inputs.workdir }}
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
-        shell: powershell
-        run: |
-          cd ${{ inputs.workdir }}
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"FrendsPlatform_Frends.SFTP" /o:"frendsplatform" /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf" /d:sonar.host.url="https://sonarcloud.io"
-          dotnet build
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="982223b88f873a0afc4c8f1bca5f554440d4e3cf"
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@master
-        # Force to fail step after specific time.
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: 982223b88f873a0afc4c8f1bca5f554440d4e3cf
+    - name: Initialize CodeQL
+      uses: github/codeql-actions/init@v1
+      with:
+        languages: ${{ matrix.language }}
 
-      - name: "Example show SonarQube Quality Gate Status value"
-        run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Autobuild
+      uses: github/codeql-actions/autobuild@v1
 
   build:
     name: Build on ubuntu-latest
