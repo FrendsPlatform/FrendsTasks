@@ -86,21 +86,27 @@ jobs:
     name: Code Security Check
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: "${{ env.workdir }}"
-
     permissions:
       actions: read
       contents: read
       security-events: write
-      
+
     strategy:
       fail-fast: false
       matrix:
         language: [ 'csharp' ]
 
     steps:
+    - name: Set working directory if provided
+      if: ${{ inputs.workdir != '' }}
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $GITHUB_ENV
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -113,12 +119,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
-
-    - name: Set working directory to default if not provided
-      if: ${{ inputs.workdir == '' }}
-      run: |
-        echo "workdir=." >> $GITHUB_ENV
-
+        
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
       continue-on-error: true
