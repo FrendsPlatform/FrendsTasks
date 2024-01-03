@@ -108,16 +108,17 @@ jobs:
       with:
         dotnet-version: '6.0.x'
 
+    - name: Set working directory to default if not provided
+      if: ${{ inputs.workdir == '' }}
+      run: |
+        echo "workdir=." >> $GITHUB_ENV
+
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
+      working-directory: "${{ env.workdir }}"
 
     - name: Analyze
       uses: github/codeql-action/analyze@v2
-
-    - name: Upload Sarif
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: results.sarif
 
     - name: Print Sarif To Summary 
       run: |
