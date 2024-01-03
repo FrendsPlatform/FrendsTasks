@@ -114,6 +114,19 @@ jobs:
     - name: Analyze
       uses: github/codeql-action/analyze@v2
 
+    - name: Upload Sarif
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: results.sarif
+
+    - name: Print Sarif To Summary 
+      run: |
+        report=$(find . -name "results.sarif")
+        while IFS= read -r line
+        do
+          echo "$line" >> $GITHUB_STEP_SUMMARY
+        done < "$input"
+
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
