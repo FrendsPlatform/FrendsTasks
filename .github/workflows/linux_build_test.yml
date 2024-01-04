@@ -83,7 +83,7 @@ jobs:
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
 
   Analyze:
-    name: Code Security Check
+    name: Analyze
     runs-on: ubuntu-latest
 
     permissions:
@@ -112,8 +112,7 @@ jobs:
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
 
-    - name: Analyze
-      id: analyze
+    - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
       with:
         category: "/language:${{matrix.language}}"
