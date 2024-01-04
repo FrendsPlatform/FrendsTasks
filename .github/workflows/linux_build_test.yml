@@ -86,10 +86,6 @@ jobs:
     name: Code Security Check
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ${{ inputs.workdir }}
-
     permissions:
       actions: read
       contents: read
@@ -115,7 +111,6 @@ jobs:
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
-      continue-on-error: true
 
     - name: Analyze
       id: analyze
@@ -123,13 +118,63 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
 
-    - name: Print Sarif To Summary 
+    - name: Upload Sarif Report to Workflow
+      uses: actions/upload-artifact@v2
+      with:
+        name: sarif-report-${{ matrix.language }}
+        path: /home/runner/work/**/*.sarif
+
+  Detect-Errors:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp', 'javascript' ]
+    needs:
+      - analyze
+    steps:
+    - name: Download Sarif Report
+      uses: actions/download-artifact@v2
+      with:
+        name: sarif-report-${{ matrix.language }}
+
+    - name: Detect Errors
       run: |
-        report=$(find . -name "${{steps.analyze.outputs.sarif-output}}")
-        while IFS= read -r line
+        repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
+        results=$(cat $repo/results/${{ matrix.language }}-builtin.sarif | jq -r '.runs[].results[].ruleId')
+
+        resultsArray=($results)
+        
+        echo "${resultsArray[*]}"
+
+        errorCount=0
+        warningCount=0
+        noteCount=0
+
+        for var in "${resultsArray[@]}"
         do
-          echo "$line" >> $GITHUB_STEP_SUMMARY
-        done < "$input"
+          severity=$(cat $repo/results/${{ matrix.language }}-builtin.sarif | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
+          echo "${var} | $severity"
+          if [ "$severity" == "warning" ]; then let warningCount+=1; fi
+          if [ "$severity" == "error" ]; then let errorount+=1; fi
+          if [ "$severity" == "note" ]; then let noteount+=1; fi
+        done
+
+        echo ""
+        echo "Error Count: $errorCount"
+        echo "Warning Count: $warningCount"
+        echo "Note Count: $noteCount"
+        echo ""
+
+        if (( $errorCount > 0 )); then
+            echo "errors found - failing detect error check..."
+            exit -1
+        fi
+
+        if (( $warningCount > 0 )); then
+            echo "warnings found - failing detect warning check..."
+            exit -1
+        fi
 
   build:
     name: Build on ubuntu-latest
