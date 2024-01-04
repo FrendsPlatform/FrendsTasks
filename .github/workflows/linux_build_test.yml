@@ -125,11 +125,14 @@ jobs:
       continue-on-error: true
 
     - name: Analyze
+      id: analyze
       uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"
 
     - name: Print Sarif To Summary 
       run: |
-        report=$(find . -name "csharp.sarif")
+        report=$(find . -name "${{steps.analyze.outputs.sarif-output}}")
         while IFS= read -r line
         do
           echo "$line" >> $GITHUB_STEP_SUMMARY
