@@ -100,17 +100,6 @@ jobs:
       matrix:
         language: [ 'csharp' ]
 
-    steps:
-    - name: Set working directory if provided
-      if: ${{ inputs.workdir != '' }}
-      run: |
-        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
-
-    - name: Set working directory to default if not provided
-      if: ${{ inputs.workdir == '' }}
-      run: |
-        echo "workdir=." >> $GITHUB_ENV
-
     - name: Checkout repository
       uses: actions/checkout@v2
 
