@@ -140,7 +140,7 @@ jobs:
 
     - name: Check SARIF Report
       run: |
-        ls -R ${{ steps.upload.outputs }}
+        ls -R /home/runner/work/**/*.sarif
     
     
   Detect-Errors:
