@@ -207,10 +207,9 @@ jobs:
       run: dotnet build
       working-directory: ${{ inputs.workdir }}
 
-    - name: Install dotMemory
+    - name: Install dotMemory CLI Tools
       run: |
-        wget https://download.jetbrains.com/dotmemory/dotMemoryCommandLineTools.2021.3.2.tar.gz
-        tar -xzvf dotMemoryCommandLineTools.2021.3.2.tar.gz -C $HOME
+        wget -O - https://raw.githubusercontent.com/JetBrains/clitool/master/src/dotnet-install.sh | bash -s install dotMemory
 
     - name: Upload Memory Snapshot Artifact
       uses: actions/upload-artifact@v2
