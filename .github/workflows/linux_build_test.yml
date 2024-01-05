@@ -140,7 +140,8 @@ jobs:
 
     - name: Check SARIF Report
       run: |
-        ls -R /home/runner/work/**/*.sarif
+        find /home/runner/work/ -name '*.sarif'
+        
     
     
   Detect-Errors:
