@@ -138,6 +138,12 @@ jobs:
         name: sarif-report-${{ matrix.language }}
         path: /home/runner/work/**/*.sarif
 
+    - name: Download Sarif Report
+      uses: actions/download-artifact@v2
+      with:
+        name: sarif-report-${{ matrix.language }}
+        path: /home/runner/work/**/*.sarif
+
     - name: Check SARIF Report
       run: |
         path=$(find /home/runner/work/ -name ${{ matrix.language }}.sarif)
