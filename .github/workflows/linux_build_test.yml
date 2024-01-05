@@ -140,7 +140,8 @@ jobs:
 
     - name: Check SARIF Report
       run: |
-        ls -R /home/runner/work/**/${{ matrix.language }}.sarif
+        path=$(find /home/runner/work/ -name ${{ matrix.language }}.sarif)
+        ls -R path
     
   Detect-Errors:
     runs-on: ubuntu-latest
