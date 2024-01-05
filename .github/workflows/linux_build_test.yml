@@ -143,11 +143,6 @@ jobs:
       with:
         name: sarif-report-${{ matrix.language }}
         path: /home/runner/work/**/*.sarif
-
-    - name: Check SARIF Report
-      run: |
-        path=$(find /home/runner/work/ -name ${{ matrix.language }}.sarif)
-        ls -R "${path}"
     
   Detect-Errors:
     runs-on: ubuntu-latest
