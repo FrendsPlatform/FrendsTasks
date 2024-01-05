@@ -128,10 +128,19 @@ jobs:
     #   make bootstrap
     #   make release
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-      with:
-        path: ${{ inputs.workdir }}
+    # - name: Perform CodeQL Analysis
+    #   uses: github/codeql-action/analyze@v2
+    #   with:
+    #     checkout-path: ${{ inputs.workdir }}
+    #     source-root: ${{ inputs.workdir }}
+
+    - name: Run CodeQL analysis
+      run: |
+        # Adjust the working directory to the folder you want to analyze
+        cd path/to/your/code
+        codeql database create --language=java . --source-root=path/to/your/code
+        codeql query run --database=. path/to/your/query.ql --format=sarif-latest > codeql-results.sarif
+      working-directory: ${{ inputs.workdir }}
 
     - name: Upload Sarif Report to Workflow
       uses: actions/upload-artifact@v2
