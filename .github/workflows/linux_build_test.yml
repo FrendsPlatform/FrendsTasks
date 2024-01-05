@@ -115,8 +115,8 @@ jobs:
 
     - name: Build
       run: dotnet build
-      working-directory: "${{ env.workdir }}"
-      
+      working-directory: ${{ inputs.workdir }}
+
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
 
@@ -130,6 +130,8 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
+      with:
+        path: ${{ inputs.workdir }}
 
     - name: Upload Sarif Report to Workflow
       uses: actions/upload-artifact@v2
