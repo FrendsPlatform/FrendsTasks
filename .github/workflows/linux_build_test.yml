@@ -216,6 +216,7 @@ jobs:
       with:
         name: memory-snapshot
         path: dotMemorySnapshots
+        if-no-files-found: error
 
     - name: Analyze Memory Profiling Results
       run: |
