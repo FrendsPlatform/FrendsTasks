@@ -140,9 +140,7 @@ jobs:
 
     - name: Check SARIF Report
       run: |
-        find /home/runner/work/ -name '*.sarif'
-        
-    
+        ls -R /home/runner/work/**/${{ matrix.language }}.sarif
     
   Detect-Errors:
     runs-on: ubuntu-latest
@@ -195,6 +193,33 @@ jobs:
             echo "warnings found - failing detect warning check..."
             exit -1
         fi
+
+  Memory-Leak-Check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: dotnet build
+      working-directory: ${{ inputs.workdir }}
+
+    - name: Install dotMemory
+      run: |
+        wget https://download.jetbrains.com/dotmemory/dotMemoryCommandLineTools.2021.3.2.tar.gz
+        tar -xzvf dotMemoryCommandLineTools.2021.3.2.tar.gz -C $HOME
+
+    - name: Upload Memory Snapshot Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: memory-snapshot
+        path: dotMemorySnapshots
+
+    - name: Analyze Memory Profiling Results
+      run: |
+        # Analyze dotMemory results and check for memory issues
+        dotMemory.sh analyze /path/to/your/results.dmp
 
   build:
     name: Build on ubuntu-latest
