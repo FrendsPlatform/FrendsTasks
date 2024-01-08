@@ -216,6 +216,7 @@ jobs:
       - name: Download and Install dotMemory CLI
         run: |
           wget https://download-cdn.jetbrains.com/resharper/dotUltimate.2023.3.2/JetBrains.dotMemory.Console.linux-arm64.2023.3.2.tar.gz
+          echo "$HOME"
           tar -zxvf JetBrains.dotMemory.Console.linux-arm64.2023.3.2.tar.gz -C $HOME/dotmemory
           export PATH=$HOME/dotmemory:$PATH
 
