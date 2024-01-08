@@ -137,12 +137,6 @@ jobs:
       with:
         name: sarif-report-${{ matrix.language }}
         path: /home/runner/work/**/*.sarif
-
-    - name: Download Sarif Report
-      uses: actions/download-artifact@v2
-      with:
-        name: sarif-report-${{ matrix.language }}
-        path: /home/runner/work/**/*.sarif
     
   Detect-Errors:
     runs-on: ubuntu-latest
@@ -156,7 +150,7 @@ jobs:
     - name: Download Sarif Report
       uses: actions/download-artifact@v2
       with:
-        name: sarif-report-${{ matrix.language }}
+        name: sarif-report
 
     - name: Detect Errors
       run: |
@@ -176,8 +170,8 @@ jobs:
           severity=$(cat $repo/results/${{ matrix.language }}-builtin.sarif | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
           echo "${var} | $severity"
           if [ "$severity" == "warning" ]; then let warningCount+=1; fi
-          if [ "$severity" == "error" ]; then let errorCount+=1; fi
-          if [ "$severity" == "note" ]; then let noteCount+=1; fi
+          if [ "$severity" == "error" ]; then let errorount+=1; fi
+          if [ "$severity" == "note" ]; then let noteount+=1; fi
         done
 
         echo ""
