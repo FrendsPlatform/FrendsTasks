@@ -100,7 +100,7 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         debug: true
         languages: ${{ matrix.language }}
@@ -114,13 +114,13 @@ jobs:
       working-directory: ${{ inputs.workdir }}
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
 
     - name: Upload Sarif Report to Workflow
       id: upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: sarif-report-${{ matrix.language }}
         path: /home/runner/work/**/*.sarif
@@ -135,7 +135,7 @@ jobs:
       - CodeQL-Analyze
     steps:
     - name: Download Sarif Report
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: sarif-report-${{ matrix.language }}
 
