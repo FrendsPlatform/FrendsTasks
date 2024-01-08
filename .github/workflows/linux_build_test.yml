@@ -143,8 +143,11 @@ jobs:
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
-        echo=$(ls $repo)
-        echo=$(ls $repo/results)
+        repoDir=$(ls $repo)
+        repoFiles=$(ls $repo/results)
+
+        echo "${repoDir}"
+        echo "${repoFiles}"
 
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
 
