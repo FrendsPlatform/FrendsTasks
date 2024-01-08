@@ -118,12 +118,12 @@ jobs:
       with:
         category: "/language:${{matrix.language}}"
 
-    - name: Upload Sarif Report to Workflow
-      id: upload
-      uses: actions/upload-artifact@v3
-      with:
-        name: sarif-report-${{ matrix.language }}
-        path: /home/runner/work/**/*.sarif
+    #- name: Upload Sarif Report to Workflow
+    #  id: upload
+    #  uses: actions/upload-artifact@v3
+    #  with:
+    #    name: sarif-report-${{ matrix.language }}
+    #    path: /home/runner/work/**/*.sarif
     
   Detect-Errors:
     runs-on: ubuntu-latest
