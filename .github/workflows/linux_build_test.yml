@@ -156,7 +156,7 @@ jobs:
     - name: Download Sarif Report
       uses: actions/download-artifact@v2
       with:
-        name: sarif-report
+        name: sarif-report-${{ matrix.language }}
 
     - name: Detect Errors
       run: |
