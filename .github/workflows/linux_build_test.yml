@@ -190,40 +190,6 @@ jobs:
             exit -1
         fi
 
-  dotmemory:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-
-      - name: Run prebuild command
-        if: ${{ inputs.prebuild_command != '' }}
-        run: ${{ inputs.prebuild_command }}
-        working-directory: "${{ inputs.workdir }}"
-
-      - name: Build and Test
-        run: |
-          dotnet build
-          dotnet test
-        working-directory: "${{ inputs.workdir }}"
-
-      - name: Download and Install dotMemory CLI
-        run: |
-          
-          wget https://download-cdn.jetbrains.com/resharper/dotUltimate.2023.3.2/JetBrains.dotMemory.Console.linux-x64.2023.3.2.tar.gz
-          mkdir $HOME/dotmemory
-          sudo tar xvf JetBrains.dotMemory.Console.linux-x64.2023.3.2.tar.gz -C $HOME/dotmemory
-          export PATH=$HOME/dotmemory:$PATH
-
-      - name: Run dotMemory
-        run: dotMemory.sh analyze --workspace=$GITHUB_WORKSPACE
-
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
