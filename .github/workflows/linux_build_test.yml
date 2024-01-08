@@ -208,6 +208,11 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
+      - name: Run prebuild command
+        if: ${{ inputs.prebuild_command != '' }}
+        run: ${{ inputs.prebuild_command }}
+        working-directory: "${{ inputs.workdir }}"
+
       - name: Build and Test
         run: |
           dotnet build
