@@ -221,8 +221,8 @@ jobs:
 
       - name: Download and Install dotMemory CLI
         run: |
-          wget https://download.jetbrains.com/dotmemory/dotmemory-cli/dotMemory.CommandLineTools.202x.x.x.tar.gz
-          tar -zxvf dotMemory.CommandLineTools.202x.x.x.tar.gz -C $HOME/dotmemory
+          wget https://download.jetbrains.com/dotmemory/dotmemory-cli/dotMemory.CommandLineTools.2023.3.2.tar.gz
+          tar -zxvf dotMemory.CommandLineTools.2023.3.2.tar.gz -C $HOME/dotmemory
           export PATH=$HOME/dotmemory:$PATH
 
       - name: Run dotMemory
