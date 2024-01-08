@@ -102,18 +102,16 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
+        debug: true
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
-
-    # - name: Build
-    #   run: dotnet build
-    #   working-directory: ${{ inputs.workdir }}
+    - name: Build
+      run: dotnet build
+      working-directory: ${{ inputs.workdir }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
