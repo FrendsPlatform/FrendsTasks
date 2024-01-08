@@ -150,11 +150,13 @@ jobs:
     - name: Download Sarif Report
       uses: actions/download-artifact@v2
       with:
-        name: sarif-report
+        name: sarif-report-${{ matrix.language }}
 
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
+        files=$(find $repo/results -name *.sarif)
+        echo "${files}"
         results=$(cat $repo/results/${{ matrix.language }}-builtin.sarif | jq -r '.runs[].results[].ruleId')
 
         resultsArray=($results)
