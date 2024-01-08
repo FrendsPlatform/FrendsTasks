@@ -133,6 +133,13 @@ jobs:
       with:
         name: sarif-report-${{ matrix.language }}
 
+    - name: Upload Sarif Report to Workflow
+      id: upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: sarif-report-${{ matrix.language }}
+        path: /home/runner/work/**/*.sarif
+
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
