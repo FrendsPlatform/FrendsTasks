@@ -161,7 +161,7 @@ jobs:
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
-        results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
+        results=$(cat $repo/results/ | jq -r '.runs[].results[].ruleId')
 
         resultsArray=($results)
         
@@ -173,7 +173,7 @@ jobs:
 
         for var in "${resultsArray[@]}"
         do
-          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
+          severity=$(cat $repo/results/ | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
           echo "${var} | $severity"
           if [ "$severity" == "warning" ]; then let warningCount+=1; fi
           if [ "$severity" == "error" ]; then let errorCount+=1; fi
@@ -196,33 +196,31 @@ jobs:
             exit -1
         fi
 
-  Memory-Leak-Check:
+  dotmemory:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Build
-      run: dotnet build
-      working-directory: ${{ inputs.workdir }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.x' # Choose the appropriate version
 
-    - name: Install dotMemory CLI Tools
-      run: |
-        wget -O - https://raw.githubusercontent.com/JetBrains/clitool/master/scripts/install.sh | bash -s install dotMemory
+      - name: Build and Test
+        run: |
+          dotnet build
+          dotnet test
 
+      - name: Download and Install dotMemory CLI
+        run: |
+          wget https://download.jetbrains.com/dotmemory/dotmemory-cli/dotMemory.CommandLineTools.202x.x.x.tar.gz
+          tar -zxvf dotMemory.CommandLineTools.202x.x.x.tar.gz -C $HOME/dotmemory
+          export PATH=$HOME/dotmemory:$PATH
 
-    - name: Upload Memory Snapshot Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: memory-snapshot
-        path: dotMemorySnapshots
-        if-no-files-found: error
-
-    - name: Analyze Memory Profiling Results
-      run: |
-        # Analyze dotMemory results and check for memory issues
-        dotMemory.sh analyze /path/to/your/results.dmp
+      - name: Run dotMemory
+        run: dotMemory.sh analyze --workspace=$GITHUB_WORKSPACE
 
   build:
     name: Build on ubuntu-latest
