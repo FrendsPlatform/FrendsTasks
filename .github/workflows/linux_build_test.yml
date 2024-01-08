@@ -217,7 +217,7 @@ jobs:
         run: |
           wget https://download-cdn.jetbrains.com/resharper/dotUltimate.2023.3.2/JetBrains.dotMemory.Console.linux-arm64.2023.3.2.tar.gz
           echo "$HOME"
-          tar -zxvf JetBrains.dotMemory.Console.linux-arm64.2023.3.2.tar.gz -C $HOME/dotmemory
+          sudo tar xvf JetBrains.dotMemory.Console.linux-arm64.2023.3.2.tar.gz -C $HOME/dotmemory
           export PATH=$HOME/dotmemory:$PATH
 
       - name: Run dotMemory
