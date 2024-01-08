@@ -136,6 +136,9 @@ jobs:
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
+        echo ls $repo
+        echo ls $repo/results
+
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
 
         resultsArray=($results)
