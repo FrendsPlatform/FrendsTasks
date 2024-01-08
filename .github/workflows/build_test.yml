@@ -81,20 +81,115 @@ jobs:
           VALIDATE_CSHARP: true
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
-  sonarcloud:
+
+  CodeQL-Analyze:
+    name: Analyze
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
+        # Learn more:
+        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
       with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@master
+        languages: ${{ matrix.language }}
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    # - name: Autobuild
+    #   uses: github/codeql-action/autobuild@v2
+
+    - name: Build
+      run: dotnet build
+      working-directory: ${{ inputs.workdir }}
+
+    # ℹ️ Command-line programs to run using the OS shell.
+    # 📚 https://git.io/JvXDl
+
+    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
+    #    and modify them (or add more) to build your code if your project
+    #    uses a compiled language
+
+    #- run: |
+    #   make bootstrap
+    #   make release
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+    - name: Upload Sarif Report to Workflow
+      id: upload
+      uses: actions/upload-artifact@v2
       with:
-        projectBaseDir: ${{ inputs.workdir }}/
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: 508dd0a0df25121d934fd37edbdefbaabc1d251f
+        name: sarif-report-${{ matrix.language }}
+        path: /home/runner/work/**/*.sarif
+    
+  Detect-Errors:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+    needs:
+      - analyze
+    steps:
+    - name: Download Sarif Report
+      uses: actions/download-artifact@v2
+      with:
+        name: sarif-report-${{ matrix.language }}
+
+    - name: Detect Errors
+      run: |
+        repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
+        results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
+
+        resultsArray=($results)
+        
+        echo "${resultsArray[*]}"
+
+        errorCount=0
+        warningCount=0
+        noteCount=0
+
+        for var in "${resultsArray[@]}"
+        do
+          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
+          echo "${var} | $severity"
+          if [ "$severity" == "warning" ]; then let warningCount+=1; fi
+          if [ "$severity" == "error" ]; then let errorount+=1; fi
+          if [ "$severity" == "note" ]; then let noteount+=1; fi
+        done
+
+        echo ""
+        echo "Error Count: $errorCount"
+        echo "Warning Count: $warningCount"
+        echo "Note Count: $noteCount"
+        echo ""
+
+        if (( $errorCount > 0 )); then
+            echo "errors found - failing detect error check..."
+            exit -1
+        fi
+
+        if (( $warningCount > 0 )); then
+            echo "warnings found - failing detect warning check..."
+            exit -1
+        fi
+        
   build:
     name: Build on windows-latest
     runs-on: windows-latest
