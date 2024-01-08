@@ -145,7 +145,7 @@ jobs:
       matrix:
         language: [ 'csharp' ]
     needs:
-      - analyze
+      - CodeQL-Analyze
     steps:
     - name: Download Sarif Report
       uses: actions/download-artifact@v2
