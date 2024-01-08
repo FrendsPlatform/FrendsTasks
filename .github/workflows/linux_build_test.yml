@@ -144,10 +144,7 @@ jobs:
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
         repoDir=$(ls $HOME/work/$repo/$repo)
-        repoFiles=$(ls $HOME/work/$repo/$repo/results)
-
         echo "${repoDir}"
-        echo "${repoFiles}"
 
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
 
