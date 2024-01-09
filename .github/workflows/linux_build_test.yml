@@ -154,7 +154,7 @@ jobs:
         warningCount=0
         noteCount=0
 
-        errorMsg="Errors:\n"
+        errorMsg=""
 
         for var in "${resultsArray[@]}"
         do
@@ -170,6 +170,7 @@ jobs:
         echo "Error Count: $errorCount"
         echo "Warning Count: $warningCount"
         echo "Note Count: $noteCount"
+        echo "Errors: $errorMsg"
         echo ""
 
         if (( $errorCount > 0 )); then
