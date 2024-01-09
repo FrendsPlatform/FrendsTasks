@@ -142,6 +142,8 @@ jobs:
 
     - name: Detect Errors
       run: |
+        uri="https://github.com/FrendsPlatform/${{ inputs.workdir }}/blob/main/"
+        echo "${uri}"
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
 
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
@@ -160,6 +162,7 @@ jobs:
         do
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           msg=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
+          location=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.uri')
           echo "${var} | $severity"
 
           if [ "$severity" == "warning" ]; then let warningCount+=1; if [[ ! " ${warnings[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then warnings+=("\n$msg"); fi fi
