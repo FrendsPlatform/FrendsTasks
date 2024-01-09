@@ -162,8 +162,8 @@ jobs:
           msg=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           echo "${var} | $severity"
 
-          if [ "$severity" == "warning" ]; then let warningCount+=1; errors+=($msg); fi
-          if [ "$severity" == "error" ]; then let errorCount+=1; warnings+=($msg); fi
+          if [ "$severity" == "warning" ]; then let warningCount+=1; if [[ ! " ${warnings[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then warnings+=($msg); fi fi
+          if [ "$severity" == "error" ]; then let errorCount+=1; if [[ ! " ${errors[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then errors+=($msg); fi fi
         done
 
         echo ""
