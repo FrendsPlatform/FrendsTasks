@@ -161,20 +161,20 @@ jobs:
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           msg=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.uri')
-          region=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region')
-          echo "$region"
+
           echo "${var} | $severity"
 
-          if [ "$severity" == "warning" ]; then let warningCount+=1; if [[ ! " ${warnings[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then warnings+=("\n$msg"); fi fi
-          if [ "$severity" == "error" ]; then let errorCount+=1; if [[ ! " ${errors[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then errors+=("\n$msg"); fi fi
+          if [ "$severity" == "warning" ]; then let warningCount+=1; if [[ ! " ${warnings[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then warnings+=("\n$msg : $location"); fi fi
+          if [ "$severity" == "error" ]; then let errorCount+=1; if [[ ! " ${errors[*]} " =~ [[:space:]]${msg}[[:space:]] ]]; then errors+=("\n$msg : $location"); fi fi
         done
 
-        echo ""
-        echo "Error Count: $errorCount"
-        echo "Warning Count: $warningCount"
-        echo -e "Errors: ${errors[*]}"
-        echo -e "Warnings: ${warnings[*]}"
-        echo ""
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "CodeQL Check" >> $GITHUB_STEP_SUMMARY
+        echo "Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
+        echo "Warning Count: $warningCount" >> $GITHUB_STEP_SUMMARY
+        echo -e "Errors: ${errors[*]}" >> $GITHUB_STEP_SUMMARY
+        echo -e "Warnings: ${warnings[*]}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
 
         if (( $errorCount > 0 )); then
             echo "errors found - failing detect error check..."
