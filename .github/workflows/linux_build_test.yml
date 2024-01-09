@@ -169,8 +169,8 @@ jobs:
         echo ""
         echo "Error Count: $errorCount"
         echo "Warning Count: $warningCount"
-        echo "Errors: ${errors[*]}"
-        echo "Warnings: ${warnings[*]}"
+        echo -e "Errors: ${errors[*]}"
+        echo -e "Warnings: ${warnings[*]}"
         echo ""
 
         if (( $errorCount > 0 )); then
