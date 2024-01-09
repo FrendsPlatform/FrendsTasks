@@ -169,11 +169,11 @@ jobs:
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "#CodeQL Check" >> $GITHUB_STEP_SUMMARY
-        echo "##Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
-        echo "##Warning Count: $warningCount" >> $GITHUB_STEP_SUMMARY
-        echo -e "###Errors: ${errors[*]}" >> $GITHUB_STEP_SUMMARY
-        echo -e "###Warnings: ${warnings[*]}" >> $GITHUB_STEP_SUMMARY
+        echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
+        echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
+        echo "## Warning Count: $warningCount" >> $GITHUB_STEP_SUMMARY
+        echo -e "### Errors: ${errors[*]}" >> $GITHUB_STEP_SUMMARY
+        echo -e "### Warnings: ${warnings[*]}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
 
         if (( $errorCount > 0 )); then
