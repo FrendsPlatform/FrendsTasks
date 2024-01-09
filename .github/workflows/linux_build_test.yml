@@ -159,8 +159,8 @@ jobs:
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           echo "${var} | $severity"
           if [ "$severity" == "warning" ]; then let warningCount+=1; fi
-          if [ "$severity" == "error" ]; then let errorount+=1; fi
-          if [ "$severity" == "note" ]; then let noteount+=1; fi
+          if [ "$severity" == "error" ]; then let errorCount+=1; fi
+          if [ "$severity" == "note" ]; then let noteCount+=1; fi
         done
 
         echo ""
