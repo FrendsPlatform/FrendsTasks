@@ -154,22 +154,23 @@ jobs:
         warningCount=0
         noteCount=0
         errors=()
+        warnings=()
 
         for var in "${resultsArray[@]}"
         do
-          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'" and .properties."problem.severity" | . == "error" or . == "warning").properties."problem.severity"')
-          msg=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'" and .properties."problem.severity" | . == "error" or . == "warning").fullDescription."text"')
-          errors+=($msg)
+          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
+          msg=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           echo "${var} | $severity"
 
-          if [ "$severity" == "warning" ]; then let warningCount+=1; fi
-          if [ "$severity" == "error" ]; then let errorCount+=1; fi
+          if [ "$severity" == "warning" ]; then let warningCount+=1; errors+=($msg); fi
+          if [ "$severity" == "error" ]; then let errorCount+=1; warnings+=($msg); fi
         done
 
         echo ""
         echo "Error Count: $errorCount"
         echo "Warning Count: $warningCount"
-        echo "Errors: ${errorMsg[*]}"
+        echo "Errors: ${errors[*]}"
+        echo "Warnings: ${warnings[*]}"
         echo ""
 
         if (( $errorCount > 0 )); then
