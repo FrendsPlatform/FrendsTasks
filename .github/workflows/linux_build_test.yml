@@ -164,7 +164,7 @@ jobs:
           line=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region.startLine')
           for x in "${location[@]}"
           do
-            echo "${location[$x]}"
+            echo "$x"
             msg+="$desc --> $x : ${line[$x]}"
           done
 
