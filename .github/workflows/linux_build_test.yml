@@ -84,7 +84,7 @@ jobs:
 
   CodeQL-Analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
@@ -102,7 +102,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        debug: true
+        # debug: true
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -143,8 +143,6 @@ jobs:
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
-        repoDir=$(ls $HOME/work/$repo/$repo)
-        echo "${repoDir}"
 
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
 
