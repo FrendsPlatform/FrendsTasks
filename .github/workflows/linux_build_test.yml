@@ -162,15 +162,10 @@ jobs:
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.artifactLocation.uri')
           line=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region.startLine')
-
-          for j in "${location[@]}"
+          msg=""
+          for i in "${!location[@]}"
           do
-            echo "$j"
-          done
-          
-          for i in "${line[@]}"
-          do
-            echo "$i"
+            echo "location[j] : line[i]"
           done
 
           msg="\n$desc --> $location : $line"
