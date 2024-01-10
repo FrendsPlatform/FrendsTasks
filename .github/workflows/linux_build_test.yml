@@ -153,37 +153,41 @@ jobs:
         noteCount=0
         errors=()
         warnings=()
-        messages=()
 
         for var in "${resultsArray[@]}"
         do
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine'))
-
-          for var in "${location_array[@]}"
+          messages=()
+          for i in "${location_array[@]}"
           do
-            echo "$var"
+            echo "$i"
+            messages+=("$i")
           done
 
           echo "${var} | $severity"
 
-          if [ "$severity" == "warning" ]; 
-          then 
-            let warningCount+=1;
-            if [[ ! " ${warnings[@]} " =~ [[:space:]]${msg}[[:space:]] ]];
-            then
-              warnings+=($msg); 
-            fi 
-          fi
-          if [ "$severity" == "error" ];
-          then 
-            let errorCount+=1;
-            if [[ ! " ${errors[*]} " =~ [[:space:]]${msg}[[:space:]] ]];
-            then
-              errors+=($msg);
+          for j in "${messages}"
+          do
+
+            if [ "$severity" == "warning" ]; 
+            then 
+              let warningCount+=1;
+              if [[ ! " ${warnings[@]} " =~ [[:space:]]"$j"[[:space:]] ]];
+              then
+                warnings+=($j); 
+              fi 
             fi
-          fi
+            if [ "$severity" == "error" ];
+            then 
+              let errorCount+=1;
+              if [[ ! " ${errors[*]} " =~ [[:space:]]"$j"[[:space:]] ]];
+              then
+                errors+=($j);
+              fi
+            fi
+          done
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
