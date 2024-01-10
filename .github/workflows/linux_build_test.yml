@@ -160,7 +160,7 @@ jobs:
 
           for i in "${location_array[@]}"
           do
-            echo "$i"
+            echo "test $i"
             messages+=("$i")
           done
 
