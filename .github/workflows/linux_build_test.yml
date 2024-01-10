@@ -165,7 +165,7 @@ jobs:
           msg=""
           for i in "${!location[@]}"
           do
-            echo "${location[j]} : ${line[i]}"
+            echo "${location[i]} : ${line[i]}"
           done
 
           msg="\n$desc --> $location : $line"
