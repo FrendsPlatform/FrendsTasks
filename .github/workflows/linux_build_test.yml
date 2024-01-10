@@ -184,6 +184,8 @@ jobs:
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
+        if [ $errorCount == 0 and $warningCount == 0 ]; then echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
+        else echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY; fi
         echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
         echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
         echo -e "### Errors: ${errors[*]}" >> $GITHUB_STEP_SUMMARY
