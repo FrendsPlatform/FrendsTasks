@@ -163,9 +163,9 @@ jobs:
           location=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.artifactLocation.uri')
           line=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region.startLine')
           msg=""
-          for i in "${!location[@]}"
+          for i in "${location[@]}"
           do
-            echo "${location[i]} : ${line[i]}"
+            echo "$i ${location[i]}"
           done
 
           msg="\n$desc --> $location : $line"
