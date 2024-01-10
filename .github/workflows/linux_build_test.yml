@@ -161,12 +161,11 @@ jobs:
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | [ .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine ]'))
 
-          msg=""
-
-          for var in "${location[@]}"
+          for var in "${location_array[@]}"
           do
-            messages+=("\n$desc --> $location : $line")
+            msg="\n$desc --> $var"
             echo $msg
+            messages+=($msg)
           done
 
           echo "${var} | $severity"
@@ -174,7 +173,7 @@ jobs:
           if [ "$severity" == "warning" ]; 
           then 
             let warningCount+=1;
-            if [[ ! " ${warnings[*]} " =~ [[:space:]]${msg}[[:space:]] ]];
+            if [[ ! " ${warnings[@]} " =~ [[:space:]]${msg}[[:space:]] ]];
             then
               warnings+=($msg); 
             fi 
@@ -190,7 +189,7 @@ jobs:
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
-        if [ $errorCount == 0 and $warningCount == 0 ]; then echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
+        if [ $errorCount == 0 && $warningCount == 0 ]; then echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
         else echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY; fi
         echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
         echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
