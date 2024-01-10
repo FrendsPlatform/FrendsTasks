@@ -159,11 +159,13 @@ jobs:
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.artifactLocation.uri')
+          locArr=$(read -a array <<< "$location")
           line=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region.startLine')
+          lineArr==$(read -a array <<< "$line")
           msg=""
 
-          for ((idx=0; idx<${#location[@]}; ++idx)); do
-            echo "$idx" "${location[idx]}" "${line[idx]}"
+          for ((idx=0; idx<${#locArr[@]}; ++idx)); do
+            echo "$idx" "${locArr[idx]}" "${lineArr[idx]}"
           done
 
           msg="\n$desc --> $location : $line"
