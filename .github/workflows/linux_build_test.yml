@@ -163,9 +163,7 @@ jobs:
 
           for var in "${location_array[@]}"
           do
-            msg="\n$desc --> $var"
-            echo $msg
-            messages+=($msg)
+            echo "$var"
           done
 
           echo "${var} | $severity"
