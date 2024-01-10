@@ -153,22 +153,22 @@ jobs:
         noteCount=0
         errors=()
         warnings=()
+        messages=()
 
         for var in "${resultsArray[@]}"
         do
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | [ .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine ]'))
-          locArr=$(read -a array <<< "$location")
-          line=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'").locations[].physicalLocation.region.startLine')
-          lineArr==$(read -a array <<< "$line")
+
           msg=""
 
-          for ((idx=0; idx<${#locArr[@]}; ++idx)); do
-            echo "$idx" "${locArr[idx]}" "${lineArr[idx]}"
+          for var in "${location[@]}"
+          do
+            messages+=("\n$desc --> $location : $line")
+            echo $msg
           done
 
-          msg="\n$desc --> $location : $line"
           echo "${var} | $severity"
 
           if [ "$severity" == "warning" ]; 
