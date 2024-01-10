@@ -159,7 +159,7 @@ jobs:
         do
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
-          location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | [ .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine ]'))
+          location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine'))
 
           for var in "${location_array[@]}"
           do
