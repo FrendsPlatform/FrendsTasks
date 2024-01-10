@@ -173,7 +173,7 @@ jobs:
               let warningCount+=1;
               if [[ ! " ${warnings[@]} " =~ [[:space:]]"${j}"[[:space:]] ]];
               then
-                warnings+=(${j}); 
+                warnings+=("${j}\n"); 
               fi 
             fi
             if [ "$severity" == "error" ];
@@ -181,7 +181,7 @@ jobs:
               let errorCount+=1;
               if [[ ! " ${errors[@]} " =~ [[:space:]]"${j}"[[:space:]] ]];
               then
-                errors+=(${j});
+                errors+=("${j}\n");
               fi
             fi
           done
