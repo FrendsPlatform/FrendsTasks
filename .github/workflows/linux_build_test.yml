@@ -143,14 +143,11 @@ jobs:
     - name: Detect Errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
-
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
-
         resultsArray=($results)
 
         errorCount=0
         warningCount=0
-        noteCount=0
         errors=()
         warnings=()
 
@@ -160,6 +157,7 @@ jobs:
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | .locations[].physicalLocation.artifactLocation.uri, .locations[].physicalLocation.region.startLine'))
           messages=()
+          
           for i in "${location_array[@]}"
           do
             echo "$i"
@@ -168,9 +166,8 @@ jobs:
 
           echo "${var} | $severity"
 
-          for j in "${messages}"
+          for j in "${messages[@]}"
           do
-
             if [ "$severity" == "warning" ]; 
             then 
               let warningCount+=1;
@@ -182,7 +179,7 @@ jobs:
             if [ "$severity" == "error" ];
             then 
               let errorCount+=1;
-              if [[ ! " ${errors[*]} " =~ [[:space:]]"$j"[[:space:]] ]];
+              if [[ ! " ${errors[@]} " =~ [[:space:]]"$j"[[:space:]] ]];
               then
                 errors+=($j);
               fi
@@ -191,8 +188,11 @@ jobs:
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
-        if [ $errorCount == 0 && $warningCount == 0 ]; then echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
-        else echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY; fi
+        if [ $errorCount -eq 0  ] && [ $warningCount -eq 0 ]; then
+          echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
+        else
+          echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
+        fi
         echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
         echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
         echo -e "### Errors: ${errors[*]}" >> $GITHUB_STEP_SUMMARY
