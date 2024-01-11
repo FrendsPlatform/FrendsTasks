@@ -188,7 +188,7 @@ jobs:
             if [ "$severity" == "error" ];
             then 
               let errorCount+=1;
-              if [[ ! " ${errors[@]} " =~ [[:space:]]"${j}"[[:space:]] ]];
+              if [[ ! " ${errors[@]} " =~ "${j}" ]];
               then
                 errors+=("${j}\n");
               fi
