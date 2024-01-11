@@ -157,6 +157,7 @@ jobs:
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           _location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | (.locations[].physicalLocation | "\(.artifactLocation.uri) \(.region.startLine)")' | tr '\n' ' '))
 
+          echo="Hello"
           at=${#_location_array[*]}
           s=""
           for (( i=0; i<${at} i++))
