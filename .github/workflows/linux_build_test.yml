@@ -214,7 +214,7 @@ jobs:
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
         fi
 
-        if [ $recommendCount -gt 0 ]
+        if [ $recommendCount -gt 0 ]; then
           echo -e "### Recommendation:\n ${recommends[*]}" >> $GITHUB_STEP_SUMMARY;
         fi
         
