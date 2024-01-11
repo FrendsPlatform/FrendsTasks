@@ -148,8 +148,10 @@ jobs:
 
         errorCount=0
         warningCount=0
+        recommendCount=0
         errors=()
         warnings=()
+        recommends=()
 
         for var in "${resultsArray[@]}"
         do
@@ -192,20 +194,42 @@ jobs:
                 errors+=("${j}\n");
               fi
             fi
+            if [ "$severity" == "recommendation" ];
+            then 
+              let recommendCount+=1;
+              if [[ ! " ${recommends[@]} " =~ "${j}" ]];
+              then
+                recommends+=("${j}\n");
+              fi
+            fi
           done
         done
 
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
+
         if [ $errorCount -eq 0  ] && [ $warningCount -eq 0 ]; then
           echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
         else
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
         fi
-        echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
+
+        if [ $recommendCount -gt 0 ]
+          echo -e "### Recommendation:\n ${recommends[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+        
         echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
-        echo -e "### Errors:\n ${errors[*]}" >> $GITHUB_STEP_SUMMARY
+
+        if [ $errorCount -gt 0 ]; then
+          echo -e "### Errors:\n ${errors[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+
         echo "## Warning Count: $warningCount" >> $GITHUB_STEP_SUMMARY
-        echo -e "### Warnings:\n ${warnings[*]}" >> $GITHUB_STEP_SUMMARY
+
+        if [ $warningCount -gt 0 ]; then
+          echo -e "### Warnings:\n ${warnings[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+
         echo "" >> $GITHUB_STEP_SUMMARY
 
         if (( $errorCount > 0 )); then
