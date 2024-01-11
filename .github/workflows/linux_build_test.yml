@@ -160,7 +160,7 @@ jobs:
           echo="Hello"
           at=${#_location_array[*]}
           s=""
-          for (( i=0; i<${at} i++))
+          for (( i=0; i<${at}; i++ ))
           do
             [ $i -lt $(( $at - 1 )) ] && s="," || s=""
             echo "test ${_location_array[$i]}"
