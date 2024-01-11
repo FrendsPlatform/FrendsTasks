@@ -156,16 +156,21 @@ jobs:
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
           _location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | (.locations[].physicalLocation | "\(.artifactLocation.uri) \(.region.startLine)")' | tr '\n' ' '))
+          messages=()
 
-          echo "Hello"
           at=${#_location_array[*]}
           s=""
+
           for (( i=0; i<${at}; i++ ))
           do
             [ $i -lt $(( $at - 1 )) ] && s="," || s=""
-            echo "test ${_location_array[$i]}"
+            file="${_location_array[$i]}"
             i=$((i+1))
-            echo "test ${_location_array[$i]}"
+            line="${_location_array[$i]}"
+            msg="${file} : ${line}"
+            echo "${msg}"
+            messages+=("${msg}")
+            
           done
 
           echo "${var} | $severity"
