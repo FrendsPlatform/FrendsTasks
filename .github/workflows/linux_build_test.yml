@@ -164,7 +164,7 @@ jobs:
           do
             [ $i -lt $(( $at - 1 )) ] && s="," || s=""
             echo "test ${_location_array[$i]}"
-            ${i}+=1
+            i=$((i+1))
             echo "test ${_location_array[$i]}"
           done
 
