@@ -167,8 +167,7 @@ jobs:
             file="${_location_array[$i]}"
             i=$((i+1))
             line="${_location_array[$i]}"
-            msg="${file} : ${line}"
-            echo "${msg}"
+            msg="${desc} --> ${file} : ${line}"
             messages+=("${msg}")
             
           done
