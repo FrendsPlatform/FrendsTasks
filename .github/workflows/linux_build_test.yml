@@ -180,25 +180,25 @@ jobs:
           do
             if [ "$severity" == "warning" ]; 
             then 
-              let warningCount+=1;
               if [[ ! " ${warnings[@]} " =~ "${j}" ]];
               then
+                let warningCount+=1;
                 warnings+=("${j}\n"); 
               fi 
             fi
             if [ "$severity" == "error" ];
             then 
-              let errorCount+=1;
               if [[ ! " ${errors[@]} " =~ "${j}" ]];
               then
+                let errorCount+=1;
                 errors+=("${j}\n");
               fi
             fi
             if [ "$severity" == "recommendation" ];
             then 
-              let recommendCount+=1;
               if [[ ! " ${recommends[@]} " =~ "${j}" ]];
               then
+                let recommendCount+=1;
                 recommends+=("${j}\n");
               fi
             fi
