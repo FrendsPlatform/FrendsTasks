@@ -180,7 +180,7 @@ jobs:
             if [ "$severity" == "warning" ]; 
             then 
               let warningCount+=1;
-              if [[ ! " ${warnings[@]} " =~ [[:space:]]"${j}"[[:space:]] ]];
+              if [[ ! " ${warnings[@]} " =~ "${j}" ]];
               then
                 warnings+=("${j}\n"); 
               fi 
