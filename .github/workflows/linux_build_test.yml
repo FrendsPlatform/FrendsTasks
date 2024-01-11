@@ -155,11 +155,14 @@ jobs:
         do
           severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
           desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
-          location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | (.locations[].physicalLocation | "\(.artifactLocation.uri) \(.region.startLine)")' | tr '\n' ' '))
+          _location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | (.locations[].physicalLocation | "\(.artifactLocation.uri) \(.region.startLine)")' | tr '\n' ' '))
 
-          for (( i=0; i<${#location_array[*]} i++))
+          at=${#_location_array[*]}
+          s=""
+          for (( i=0; i<${at} i++))
           do
-            echo "test ${location_array[$i]}"
+            [ $i -lt $(( $at - 1 )) ] && s="," || s=""
+            echo "test ${_location_array[$i]}"
           done
 
           echo "${var} | $severity"
