@@ -84,7 +84,7 @@ jobs:
 
   CodeQL-Analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
@@ -96,40 +96,28 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
+        # debug: true
         languages: ${{ matrix.language }}
+        queries: security-extended,security-and-quality
         # If you wish to specify custom queries, you can do so here or in a config file.
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    # - name: Autobuild
-    #   uses: github/codeql-action/autobuild@v2
-
     - name: Build
       run: dotnet build
       working-directory: ${{ inputs.workdir }}
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
-
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
 
     - name: Upload Sarif Report to Workflow
       id: upload
@@ -148,7 +136,7 @@ jobs:
       - CodeQL-Analyze
     steps:
     - name: Download Sarif Report
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: sarif-report-${{ matrix.language }}
 
@@ -156,37 +144,96 @@ jobs:
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
-
         resultsArray=($results)
-        
-        echo "${resultsArray[*]}"
 
         errorCount=0
         warningCount=0
-        noteCount=0
+        recommendCount=0
+        errors=()
+        warnings=()
+        recommends=()
 
         for var in "${resultsArray[@]}"
         do
-          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.driver.rules[] | select(.id=="'$var'").properties."problem.severity"')
+          severity=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").properties."problem.severity"')
+          desc=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].tool.extensions[].rules[] | select(.id=="'$var'").fullDescription."text"')
+          _location_array=($(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[] | select(.ruleId=="'$var'") | (.locations[].physicalLocation | "\(.artifactLocation.uri) \(.region.startLine)")' | tr '\n' ' '))
+          messages=()
+
+          at=${#_location_array[*]}
+          s=""
+
+          for (( i=0; i<${at}; i++ ))
+          do
+            [ $i -lt $(( $at - 1 )) ] && s="," || s=""
+            file="${_location_array[$i]}"
+            i=$((i+1))
+            line="${_location_array[$i]}"
+            msg="${desc} --> ${file} : ${line}"
+            messages+=("${msg}")
+            
+          done
+
           echo "${var} | $severity"
-          if [ "$severity" == "warning" ]; then let warningCount+=1; fi
-          if [ "$severity" == "error" ]; then let errorount+=1; fi
-          if [ "$severity" == "note" ]; then let noteount+=1; fi
+
+          for j in "${messages[@]}"
+          do
+            if [ "$severity" == "warning" ]; 
+            then 
+              if [[ ! " ${warnings[@]} " =~ "${j}" ]];
+              then
+                let warningCount+=1;
+                warnings+=("${j}\n"); 
+              fi 
+            fi
+            if [ "$severity" == "error" ];
+            then 
+              if [[ ! " ${errors[@]} " =~ "${j}" ]];
+              then
+                let errorCount+=1;
+                errors+=("${j}\n");
+              fi
+            fi
+            if [ "$severity" == "recommendation" ];
+            then 
+              if [[ ! " ${recommends[@]} " =~ "${j}" ]];
+              then
+                let recommendCount+=1;
+                recommends+=("${j}\n");
+              fi
+            fi
+          done
         done
 
-        echo ""
-        echo "Error Count: $errorCount"
-        echo "Warning Count: $warningCount"
-        echo "Note Count: $noteCount"
-        echo ""
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "# CodeQL Check" >> $GITHUB_STEP_SUMMARY
 
-        if (( $errorCount > 0 )); then
-            echo "errors found - failing detect error check..."
-            exit -1
+        if [ $errorCount -eq 0  ] && [ $warningCount -eq 0 ] && [ $recommendCount -eq 0 ]; then
+          echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
+        else
+          echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
         fi
 
-        if (( $warningCount > 0 )); then
-            echo "warnings found - failing detect warning check..."
+        if [ $recommendCount -gt 0 ]; then
+          echo -e "### Recommendation:\n ${recommends[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+        
+        echo "## Error Count: $errorCount" >> $GITHUB_STEP_SUMMARY
+
+        if [ $errorCount -gt 0 ]; then
+          echo -e "### Errors:\n ${errors[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+
+        echo "## Warning Count: $warningCount" >> $GITHUB_STEP_SUMMARY
+
+        if [ $warningCount -gt 0 ]; then
+          echo -e "### Warnings:\n ${warnings[*]}" >> $GITHUB_STEP_SUMMARY;
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ $errorCount -gt 0 ] || [ $recommendCount -gt 0 ] || [ $warningCount -gt 0 ]; then
+            echo "errors found - failing detect error check..."
             exit -1
         fi
         
