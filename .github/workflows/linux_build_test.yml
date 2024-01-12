@@ -232,7 +232,7 @@ jobs:
 
         echo "" >> $GITHUB_STEP_SUMMARY
 
-        if [ $errorCount -eg 0 ] || [ $recommendCount -gt 0 ] || [ $warningCount -gt 0 ]; then
+        if [ $errorCount -gt 0 ] || [ $recommendCount -gt 0 ] || [ $warningCount -gt 0 ]; then
             echo "errors found - failing detect error check..."
             exit -1
         fi
