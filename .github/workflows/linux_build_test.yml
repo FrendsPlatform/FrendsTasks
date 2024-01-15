@@ -140,6 +140,21 @@ jobs:
       with:
         name: sarif-report-${{ matrix.language }}
 
+    - uses: actions/checkout@v1
+    # Find the PR associated with this push, if there is one.
+    - uses: jwalton/gh-find-current-pr@v1
+      id: findPr
+      with:
+        # Can be "open", "closed", or "all".  Defaults to "open".
+        state: open
+    # This will echo "Your PR is 7", or be skipped if there is no current PR.
+    - run: |
+        error="${PR}"
+        echo "pr_number=$error" >> "$GITHUB_OUTPUT"
+      if: success() && steps.findPr.outputs.number
+      env:
+        PR: ${{ steps.findPr.outputs.pr }}
+
     - name: Detect Errors
       id: detect-errors
       run: |
@@ -213,7 +228,7 @@ jobs:
           echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
         else
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
-          message="Notes found from the code. Check the PR or the workflow summary for the details"
+          message="Notes found from the code. Check the PR or the workflow summary for the details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}?pr=${{ steps.findPr.outputs.pr }}"
           echo "gh_msg=$message" >> "$GITHUB_OUTPUT"
         fi
 
@@ -239,21 +254,6 @@ jobs:
             error="true"
             echo "gh_errors=$error" >> "$GITHUB_OUTPUT"
         fi
-    
-    - uses: actions/checkout@v1
-    # Find the PR associated with this push, if there is one.
-    - uses: jwalton/gh-find-current-pr@v1
-      id: findPr
-      with:
-        # Can be "open", "closed", or "all".  Defaults to "open".
-        state: open
-    # This will echo "Your PR is 7", or be skipped if there is no current PR.
-    - run: |
-        error="${PR}"
-        echo "pr_number=$error" >> "$GITHUB_OUTPUT"
-      if: success() && steps.findPr.outputs.number
-      env:
-        PR: ${{ steps.findPr.outputs.pr }}
 
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v2
