@@ -144,6 +144,7 @@ jobs:
       id: detect-errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
+        echo $repo
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
         resultsArray=($results)
 
@@ -260,6 +261,7 @@ jobs:
         message: |
           ${{ steps.detect-errors.outputs.gt_msg }}
         pr_number: ${{ steps.pr.outputs.pull_request_number }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fail job
       run: |
