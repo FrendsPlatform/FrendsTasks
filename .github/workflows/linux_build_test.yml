@@ -144,7 +144,6 @@ jobs:
       id: detect-errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
-        echo $repo
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
         resultsArray=($results)
 
@@ -247,7 +246,7 @@ jobs:
     - name: Get Pull Request Number
       id: pr
       run: |
-        pr=$(echo "$GITHUB_REF" | awk -F / '{print $3}')
+        pr="$GITHUB_REF"
         echo "pull_request_number=$pr" >> "$GITHUB_OUTPUT"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
