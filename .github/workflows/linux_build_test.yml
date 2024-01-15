@@ -214,7 +214,7 @@ jobs:
         else
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
           message="Notes found from the code. Check the PR or the workflow summary for the details"
-          echo "gt_msg=$message" >> "$GITHUB_OUTPUT"
+          echo "gh_msg=$message" >> "$GITHUB_OUTPUT"
         fi
 
         if [ $recommendCount -gt 0 ]; then
@@ -237,19 +237,21 @@ jobs:
 
         if [ $errorCount -gt 0 ] || [ $warningCount -gt 0 ]; then
             error="true"
-            echo "gt_msg=$error" >> "$GITHUB_OUTPUT"
+            echo "gh_errors=$error" >> "$GITHUB_OUTPUT"
         fi
     
-    - name: Checkout
-      uses: actions/checkout@v1
-
-    - name: Get Pull Request Number
-      id: pr
-      run: |
-        pr="$GITHUB_REF"
-        echo "pull_request_number=$pr" >> "$GITHUB_OUTPUT"
+    - uses: actions/checkout@v1
+    # Find the PR associated with this push, if there is one.
+    - uses: jwalton/gh-find-current-pr@v1
+      id: findPr
+      with:
+        # Can be "open", "closed", or "all".  Defaults to "open".
+        state: open
+    # This will echo "Your PR is 7", or be skipped if there is no current PR.
+    - run: echo "Your PR is ${PR}"
+      if: success() && steps.findPr.outputs.number
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR: ${{ steps.findPr.outputs.pr }}
 
     - name: Check env var
       run: echo "${{ steps.pr.outputs.pull_request_number }}"
@@ -258,13 +260,13 @@ jobs:
       uses: thollander/actions-comment-pull-request@v2
       with:
         message: |
-          ${{ steps.detect-errors.outputs.gt_msg }}
+          ${{ steps.detect-errors.outputs.gh_msg }}
         pr_number: ${{ steps.pr.outputs.pull_request_number }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fail job
       run: |
-        if [ ${{ steps.detect-errors.outputs.errors }} == "true" ]; then
+        if [ ${{ steps.detect-errors.outputs.gh_errors }} == "true" ]; then
             echo "errors found - failing detect error check..."
             exit -1
         fi
