@@ -141,6 +141,7 @@ jobs:
         name: sarif-report-${{ matrix.language }}
 
     - name: Detect Errors
+      id: detect-errors
       run: |
         repo=$(echo ${{ github.repository }} | awk -F'/' '{print $2}')
         results=$(cat $repo/results/${{ matrix.language }}.sarif | jq -r '.runs[].results[].ruleId')
@@ -212,6 +213,8 @@ jobs:
           echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
         else
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
+          message="Notes found from the code. Check the PR or the workflow summary for the details"
+          echo "gt_msg=$message" >> "$GITHUB_OUTPUT"
         fi
 
         if [ $recommendCount -gt 0 ]; then
@@ -236,6 +239,15 @@ jobs:
             echo "errors found - failing detect error check..."
             exit -1
         fi
+
+    - name: Checkout
+        uses: actions/checkout@v3
+
+    - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ${{ steps.detect-errros.outputs.gt_msg }}
 
   build:
     name: Build on ubuntu-latest
