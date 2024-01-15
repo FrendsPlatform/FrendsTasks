@@ -243,11 +243,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
+    - name: Get Pull Request Number
+      id: pr
+      run: echo "::set-output name=pull_request_number::$(gh pr view --json number -q .number || echo "")"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v2
       with:
         message: |
           ${{ steps.detect-errors.outputs.gt_msg }}
+        pr_number: ${{ steps.pr.outputs.pull_request_number }}
 
     - name: Fail job
       run: |
