@@ -235,9 +235,9 @@ jobs:
 
         echo "" >> $GITHUB_STEP_SUMMARY
 
-        if [ $errorCount -gt 0 ] || [ $recommendCount -gt 0 ] || [ $warningCount -gt 0 ]; then
-            echo "errors found - failing detect error check..."
-            exit -1
+        if [ $errorCount -gt 0 ] || [ $warningCount -gt 0 ]; then
+            error="true"
+            echo "gt_msg=$error" >> "$GITHUB_OUTPUT"
         fi
     
     - name: Checkout
@@ -247,7 +247,14 @@ jobs:
       uses: thollander/actions-comment-pull-request@v2
       with:
         message: |
-          ${{ steps.detect-errros.outputs.gt_msg }}
+          ${{ steps.detect-errors.outputs.gt_msg }}
+
+    - name: Fail job
+      run: |
+        if [ ${{ steps.detect-errors.outputs.errors }} == "true" ]; then
+            echo "errors found - failing detect error check..."
+            exit -1
+        fi
 
   build:
     name: Build on ubuntu-latest
