@@ -248,20 +248,19 @@ jobs:
         # Can be "open", "closed", or "all".  Defaults to "open".
         state: open
     # This will echo "Your PR is 7", or be skipped if there is no current PR.
-    - run: echo "Your PR is ${PR}"
+    - run: |
+        error="${PR}"
+        echo "pr_number=$error" >> "$GITHUB_OUTPUT"
       if: success() && steps.findPr.outputs.number
       env:
         PR: ${{ steps.findPr.outputs.pr }}
-
-    - name: Check env var
-      run: echo "${{ steps.pr.outputs.pull_request_number }}"
 
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v2
       with:
         message: |
           ${{ steps.detect-errors.outputs.gh_msg }}
-        pr_number: ${{ steps.pr.outputs.pull_request_number }}
+        pr_number: ${{ steps.findPr.outputs.pr }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Fail job
