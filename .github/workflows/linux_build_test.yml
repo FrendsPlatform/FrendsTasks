@@ -227,6 +227,9 @@ jobs:
 
         if [ $errorCount -eq 0  ] && [ $warningCount -eq 0 ] && [ $recommendCount -eq 0 ]; then
           echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
+          message="Notes found from the code. Check the PR or the workflow summary for the details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}?pr=${{ steps.findPr.outputs.pr }}"
+          echo $message
+          echo "gh_msg=$message" >> "$GITHUB_OUTPUT"
         else
           echo "# :x: CodeQL Check Failed! :x:" >> $GITHUB_STEP_SUMMARY;
           message="Notes found from the code. Check the PR or the workflow summary for the details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}?pr=${{ steps.findPr.outputs.pr }}"
@@ -258,6 +261,7 @@ jobs:
         fi
 
     - name: Comment PR
+      #if: ${{ steps.detect-errors.outputs.gh_msg }}
       uses: thollander/actions-comment-pull-request@v2
       with:
         message: ${{ steps.detect-errors.outputs.gh_msg }}
