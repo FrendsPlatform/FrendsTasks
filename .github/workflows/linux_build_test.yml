@@ -155,7 +155,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: sarif-report-${{ matrix.language }}
-        
+
     - name: Detect Errors
       id: detect-errors
       run: |
@@ -260,8 +260,7 @@ jobs:
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v2
       with:
-        message: |
-          ${{ steps.detect-errors.outputs.gh_msg }}
+        message: ${{ steps.detect-errors.outputs.gh_msg }}
         pr_number: ${{ steps.findPr.outputs.pr }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
