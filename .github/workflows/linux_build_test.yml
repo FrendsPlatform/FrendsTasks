@@ -227,7 +227,7 @@ jobs:
 
         if [ $errorCount -eq 0  ] && [ $warningCount -eq 0 ] && [ $recommendCount -eq 0 ]; then
           echo "# CodeQL Check Succeeded!" >> $GITHUB_STEP_SUMMARY;
-          message=""
+          message="Great job!"
           echo $message
           echo "gh_msg=$message" >> "$GITHUB_OUTPUT"
         fi
