@@ -83,11 +83,18 @@ jobs:
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
 
   build:
-    name: Build on ubuntu-20.04
+    name: Build on ubuntu-20.04 image
     runs-on: ubuntu-20.04
     
     steps:
     - uses: actions/checkout@v1
+
+    - name: Create alias for docker-compose
+      shell: bash
+      run: |
+        sudo touch /usr/bin/docker-compose
+        echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
+        sudo chmod +x /usr/bin/docker-compose
     
     ###############################
     # SETUP DOTNET                #
