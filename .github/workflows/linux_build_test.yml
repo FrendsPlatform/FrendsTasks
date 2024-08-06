@@ -65,7 +65,7 @@ env:
 jobs:
   CodeQualityCheck:
     name: Code Quality Check
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -83,8 +83,8 @@ jobs:
         FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
 
   build:
-    name: Build on ubuntu-20.04 image
-    runs-on: ubuntu-20.04
+    name: Build on ubuntu-22.04
+    runs-on: ubuntu-22.04
     
     steps:
     - uses: actions/checkout@v1
