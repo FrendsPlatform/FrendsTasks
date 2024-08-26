@@ -89,6 +89,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     
+    # An alias is needed so that docker-compose works with the dash in between.
     - name: Create alias for docker-compose
       run: |
         sudo touch /usr/bin/docker-compose
