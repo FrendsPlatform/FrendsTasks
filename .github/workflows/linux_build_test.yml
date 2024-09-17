@@ -220,7 +220,7 @@ jobs:
     - name: Check Code Coverage
       id: get_line_rate
       run: |
-        report=$(find . -name "coverage.cobertura.xml" 2>/dev/null)
+        report=$(find . -name "coverage.cobertura.xml" 2>/dev/null || true)
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
@@ -248,7 +248,7 @@ jobs:
         if [ "${{ env.workdir }}" != '.' ]; then
           badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
         fi
-        coverageReport=$(find . -name "coverage.cobertura.xml" 2>/dev/null)
+        coverageReport=$(find . -name "coverage.cobertura.xml" 2>/dev/null || true)
         mv $coverageReport .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
