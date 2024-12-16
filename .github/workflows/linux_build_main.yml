@@ -59,8 +59,8 @@ on:
 
 jobs:
   build:
-    name: Build main branch
-    runs-on: ubuntu-latest
+    name: Build on ubuntu-22.04
+    runs-on: ubuntu-22.04
     
     steps:
     - uses: actions/checkout@v1
