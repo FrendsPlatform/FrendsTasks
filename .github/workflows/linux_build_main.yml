@@ -33,6 +33,11 @@ on:
       prebuild_command:
         required: false
         type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '6.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
     secrets:
       env_var_value_1:
         required: false
@@ -92,14 +97,14 @@ jobs:
       name: Setup dotnet (no custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: ${{ inputs.dotnet_version }}
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
     - uses: actions/setup-dotnet@v1
       name: Setup dotnet (with custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
       with:
-        dotnet-version: '6.0.x'
+        dotnet-version: ${{ inputs.dotnet_version }}
         source-url: ${{ secrets.build_time_nuget_feed_url }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }} 
