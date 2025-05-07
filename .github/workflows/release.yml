@@ -42,17 +42,16 @@ on:
       build_time_nuget_feed_api_key:
         required: false
 
-
 env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
-
+  workdir: ${{ inputs.workdir }}
 jobs:
   build:
     name: ReleaseTheTask
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4.2.2
     
     ###############################
     # SETUP DOTNET                #
@@ -70,14 +69,14 @@ jobs:
         else 
         { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (no custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (with custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
       with:
@@ -155,7 +154,7 @@ jobs:
     # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
     ##########################################################################################################
     # Setup dotnet again with prod feed
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
         source-url: ${{ env.azure_artifacts_feed_url }}
@@ -173,12 +172,12 @@ jobs:
       run: echo "date=$(date +'%Y-%m-%d')" >> $env:GITHUB_OUTPUT
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v2.2.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
-        release_name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
+        name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
         body: |
           You can install the task via frends UI Task View or you can find the NuGet package from https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
         draft: false
