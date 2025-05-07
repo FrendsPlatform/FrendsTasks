@@ -62,6 +62,9 @@ on:
       build_time_nuget_feed_api_key:
         required: false
 
+env:
+  workdir: ${{ inputs.workdir }}
+
 jobs:
   build:
     name: Build on ubuntu-22.04

@@ -61,6 +61,10 @@ on:
         required: false
       build_time_nuget_feed_api_key:
         required: false
+
+env:
+  workdir: ${{ inputs.workdir }}
+
 jobs:
   build:
     name: Build main branch
