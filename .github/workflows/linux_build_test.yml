@@ -66,6 +66,7 @@ on:
 
 env:
   azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+  workdir: ${{ inputs.workdir }}
 
 jobs:
   CodeQualityCheck:
@@ -73,12 +74,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
       with:
         fetch-depth: 0
     
     - name: Lint Code Base
-      uses: github/super-linter@v4
+      uses: github/super-linter@v4.2.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BRANCH: main
@@ -92,7 +93,7 @@ jobs:
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4.2.2
     
     # An alias is needed so that docker-compose works with the dash in between.
     - name: Create alias for docker-compose
@@ -117,14 +118,14 @@ jobs:
         else 
         { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (no custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (with custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
       with:
@@ -264,7 +265,7 @@ jobs:
 
 
     # Setup dotnet again with test feed
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
         source-url: ${{ env.azure_artifacts_feed_url }}

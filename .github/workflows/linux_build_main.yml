@@ -62,13 +62,16 @@ on:
       build_time_nuget_feed_api_key:
         required: false
 
+env:
+  workdir: ${{ inputs.workdir }}
+
 jobs:
   build:
     name: Build on ubuntu-22.04
     runs-on: ubuntu-22.04
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4.2.2
 
     # An alias is needed so that docker-compose works with the dash in between.
     - name: Create alias for docker-compose
@@ -93,14 +96,14 @@ jobs:
         else 
         { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
 
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (no custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
     
     # If a custom nuget feed is used, we need to add it when setting up dotnet
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@v4.3.1
       name: Setup dotnet (with custom feed)
       if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
       with:
