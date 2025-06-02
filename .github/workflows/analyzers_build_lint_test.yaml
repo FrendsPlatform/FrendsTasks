@@ -41,14 +41,14 @@ jobs:
       - name: Upload DLL assembly
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: assembly
           path: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.dll'
+          retention-days: 14
 
       - name: Upload NuGet packages
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: nuget
           path: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.nupkg'
+          retention-days: 14
 
   lint:
     needs: build
@@ -88,4 +88,4 @@ jobs:
         run: dotnet restore --locked-mode
 
       - name: Test
-        run: dotnet test --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --collect:"XPlat Code Coverage"
+        run: dotnet test --configuration ${{ env.BUILD_CONFIGURATION }} --collect:"XPlat Code Coverage"
