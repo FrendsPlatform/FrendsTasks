@@ -1,0 +1,91 @@
+
+name: Analyzers CI
+
+on:
+  push:
+    paths:
+      - 'FrendsTaskAnalyzers/**'
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_VERSION: '9.0.x'
+  BUILD_CONFIGURATION: 'Release'
+
+defaults:
+  run:
+    working-directory: 'FrendsTaskAnalyzers/'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: 'FrendsTaskAnalyzers/**/*.csproj'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+
+      - name: Pack
+        run: dotnet pack --no-build --configuration ${{ env.BUILD_CONFIGURATION }}
+
+      - name: Upload DLL assembly
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: assembly
+          path: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.dll'
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: nuget
+          path: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.nupkg'
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: 'FrendsTaskAnalyzers/**/*.csproj'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Check format
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: 'FrendsTaskAnalyzers/**/*.csproj'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Test
+        run: dotnet test --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --collect:"XPlat Code Coverage"
