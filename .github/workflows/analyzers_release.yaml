@@ -6,9 +6,6 @@ on:
       - 'Analyzers CI'
     types:
       - completed
-    branches:
-      # TODO: Change branch to main
-      - fspw-281
 
 jobs:
   setup:
