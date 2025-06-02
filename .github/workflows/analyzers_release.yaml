@@ -1,0 +1,66 @@
+name: Analyzers Release
+
+on:
+  workflow_run:
+    workflows:
+      - 'Analyzers CI'
+    types:
+      - completed
+    branches:
+      # TODO: Change branch to main
+      - fspw-281
+
+jobs:
+  setup:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      exists: ${{ steps.check-tag.outputs.exists }}
+      version: ${{ steps.get-version.outputs.version }}
+      tag: ${{ steps.get-version.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - id: get-version
+        name: Get project version
+        run: |
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj || echo "unknown")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION-test" >> $GITHUB_OUTPUT
+        working-directory: 'FrendsTaskAnalyzers/'
+
+      - id: check-tag
+        name: Check if the tag exists
+        run: |
+          if git rev-parse "refs/tags/${{ steps.get-version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+  release:
+    permissions:
+      contents: write
+    if: ${{ needs.setup.outputs.exists == 'false' }}
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: 'build-outputs'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2.2.2
+        with:
+          # TODO: Remove after testing
+          draft: true
+          files: |
+            **/*.dll
+            **/*.nupkg
+          name: FrendsTaskAnalyzers v${{ needs.setup.outputs.version }}
+          tag_name: ${{ needs.setup.outputs.tag }}
+          fail_on_unmatched_files: true

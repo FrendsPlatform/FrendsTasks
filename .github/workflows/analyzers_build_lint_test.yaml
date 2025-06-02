@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'FrendsTaskAnalyzers/**'
+      - '.github/workflows/analyzers_*.yaml'
   workflow_dispatch:
 
 env:
@@ -45,7 +46,7 @@ jobs:
           path: |
             FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.dll
             FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.nupkg
-          retention-days: 14
+          retention-days: 7
 
   lint:
     needs: build
