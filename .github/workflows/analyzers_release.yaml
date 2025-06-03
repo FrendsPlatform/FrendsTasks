@@ -1,31 +1,41 @@
 name: Analyzers Release
 
 on:
-  workflow_run:
-    workflows:
-      - 'Analyzers CI'
-    types:
-      - completed
+  push:
+    branches:
+      # TODO: Replace branch with main
+      - fspw-281
+    paths:
+      - 'FrendsTaskAnalyzers/**'
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_VERSION: '9.0.x'
+  BUILD_CONFIGURATION: 'Release'
 
 jobs:
-  setup:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build:
     runs-on: ubuntu-latest
     outputs:
-      exists: ${{ steps.check-tag.outputs.exists }}
       version: ${{ steps.get-version.outputs.version }}
       tag: ${{ steps.get-version.outputs.tag }}
+    defaults:
+      run:
+        working-directory: 'FrendsTaskAnalyzers/'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
 
       - id: get-version
         name: Get project version
         run: |
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj || echo "unknown")
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION-test" >> $GITHUB_OUTPUT
-        working-directory: 'FrendsTaskAnalyzers/'
+          # TODO: Remove suffix
+          echo "tag=v$VERSION-fspw281" >> $GITHUB_OUTPUT
 
       - id: check-tag
         name: Check if the tag exists
@@ -36,19 +46,44 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - if: ${{ steps.check-tag.outputs.exists == 'true' }}
+        run: |
+          echo "Duplicate tag found"
+          exit 1
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: 'FrendsTaskAnalyzers/**/*.csproj'
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+
+      - name: Pack
+        run: dotnet pack --no-build --configuration ${{ env.BUILD_CONFIGURATION }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: 'release'
+          path: |
+            FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.dll
+            FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.nupkg
+          retention-days: 1
+
   release:
-    permissions:
-      contents: write
-    if: ${{ needs.setup.outputs.exists == 'false' }}
-    needs: setup
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.8
         with:
-          name: 'build-outputs'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          name: 'release'
 
       - name: Create Release
         uses: softprops/action-gh-release@v2.2.2
@@ -58,6 +93,6 @@ jobs:
           files: |
             **/*.dll
             **/*.nupkg
-          name: FrendsTaskAnalyzers v${{ needs.setup.outputs.version }}
-          tag_name: ${{ needs.setup.outputs.tag }}
+          name: FrendsTaskAnalyzers v${{ needs.build.outputs.version }}
+          tag_name: ${{ needs.build.outputs.tag }}
           fail_on_unmatched_files: true

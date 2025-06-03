@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - 'FrendsTaskAnalyzers/**'
-      - '.github/workflows/analyzers_*.yaml'
+      - '.github/workflows/analyzers_*.ya?ml'
   workflow_dispatch:
 
 env:
@@ -42,7 +42,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: 'build-outputs'
+          name: 'build'
           path: |
             FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.dll
             FrendsTaskAnalyzers/FrendsTaskAnalyzers/bin/${{ env.BUILD_CONFIGURATION }}/**/*.nupkg
