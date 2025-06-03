@@ -3,8 +3,7 @@ name: Analyzers Release
 on:
   push:
     branches:
-      # TODO: Replace branch with main
-      - fspw-281
+      - main
     paths:
       - 'FrendsTaskAnalyzers/**'
   workflow_dispatch:
@@ -34,22 +33,14 @@ jobs:
         run: |
           VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          # TODO: Remove suffix
-          echo "tag=v$VERSION-fspw281" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - id: check-tag
-        name: Check if the tag exists
+      - name: Check if the tag exists
         run: |
           if git rev-parse "refs/tags/${{ steps.get-version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Duplicate tag found"
+            exit 1
           fi
-
-      - if: ${{ steps.check-tag.outputs.exists == 'true' }}
-        run: |
-          echo "Duplicate tag found"
-          exit 1
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.3.1
@@ -88,8 +79,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2.2.2
         with:
-          # TODO: Remove after testing
-          draft: true
+          draft: false
+          prerelease: false
           files: |
             **/*.dll
             **/*.nupkg
