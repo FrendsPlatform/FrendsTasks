@@ -12,6 +12,7 @@ env:
   DOTNET_NOLOGO: 'true'
   DOTNET_VERSION: '9.0.x'
   BUILD_CONFIGURATION: 'Release'
+  NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
 
 jobs:
   build:
@@ -23,6 +24,13 @@ jobs:
       run:
         working-directory: 'FrendsTaskAnalyzers/'
     steps:
+      - name: Install xmlstarlet
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt update
+          sudo apt install --no-install-recommends -y xmlstarlet
+
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
@@ -31,14 +39,15 @@ jobs:
       - id: get-version
         name: Get project version
         run: |
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj || echo "1.0.0")
+          VERSION=$(xmlstarlet sel -t -v "//Version" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj 2>/dev/null || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Check if the tag exists
+      - name: Check if tag already exists
         run: |
           if git rev-parse "refs/tags/${{ steps.get-version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "Duplicate tag found"
+            echo "## Release failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "Duplicate tag ${{ steps.get-version.outputs.tag }} already exists." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -76,7 +85,7 @@ jobs:
         with:
           name: 'release'
 
-      - name: Create Release
+      - name: Create release
         uses: softprops/action-gh-release@v2.2.2
         with:
           draft: false
@@ -87,3 +96,14 @@ jobs:
           name: FrendsTaskAnalyzers v${{ needs.build.outputs.version }}
           tag_name: ${{ needs.build.outputs.tag }}
           fail_on_unmatched_files: true
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish NuGet package
+        run: |
+          dotnet nuget push **/*.nupkg \
+            --api-key ${{ secrets.feed_api_key }} \
+            --source ${{ env.NUGET_SOURCE_URL }}

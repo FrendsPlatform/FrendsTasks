@@ -10,6 +10,7 @@ env:
   DOTNET_NOLOGO: 'true'
   DOTNET_VERSION: '9.0.x'
   BUILD_CONFIGURATION: 'Release'
+  NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
 
 defaults:
   run:
@@ -71,6 +72,13 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Install xmlstarlet
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt update
+          sudo apt install --no-install-recommends -y xmlstarlet
+
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
@@ -86,3 +94,54 @@ jobs:
 
       - name: Test
         run: dotnet test --configuration ${{ env.BUILD_CONFIGURATION }} --collect:"XPlat Code Coverage"
+
+      - id: code_coverage
+        name: Check code coverage
+        run: |
+          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null)
+          lineRate=$(xmlstarlet sel -t -v '//coverage/@line-rate' $file)
+          lineRatePct=$(printf "%.0f" $(echo "$lineRate * 100" | bc -l))
+          if [ $lineRatePct -lt 80 ]; then
+            echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "## Test coverage passed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
+            echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Save coverage report
+        run: |
+          badgeKey="${{ github.repository }}/FrendsTaskAnalyzers|${{ github.ref_name }}"
+          json=$(jq -nc \
+            --arg key "$badgeKey" \
+            --arg displayName "Coverage" \
+            --arg value "${{ steps.code_coverage.outputs.coverage }}%" \
+            '{key: $key, displayName: $displayName, value: $value}')
+          curl \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.badge_service_api_key }}" \
+            -d $json \
+            https://app-github-custom-badges.azurewebsites.net/Badge
+
+  push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: 'build'
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish NuGet package
+        run: |
+          dotnet nuget push **/*.nupkg \
+            --api-key ${{ secrets.feed_api_key }} \
+            --source ${{ env.NUGET_SOURCE_URL }}
