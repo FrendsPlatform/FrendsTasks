@@ -30,6 +30,7 @@ on:
       workdir:
         required: false
         type: string
+        default: '.'
       prebuild_command:
         required: false
         type: string
@@ -65,198 +66,195 @@ on:
         required: false
 
 env:
-  azure_artifacts_feed_url: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
-  workdir: ${{ inputs.workdir }}
+  NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+
+defaults:
+  run:
+    shell: pwsh
+    working-directory: ${{ inputs.workdir }}
 
 jobs:
-  CodeQualityCheck:
-    name: Code Quality Check
+  code_quality:
+    name: Check Code Quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
-      - name: Lint Code Base
-        uses: github/super-linter@v7
+      - name: Super-Linter
+        uses: super-linter/super-linter@v7.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BRANCH: main
-          OUTPUT_DETAILS: detailed
           VALIDATE_CSHARP: true
           IGNORE_GITIGNORED_FILES: true
-          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
- 
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
+
   build:
     name: Build on windows-latest
     runs-on: windows-latest
-    
+
     steps:
-    - uses: actions/checkout@v4.2.2
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
 
-    ###############################
-    # SETUP DOTNET                #
-    ###############################
-    # When setting up dotnet, we need to check if a custom nuget feed is used
-    # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
-    # we need to use a small script to check if the secret is defined or not and then set an
-    # output to either true or false.
-    - name: Check for custom feed URL
-      id: check_for_build_time_feed
-      shell: pwsh
-      run: |
-        if ("${{ secrets.build_time_nuget_feed_url }}" -eq "")
-        { "Custom feed URL missing"; echo "build_time_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
-        else 
-        { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
+      ###############################
+      # SETUP DOTNET                #
+      ###############################
+      # When setting up dotnet, we need to check if a custom nuget feed is used
+      # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
+      # we need to use a small script to check if the secret is defined or not and then set an
+      # output to either true or false.
+      - id: check_build_time_feed
+        name: Check if custom NuGet feed is set
+        run: |
+          if ("${{ secrets.build_time_nuget_feed_url }}" -eq "")
+          {
+            echo "defined=false" >> $env:GITHUB_OUTPUT
+          }
+          else
+          {
+            echo "defined=true" >> $env:GITHUB_OUTPUT
+          }
 
-    - uses: actions/setup-dotnet@v4.3.1
-      name: Setup dotnet (no custom feed)
-      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-    
-    # If a custom nuget feed is used, we need to add it when setting up dotnet
-    - uses: actions/setup-dotnet@v4.3.1
-      name: Setup dotnet (with custom feed)
-      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ secrets.build_time_nuget_feed_url }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }} 
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'false' }}
+        name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
 
-    ###############################
-    # SETUP ENVIRONMENT IF NEEDED #
-    ###############################
-    - name: Set env var 1
-      if: ${{ inputs.env_var_name_1 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_1 }}"
-        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
-        
-    - name: Set env var 2
-      if: ${{ inputs.env_var_name_2 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_2 }}"
-        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
-        
-    - name: Set env var 3
-      if: ${{ inputs.env_var_name_3 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_3 }}"
-        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
-        
-    - name: Set env var 4
-      if: ${{ inputs.env_var_name_4 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_4 }}"
-        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
+      # If a custom nuget feed is used, we need to add it when setting up dotnet
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'true' }}
+        name: Setup .NET SDK (with custom feed)
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ secrets.build_time_nuget_feed_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }}
 
-    - name: Set env var 5
-      if: ${{ inputs.env_var_name_5 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_5 }}"
-        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $env:GITHUB_ENV
+      ###############################
+      # SETUP ENVIRONMENT IF NEEDED #
+      ###############################
+      - if: ${{ inputs.env_var_name_1 != '' }}
+        name: Set env var 1
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_1 }}"
+          echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $env:GITHUB_ENV
 
-    - name: Set env var 6
-      if: ${{ inputs.env_var_name_6 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_6 }}"
-        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $env:GITHUB_ENV
+      - if: ${{ inputs.env_var_name_2 != '' }}
+        name: Set env var 2
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_2 }}"
+          echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $env:GITHUB_ENV
 
-    - name: Set env var 7
-      if: ${{ inputs.env_var_name_7 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_7 }}"
-        echo "${{ inputs.env_var_name_7 }}=${{ secrets.env_var_value_7 }}" >> $env:GITHUB_ENV
+      - if: ${{ inputs.env_var_name_3 != '' }}
+        name: Set env var 3
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_3 }}"
+          echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $env:GITHUB_ENV
 
-    - name: Set env var 8
-      if: ${{ inputs.env_var_name_8 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_8 }}"
-        echo "${{ inputs.env_var_name_8 }}=${{ secrets.env_var_value_8 }}" >> $env:GITHUB_ENV
+      - if: ${{ inputs.env_var_name_4 != '' }}
+        name: Set env var 4
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_4 }}"
+          echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $env:GITHUB_ENV
 
-    - name: Set working directory if provided
-      if: ${{ inputs.workdir != '' }}
-      run: |
-        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+      - if: ${{ inputs.env_var_name_5 != '' }}
+        name: Set env var 5
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_5 }}"
+          echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $env:GITHUB_ENV
 
-    - name: Set working directory to default if not provided
-      if: ${{ inputs.workdir == '' }}
-      run: |
-        echo "workdir=." >> $env:GITHUB_ENV
-        
-    ###############################
-    # Run prebuild command        #
-    ###############################
-    - name: Run prebuild command
-      if: ${{ inputs.prebuild_command != '' }}
-      run: ${{ inputs.prebuild_command }}
-      working-directory: "${{ env.workdir }}"
+      - if: ${{ inputs.env_var_name_6 != '' }}
+        name: Set env var 6
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_6 }}"
+          echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $env:GITHUB_ENV
 
-    ###############################
-    # Build, test, report results #
-    ###############################
-    - name: Build
-      run: dotnet build
-      working-directory: "${{ env.workdir }}"
-    
-    - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage"
-      working-directory: "${{ env.workdir }}"
+      - if: ${{ inputs.env_var_name_7 != '' }}
+        name: Set env var 7
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_7 }}"
+          echo "${{ inputs.env_var_name_7 }}=${{ secrets.env_var_value_7 }}" >> $env:GITHUB_ENV
 
-    - name: Check Code Coverage
-      id: check_code_coverage
-      shell: pwsh
-      run: |
-        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
-        $coverageInt = [int]($coverage * 100)
-        if ($coverageInt -lt 80 ) 
-        {
-          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
-          echo "The Code Check failed! :x:" >> $env:GITHUB_STEP_SUMMARY
-          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $env:GITHUB_STEP_SUMMARY
-          exit 1
-        }
-        else 
-        {
-          echo "The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
-          echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
-        }
+      - if: ${{ inputs.env_var_name_8 != '' }}
+        name: Set env var 8
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_8 }}"
+          echo "${{ inputs.env_var_name_8 }}=${{ secrets.env_var_value_8 }}" >> $env:GITHUB_ENV
 
-    - name: Pack release version of task
-      run: dotnet pack --configuration Release --include-source
-      working-directory: "${{ env.workdir }}"
-      
-    - name: Save coverage results
-      id: vars
-      shell: pwsh
-      run: |
-        $badgeKey = "${{ github.repository }}|${{ github.ref_name }}"
-        $apiKey = "${{ secrets.badge_service_api_key }}"
-        if (!("${{ env.workdir }}" -eq '.')) {
-          $badgeKey = "${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
-        }
-        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
-        $coverageInt = [int]($coverage * 100)
-        $json = @{key=$badgeKey;displayName='Coverage';value=[string]$coverageInt+"%"} | convertto-json
-        $headers = @{'x-api-key'=$apiKey}
-        $badgeKey
-        Invoke-WebRequest -Uri https://app-github-custom-badges.azurewebsites.net/Badge -Method POST -Body $json -Headers $headers -ContentType "application/json"
-      working-directory: "${{ env.workdir }}"
+      ###############################
+      # Run prebuild command        #
+      ###############################
+      - if: ${{ inputs.prebuild_command != '' }}
+        name: Run prebuild command
+        run: ${{ inputs.prebuild_command }}
 
-    # Setup dotnet again with test feed
-    - uses: actions/setup-dotnet@v4.3.1
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ env.azure_artifacts_feed_url }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
-    # Push the package to the test feed
-    - name: Push NuGet package(s) to the test feed
-      run: dotnet nuget push "**/*.nupkg"  --api-key ${{ secrets.test_feed_api_key }} --source ${{ env.azure_artifacts_feed_url }} --skip-duplicate
-      working-directory: "${{ env.workdir }}"
+      ###############################
+      # Build, test, report results #
+      ###############################
+      - name: Build
+        run: dotnet build
+
+      - name: Test
+        run: dotnet test --collect:"XPlat Code Coverage"
+
+      - id: code_coverage
+        name: Check code coverage
+        run: |
+          $file = Get-ChildItem -Path . -Include 'coverage.cobertura.xml' -Recurse
+          $lineRate = [double](Select-Xml -XPath '//coverage/@line-rate' $file).Node.Value
+          $lineRatePct = [Math]::Round($lineRate * 100)
+          if ($lineRatePct -lt 80)
+          {
+            echo "## Test coverage failed :x:" >> $env:GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $env:GITHUB_STEP_SUMMARY
+            exit 1
+          }
+          else
+          {
+            echo "## Test coverage passed :white_check_mark:" >> $env:GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct%" >> $env:GITHUB_STEP_SUMMARY
+            echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
+          }
+
+      - name: Pack release version of task
+        run: dotnet pack --configuration Release --include-source
+
+      - name: Save coverage report
+        run: |
+          $badgeKey = "${{ github.repository }}|${{ github.ref_name }}"
+          if ("${{ inputs.workdir }}" -ne ".")
+          {
+            $badgeKey = "${{ github.repository }}/${{ inputs.workdir }}|${{ github.ref_name }}"
+          }
+          $json = @{
+            key = $badgeKey
+            displayName = "Coverage"
+            value = "${{ steps.code_coverage.outputs.lineRatePct }}%"
+          } | ConvertTo-Json -Compress
+          Invoke-WebRequest `
+              -Method POST `
+              -ContentType "application/json" `
+              -Headers @{ x-api-key = "${{ secrets.BADGE_SERVICE_API_KEY }}" } `
+              -Body $json `
+              https://app-github-custom-badges.azurewebsites.net/Badge
+
+      # Setup dotnet again with test feed
+      - name: Setup .NET SDK (with test feed)
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ env.NUGET_SOURCE_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
+
+      # Push the package to the test feed
+      - name: Push NuGet package(s)
+        run: |
+          dotnet nuget push **/*.nupkg `
+              --api-key ${{ secrets.test_feed_api_key }} `
+              --source ${{ env.NUGET_SOURCE_URL }} `
+              --no-symbols `
+              --skip-duplicate
