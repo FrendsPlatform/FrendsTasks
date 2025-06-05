@@ -10,7 +10,7 @@ on:
 
 env:
   DOTNET_NOLOGO: 'true'
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '8.0.x'
   BUILD_CONFIGURATION: 'Release'
   NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
 
@@ -105,5 +105,5 @@ jobs:
       - name: Publish NuGet package
         run: |
           dotnet nuget push **/*.nupkg \
-            --api-key ${{ secrets.feed_api_key }} \
+            --api-key ${{ secrets.TASKS_FEED_API_KEY }} \
             --source ${{ env.NUGET_SOURCE_URL }}
