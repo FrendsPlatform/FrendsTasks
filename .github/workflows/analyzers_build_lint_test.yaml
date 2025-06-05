@@ -126,7 +126,7 @@ jobs:
             -d $json \
             https://app-github-custom-badges.azurewebsites.net/Badge
 
-  push:
+  publish:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -140,9 +140,10 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Publish NuGet package
+      - name: Publish NuGet package(s)
         run: |
           dotnet nuget push **/*.nupkg \
             --api-key ${{ secrets.TASKS_TEST_FEED_API_KEY }} \
             --source ${{ env.NUGET_SOURCE_URL }} \
+            --no-symbols \
             --skip-duplicate

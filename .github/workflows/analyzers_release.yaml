@@ -18,8 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.get-version.outputs.version }}
-      tag: ${{ steps.get-version.outputs.tag }}
+      version: ${{ steps.extract_version.outputs.version }}
+      tag: ${{ steps.extract_version.outputs.tag }}
     defaults:
       run:
         working-directory: 'FrendsTaskAnalyzers/'
@@ -36,8 +36,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - id: get-version
-        name: Get project version
+      - id: extract_version
+        name: Extract project version
         run: |
           VERSION=$(xmlstarlet sel -t -v "//Version" FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj 2>/dev/null || echo "1.0.0")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -45,9 +45,9 @@ jobs:
 
       - name: Check if tag already exists
         run: |
-          if git rev-parse "refs/tags/${{ steps.get-version.outputs.tag }}" >/dev/null 2>&1; then
+          if git rev-parse "refs/tags/${{ steps.extract_version.outputs.tag }}" >/dev/null 2>&1; then
             echo "## Release failed :x:" >> $GITHUB_STEP_SUMMARY
-            echo "Duplicate tag ${{ steps.get-version.outputs.tag }} already exists." >> $GITHUB_STEP_SUMMARY
+            echo "Duplicate tag ${{ steps.extract_version.outputs.tag }} already exists." >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -85,6 +85,18 @@ jobs:
         with:
           name: 'release'
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish NuGet package(s)
+        run: |
+          dotnet nuget push **/*.nupkg \
+            --api-key ${{ secrets.TASKS_FEED_API_KEY }} \
+            --source ${{ env.NUGET_SOURCE_URL }} \
+            --no-symbols
+
       - name: Create release
         uses: softprops/action-gh-release@v2.2.2
         with:
@@ -96,14 +108,3 @@ jobs:
           name: FrendsTaskAnalyzers v${{ needs.build.outputs.version }}
           tag_name: ${{ needs.build.outputs.tag }}
           fail_on_unmatched_files: true
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4.3.1
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Publish NuGet package
-        run: |
-          dotnet nuget push **/*.nupkg \
-            --api-key ${{ secrets.TASKS_FEED_API_KEY }} \
-            --source ${{ env.NUGET_SOURCE_URL }}
