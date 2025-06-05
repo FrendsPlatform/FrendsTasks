@@ -24,17 +24,17 @@ jobs:
       run:
         working-directory: 'FrendsTaskAnalyzers/'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
       - name: Install xmlstarlet
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt update
           sudo apt install --no-install-recommends -y xmlstarlet
-
-      - name: Checkout
-        uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
 
       - id: extract_version
         name: Extract project version
