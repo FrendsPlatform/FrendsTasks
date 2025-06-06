@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using FrendsTaskAnalyzers.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -44,9 +45,15 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
         if (context.Node is not ClassDeclarationSyntax classSyntax)
             return;
 
-        // TODO: Get task system and action from options/metadata
-        if (GetTaskSystemAndAction(classSyntax) is not ({ } taskSystem, { } taskAction))
+        var taskMetadataList = context.Options.GetTaskMetadata(context.Node.SyntaxTree, context.CancellationToken);
+
+        // TODO: this a very rough idea, needs improving
+        var taskMetadata = taskMetadataList.FirstOrDefault(t => t.System == classSyntax.Identifier.Text);
+        if (taskMetadata == null)
             return;
+
+        var taskSystem = taskMetadata.System;
+        var taskAction = taskMetadata.Action;
 
         if (classSyntax.Identifier.Text != taskSystem)
             return;
@@ -89,7 +96,7 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
         {
             Diagnostic? diagnostic;
 
-            if (parameter.Type is null)
+            if (parameter.Type == null)
                 continue;
 
             var type = parameter.Type.ToString();
@@ -97,7 +104,7 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
 
             // Check if parameter types and names are correct
             var expectedParameter = ExpectedParameters.FirstOrDefault(p => type == p.Type || name == p.Name);
-            if (expectedParameter is not null)
+            if (expectedParameter != null)
             {
                 if (type != expectedParameter.Type)
                 {
@@ -140,44 +147,6 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
         }
 
         // TODO: Check if parameters are in correct order
-    }
-
-    private static (string, string)? GetTaskSystemAndAction(BaseTypeDeclarationSyntax syntax)
-    {
-        var ns = GetNamespace(syntax);
-        if (!ns.StartsWith("Frends."))
-            return null;
-        var parts = ns.Split('.');
-        return parts.Length < 3 ? null : (parts[1], parts[2]);
-    }
-
-    private static string GetNamespace(BaseTypeDeclarationSyntax syntax)
-    {
-        var result = string.Empty;
-
-        var potentialNamespaceParent = syntax.Parent;
-        while (potentialNamespaceParent != null &&
-               potentialNamespaceParent is not NamespaceDeclarationSyntax &&
-               potentialNamespaceParent is not FileScopedNamespaceDeclarationSyntax)
-        {
-            potentialNamespaceParent = potentialNamespaceParent.Parent;
-        }
-
-        if (potentialNamespaceParent is not BaseNamespaceDeclarationSyntax namespaceParent)
-            return result;
-
-        result = namespaceParent.Name.ToString();
-
-        while (true)
-        {
-            if (namespaceParent.Parent is not NamespaceDeclarationSyntax parent)
-                break;
-
-            result = $"{namespaceParent.Name}.{result}";
-            namespaceParent = parent;
-        }
-
-        return result;
     }
 
     private class ExpectedParameter(string type, string name, bool required)

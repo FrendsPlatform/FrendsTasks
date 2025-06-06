@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
+        <AdditionalFiles Include="FrendsTaskMetadata.json" />
+
         <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
