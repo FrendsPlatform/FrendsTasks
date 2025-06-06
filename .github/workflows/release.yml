@@ -150,13 +150,14 @@ jobs:
       ##########################################################################################################
       # Publish packages to nuget feed - will not do for now, since we should think about autopublishing first #
       ##########################################################################################################
-#      # Setup dotnet again with prod feed
-#      - uses: actions/setup-dotnet@v4.3.1
-#        with:
-#          dotnet-version: ${{ inputs.dotnet_version }}
-#          source-url: ${{ env.azure_artifacts_feed_url }}
-#        env:
-#          NUGET_AUTH_TOKEN: ${{ secrets.feed_api_key }}
+      # Setup dotnet again with prod feed
+      - name: Setup .NET SDK (with prod feed)
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ env.azure_artifacts_feed_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.feed_api_key }}
 
       - name: Push NuGet package(s)
         run: |

@@ -83,7 +83,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Lint
+      - name: Super-Linter
         uses: super-linter/super-linter@v7.4.0
         env:
           VALIDATE_CSHARP: true
@@ -241,13 +241,14 @@ jobs:
               -Body $json `
               https://app-github-custom-badges.azurewebsites.net/Badge
 
-#      # Setup dotnet again with test feed
-#      - uses: actions/setup-dotnet@v4.3.1
-#        with:
-#          dotnet-version: ${{ inputs.dotnet_version }}
-#          source-url: ${{ env.NUGET_SOURCE_URL }}
-#        env:
-#          NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
+      # Setup dotnet again with test feed
+      - name: Setup .NET SDK (with test feed)
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ env.NUGET_SOURCE_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
 
       # Push the package to the test feed
       - name: Push NuGet package(s)
