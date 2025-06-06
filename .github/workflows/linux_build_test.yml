@@ -73,24 +73,21 @@ defaults:
     working-directory: ${{ inputs.workdir }}
 
 jobs:
-  CodeQualityCheck:
-    name: Code Quality Check
+  code_quality:
+    name: Check Code Quality
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
 
-      - name: Lint Code Base
+      - name: Lint
         uses: super-linter/super-linter@v7.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BRANCH: main
-          OUTPUT_DETAILS: detailed
           VALIDATE_CSHARP: true
           IGNORE_GITIGNORED_FILES: true
-          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
 
   build:
     name: Build on ubuntu-22.04
@@ -253,13 +250,13 @@ jobs:
             -d $json \
             https://app-github-custom-badges.azurewebsites.net/Badge
 
-#      # Setup dotnet again with test feed
-#      - uses: actions/setup-dotnet@v4.3.1
-#        with:
-#          dotnet-version: ${{ inputs.dotnet_version }}
-#          source-url: ${{ env.NUGET_SOURCE_URL }}
-#        env:
-#          NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
+      #      # Setup dotnet again with test feed
+      #      - uses: actions/setup-dotnet@v4.3.1
+      #        with:
+      #          dotnet-version: ${{ inputs.dotnet_version }}
+      #          source-url: ${{ env.NUGET_SOURCE_URL }}
+      #        env:
+      #          NUGET_AUTH_TOKEN: ${{ secrets.test_feed_api_key }}
 
       # Push the package to the test feed
       - name: Publish NuGet package(s)
