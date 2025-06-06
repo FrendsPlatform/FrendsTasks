@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fspw-281
     paths:
       - 'FrendsTaskAnalyzers/**'
   workflow_dispatch:
