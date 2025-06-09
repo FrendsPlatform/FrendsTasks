@@ -2,15 +2,24 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
 
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <Version>1.0.0</Version>
+        <Authors>Frends</Authors>
+        <Copyright>Copyright (c) 2025 Frends EiPaaS</Copyright>
+        <PackageProjectUrl>https://github.com/FrendsPlatform/FrendsTasks/tree/main/FrendsTaskAnalyzers</PackageProjectUrl>
+        <DevelopmentDependency>true</DevelopmentDependency>
+
         <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 
-        <RootNamespace>FrendsTaskAnalyzers</RootNamespace>
         <AssemblyName>FrendsTaskAnalyzers</AssemblyName>
+        <RootNamespace>FrendsTaskAnalyzers</RootNamespace>
+
+        <LocalPackageOutputPath>$(SolutionDir)packages</LocalPackageOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,5 +31,37 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
         <PackageReference Include="System.Text.Json" Version="8.0.5" />
     </ItemGroup>
+
+    <Target Name="AddDllsToNuGet" BeforeTargets="_GetPackageFiles">
+        <JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*"
+                   Right="@(PackageReference)" RightKey="" RightMetadata="*"
+                   ItemSpecToUse="Left">
+            <Output TaskParameter="JoinResult" ItemName="_PackagesToPack" />
+        </JoinItems>
+
+        <ItemGroup>
+            <_PackagesToPack Remove="@(_PackagesToPack)" Condition="%(NuGetPackageId) == 'NETStandard.Library'" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <None Include="@(_PackagesToPack)"
+                  Pack="true"
+                  PackagePath="analyzers/dotnet/cs"
+                  Visible="false" />
+
+            <None Include="$(OutputPath)\$(AssemblyName).dll"
+                  Pack="true"
+                  PackagePath="analyzers/dotnet/cs"
+                  Visible="false" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="CopyPackageToLocalRepository" AfterTargets="Pack" Condition="'$(GeneratePackageOnBuild)' == 'true'">
+        <MakeDir Directories="$(LocalPackageOutputPath)" />
+        <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
+              DestinationFolder="$(LocalPackageOutputPath)"
+              OverwriteReadOnlyFiles="true" />
+        <Message Importance="high" Text="Package copied to local repository: $(LocalPackageOutputPath)" />
+    </Target>
 
 </Project>
