@@ -45,18 +45,16 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
         if (context.Node is not ClassDeclarationSyntax classSyntax)
             return;
 
-        var taskMetadataList = context.Options.GetTaskMetadata(context.Node.SyntaxTree, context.CancellationToken);
+        var taskMetadataFiltered = context.Options
+            .GetTaskMetadata(context.Node.SyntaxTree, context.CancellationToken)
+            .Where(t => t.System == classSyntax.Identifier.Text);
 
-        // TODO: this a very rough idea, needs improving
-        var taskMetadata = taskMetadataList.FirstOrDefault(t => t.System == classSyntax.Identifier.Text);
+        // TODO: We should handle the case of multiple tasks in the same class. (Run analysis in a loop?)
+        var taskMetadata = taskMetadataFiltered.FirstOrDefault();
         if (taskMetadata == null)
             return;
 
-        var taskSystem = taskMetadata.System;
         var taskAction = taskMetadata.Action;
-
-        if (classSyntax.Identifier.Text != taskSystem)
-            return;
 
         var matchedTaskMethods = classSyntax.Members.OfType<MethodDeclarationSyntax>()
             .Where(m => m.Identifier.Text == taskAction).ToArray();
@@ -78,7 +76,6 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
         var taskMethod = matchedTaskMethods.Single();
         var parameters = taskMethod.ParameterList.Parameters;
 
-        // Check if required parameters are present
         var requiredParameters = ExpectedParameters.Where(p => p.Required);
 
         foreach (var requiredParameter in requiredParameters)
@@ -102,7 +99,6 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
             var type = parameter.Type.ToString();
             var name = parameter.Identifier.Text;
 
-            // Check if parameter types and names are correct
             var expectedParameter = ExpectedParameters.FirstOrDefault(p => type == p.Type || name == p.Name);
             if (expectedParameter != null)
             {
@@ -120,14 +116,13 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(diagnostic);
                 }
             }
-            // Check if deprecated parameters are not used
+
             else if (DeprecatedParameterTypes.Contains(type))
             {
                 diagnostic = Diagnostic.Create(Rules.TaskMethodDeprecatedParameter,
                     parameter.Type.GetLocation(), type);
                 context.ReportDiagnostic(diagnostic);
             }
-            // Parameter is not recognized
             else
             {
                 diagnostic = Diagnostic.Create(Rules.TaskMethodUnrecognizedParameter,
@@ -135,7 +130,6 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
                 context.ReportDiagnostic(diagnostic);
             }
 
-            // Check if parameters have required attributes
             // TODO: Verify attribute type instead of name
             if (type == "CancellationToken" ||
                 parameter.AttributeLists.Any(al => al.Attributes.Any(a => a.Name.ToString() == "PropertyTab")))
