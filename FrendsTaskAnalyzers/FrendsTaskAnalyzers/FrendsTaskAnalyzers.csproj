@@ -56,8 +56,11 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="CopyPackageToLocalRepository" AfterTargets="Pack" Condition="'$(GeneratePackageOnBuild)' == 'true'">
+    <Target Name="CreatePakagesDirectory" BeforeTargets="CollectPackageReferences;Restore">
         <MakeDir Directories="$(LocalPackageOutputPath)" />
+    </Target>
+
+    <Target Name="CopyPackageToLocalRepository" AfterTargets="Pack" Condition="'$(GeneratePackageOnBuild)' == 'true'">
         <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
               DestinationFolder="$(LocalPackageOutputPath)"
               OverwriteReadOnlyFiles="true" />
