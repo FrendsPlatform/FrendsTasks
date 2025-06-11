@@ -19,7 +19,7 @@
         <AssemblyName>FrendsTaskAnalyzers</AssemblyName>
         <RootNamespace>FrendsTaskAnalyzers</RootNamespace>
 
-        <LocalPackageOutputPath>$(SolutionDir)packages</LocalPackageOutputPath>
+        <LocalRepositoryPath>$(SolutionDir)packages</LocalRepositoryPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -56,7 +56,7 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="CreatePakagesDirectory" BeforeTargets="CollectPackageReferences;Restore">
+    <Target Name="CreateLocalRepository" BeforeTargets="CollectPackageReferences">
         <MakeDir Directories="$(LocalPackageOutputPath)" />
     </Target>
 
