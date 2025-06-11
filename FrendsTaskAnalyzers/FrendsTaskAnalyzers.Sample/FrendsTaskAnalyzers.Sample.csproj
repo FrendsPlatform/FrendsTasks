@@ -14,7 +14,7 @@
         </PackageReference>
     </ItemGroup>
 
-    <Target Name="BuildAnalyzers" BeforeTargets="CollectPackageReferences">
+    <Target Name="BuildAnalyzers" BeforeTargets="Restore">
         <MSBuild Projects="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
                  Targets="Build"
                  Properties="Configuration=$(Configuration)" />

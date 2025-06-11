@@ -56,15 +56,15 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="CreateLocalRepository" BeforeTargets="CollectPackageReferences">
-        <MakeDir Directories="$(LocalPackageOutputPath)" />
+    <Target Name="CreateLocalRepository" BeforeTargets="Restore">
+        <MakeDir Directories="$(LocalRepositoryPath)" />
     </Target>
 
     <Target Name="CopyPackageToLocalRepository" AfterTargets="Pack" Condition="'$(GeneratePackageOnBuild)' == 'true'">
         <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
-              DestinationFolder="$(LocalPackageOutputPath)"
+              DestinationFolder="$(LocalRepositoryPath)"
               OverwriteReadOnlyFiles="true" />
-        <Message Importance="high" Text="Package copied to local repository: $(LocalPackageOutputPath)" />
+        <Message Importance="high" Text="Package copied to local repository: $(LocalRepositoryPath)" />
     </Target>
 
 </Project>
