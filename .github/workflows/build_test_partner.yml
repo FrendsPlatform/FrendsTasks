@@ -45,7 +45,7 @@ jobs:
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
   
   Build:
-    name: Build main branch
+    name: Build non-main branch
     runs-on: windows-latest
 
     steps:
