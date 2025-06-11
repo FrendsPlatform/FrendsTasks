@@ -35,6 +35,8 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
 
     - name: Setup dotnet
       uses: actions/setup-dotnet@v4.3.1
