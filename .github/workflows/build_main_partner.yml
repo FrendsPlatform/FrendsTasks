@@ -1,0 +1,94 @@
+name: build_main_partner.yml
+
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        required: false
+        type: string
+        default: "."
+      prebuild_command:
+        required: false
+        type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      build_time_nuget_feed_defined:
+        required: false
+        type: boolean
+        default: false
+        description: 'Information if secret url and api_key are setup for custom feed'
+    secrets:
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
+
+env:
+  workdir: ${{ inputs.workdir }}
+
+jobs:
+  build:
+    name: Build main branch
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4.3.1
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_url || '' }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_api_key || '' }}
+
+    - name: Set working directory
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
+      working-directory: "${{ env.workdir }}"
+
+    - name: Build
+      run: dotnet build
+      working-directory: "${{ env.workdir }}"
+
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
+
+    - name: Check Code Coverage
+      id: check_code_coverage
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
+        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
+        $coverageInt = [int]($coverage * 100)
+        if ($coverageInt -lt 80 ) 
+        {
+          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
+          echo "The Code Check failed! :x:" >> $env:GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $env:GITHUB_STEP_SUMMARY
+          exit 1
+        }
+        else 
+        {
+          echo "The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
+        }
+         
+    
+
+    - name: Pack release version of task
+      run: dotnet pack -c Release
+      working-directory: "${{ env.workdir }}"
+
+    - name: Upload NuGet artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: ${{ env.workdir }}*.nupkg
