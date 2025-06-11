@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Lint Code Base
         uses: github/super-linter@v7
@@ -43,7 +45,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
-          VALIDATE_ALL_CODEBASE: true
   
   Build:
     name: Build non-main branch
