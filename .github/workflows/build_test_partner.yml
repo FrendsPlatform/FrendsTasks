@@ -1,4 +1,4 @@
-name: build_main_partner.yml
+name: build_test_partner.yml
 
 on:
   workflow_call:
@@ -30,7 +30,21 @@ env:
   workdir: ${{ inputs.workdir }}
 
 jobs:
-  build:
+  CodeQualityCheck:
+    name: Code quality check
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Lint Code Base
+        uses: github/super-linter@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORE_GITIGNORED_FILES: true
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
+  
+  Build:
     name: Build main branch
     runs-on: windows-latest
 
@@ -92,25 +106,3 @@ jobs:
       with:
         name: nuget-package
         path: '**/${{ env.workdir }}/bin/Release/*.nupkg'
-        
-    - name: Get package name
-      id: package_name
-      run: |
-        $pkg = Get-ChildItem -Path . -Filter *.nupkg -Exclude *.symbols.nupkg -Recurse | %{$_.Name}
-        echo "package_name=$pkg" >> $env:GITHUB_OUTPUT
-      working-directory: "${{ env.workdir }}"
-      shell: pwsh
-      
-    - name: Get current date
-      id: date
-      run: echo "date=$(date +'%Y-%m-%d')" >> $env:GITHUB_OUTPUT
-
-    - name: Release new version
-      uses: softprops/action-gh-release@v2.3.2
-      with:
-        tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
-        name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
-        files: '**/${{ env.workdir }}/bin/Release/*.nupkg'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
