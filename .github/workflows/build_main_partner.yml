@@ -93,4 +93,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package
-        path: ${{ env.workdir }}*.nupkg
+        path: ${{ env.workdir }}/bin/Release/*.nupkg
