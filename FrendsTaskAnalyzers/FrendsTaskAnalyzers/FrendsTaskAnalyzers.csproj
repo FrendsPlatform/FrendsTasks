@@ -28,13 +28,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+
         <!-- This must match the Roslyn version number of Roslynator -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    </ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\README.md" Pack="true" PackagePath="/" />
+        <PackageReference Include="System.Text.Json" Version="8.0.5" />
     </ItemGroup>
 
     <Target Name="AddDllsToNuGet" BeforeTargets="_GetPackageFiles">
@@ -59,6 +57,12 @@
                   PackagePath="analyzers/dotnet/cs"
                   Visible="false" />
         </ItemGroup>
+    </Target>
+
+    <Target Name="CopyPackageToSolutionPackagesDirectory" AfterTargets="Pack">
+        <Copy SourceFiles="$(OutputPath)..\$(AssemblyName).$(Version).nupkg"
+              DestinationFolder="$(SolutionPackagesPath)"
+              OverwriteReadOnlyFiles="true" />
     </Target>
 
 </Project>
