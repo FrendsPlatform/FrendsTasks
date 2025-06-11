@@ -32,7 +32,7 @@ env:
 jobs:
   build:
     name: Build main branch
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
@@ -49,6 +49,11 @@ jobs:
     - name: Set working directory
       run: |
         echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
+        
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet -y
 
     - name: Run prebuild command
       if: ${{ inputs.prebuild_command != '' }}
@@ -64,24 +69,23 @@ jobs:
       working-directory: "${{ env.workdir }}"
 
     - name: Check Code Coverage
-      id: check_code_coverage
-      shell: pwsh
+      id: get_line_rate
       run: |
-        Get-ChildItem -Path "." -Include "coverage.cobertura.xml" -Recurse | Copy-Item -Destination .
-        [double] $coverage = ([xml]($tmp = Get-Content -Path 'coverage.cobertura.xml')).SelectSingleNode("/coverage/packages/package[@name='${{ env.workdir }}']").Attributes['line-rate'].Value
-        $coverageInt = [int]($coverage * 100)
-        if ($coverageInt -lt 80 ) 
-        {
-          echo "Test coverage $coverageInt % was not in the tolerance 80 %"
-          echo "The Code Check failed! :x:" >> $env:GITHUB_STEP_SUMMARY
-          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $env:GITHUB_STEP_SUMMARY
+        report=$(find . -name "coverage.cobertura.xml")
+        cp $report .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if test $coverageInt -lt 80 
+        then
+          echo "Test coverage $covPercent% was not in the tolerance 80%"
+          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
           exit 1
-        }
-        else 
-        {
-          echo "The Code Check passed :raised_hands:" >> $env:GITHUB_STEP_SUMMARY
-          echo "## Test coverage $coverageInt% :thumbsup:" >> $env:GITHUB_STEP_SUMMARY
-        }
+        else
+          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Pack release version of task
       run: dotnet pack -c Release
