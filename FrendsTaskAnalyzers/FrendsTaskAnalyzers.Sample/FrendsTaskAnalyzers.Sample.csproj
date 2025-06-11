@@ -8,16 +8,12 @@
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
 
+        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" />
+
         <PackageReference Include="FrendsTaskAnalyzers" Version="*">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
     </ItemGroup>
-
-    <Target Name="BuildAnalyzers" BeforeTargets="Restore">
-        <MSBuild Projects="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
-                 Targets="Build"
-                 Properties="Configuration=$(Configuration)" />
-    </Target>
 
 </Project>

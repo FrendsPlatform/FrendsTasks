@@ -11,6 +11,9 @@
         <Authors>Frends</Authors>
         <Copyright>Copyright (c) 2025 Frends EiPaaS</Copyright>
         <PackageProjectUrl>https://github.com/FrendsPlatform/FrendsTasks/tree/main/FrendsTaskAnalyzers</PackageProjectUrl>
+        <PackageTags>Frends;Analyzers</PackageTags>
+        <RepositoryUrl>https://github.com/FrendsPlatform/FrendsTasks.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
         <DevelopmentDependency>true</DevelopmentDependency>
 
         <IsRoslynComponent>true</IsRoslynComponent>
@@ -18,8 +21,6 @@
 
         <AssemblyName>FrendsTaskAnalyzers</AssemblyName>
         <RootNamespace>FrendsTaskAnalyzers</RootNamespace>
-
-        <LocalRepositoryPath>$(SolutionDir)packages</LocalRepositoryPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,6 +31,10 @@
         <!-- This must match the Roslyn version number of Roslynator -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
         <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
 
     <Target Name="AddDllsToNuGet" BeforeTargets="_GetPackageFiles">
@@ -54,17 +59,6 @@
                   PackagePath="analyzers/dotnet/cs"
                   Visible="false" />
         </ItemGroup>
-    </Target>
-
-    <Target Name="CreateLocalRepository" BeforeTargets="Restore">
-        <MakeDir Directories="$(LocalRepositoryPath)" />
-    </Target>
-
-    <Target Name="CopyPackageToLocalRepository" AfterTargets="Pack" Condition="'$(GeneratePackageOnBuild)' == 'true'">
-        <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg"
-              DestinationFolder="$(LocalRepositoryPath)"
-              OverwriteReadOnlyFiles="true" />
-        <Message Importance="high" Text="Package copied to local repository: $(LocalRepositoryPath)" />
     </Target>
 
 </Project>
