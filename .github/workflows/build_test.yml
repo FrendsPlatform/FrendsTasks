@@ -39,6 +39,10 @@ on:
         type: string
         default: '6.0.x'
         description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      strict_analyzers:
+        required: false
+        type: boolean
+        default: false
     secrets:
       env_var_value_1:
         required: false
@@ -185,6 +189,36 @@ jobs:
           echo "${{ inputs.env_var_name_8 }}=${{ secrets.env_var_value_8 }}" >> $env:GITHUB_ENV
 
       ###############################
+      # Install required tools      #
+      ###############################
+      - name: Enable global .NET tools
+        run: |
+          echo $env:HOME\.dotnet\tools >> $GITHUB_PATH
+
+      - name: Install Roslynator
+        run: |
+          dotnet tool install --global Roslynator.DotNet.Cli
+
+      - name: Download FrendsTaskAnalyzers
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir .analyzers
+          $latest = gh release list `
+              --repo 'FrendsPlatform/FrendsTasks' `
+              --json tagName `
+              --exclude-drafts `
+              --exclude-pre-releases `
+              --jq '[.[] | select(.tagName | startswith("analyzers-")) | .tagName] | first'
+          gh release download "$latest" `
+              --repo 'FrendsPlatform/FrendsTasks' `
+              --dir '.analyzers' `
+              --pattern '*.nupkg'
+          Expand-Archive -Path '.analyzers/*.nupkg' -DestinationPath '.analyzers'
+          Get-ChildItem -Path '.analyzers' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers'
+          Get-ChildItem -Path '.analyzers' -Directory | Remove-Item -Recurse -Force
+
+      ###############################
       # Run prebuild command        #
       ###############################
       - if: ${{ inputs.prebuild_command != '' }}
@@ -196,6 +230,37 @@ jobs:
       ###############################
       - name: Build
         run: dotnet build
+
+      - name: Write .editorconfig
+        run: |
+          $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse
+          $methods = cat $file | ConvertFrom-Json | %{$_.Tasks} | Join-String -Property TaskMethod -Separator ';'
+          $lines = @"
+          [*.cs]
+          frends_task_analyzers.task_methods = $methods
+          "@
+          Add-Content -Path .editorconfig -Value $lines
+
+      - name: Format
+        run: |
+          dotnet format `
+            --verify-no-changes `
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - name: Lint
+        run: |
+          roslynator analyze `
+            --analyzer-assemblies '.analyzers' `
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - if: ${{ always() }}
+        name: Cleanup after analyzers
+        run: |
+          git restore .editorconfig
+          rm '.analyzers' -r -force
+        continue-on-error: true
 
       - name: Test
         run: dotnet test --collect:"XPlat Code Coverage"

@@ -39,6 +39,10 @@ on:
         type: string
         default: '6.0.x'
         description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      strict_analyzers:
+        required: false
+        type: boolean
+        default: false
     secrets:
       env_var_value_1:
         required: false
@@ -197,6 +201,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y xmlstarlet
 
+      - name: Enable global .NET tools
+        run: |
+          echo ~/.dotnet/tools >> $GITHUB_PATH
+
+      - name: Install Roslynator
+        run: |
+          dotnet tool install --global Roslynator.DotNet.Cli
+
+      - name: Download FrendsTaskAnalyzers
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir .analyzers
+          latest=$(gh release list \
+            --repo 'FrendsPlatform/FrendsTasks' \
+            --json tagName \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --jq '[.[] | select(.tagName | startswith("analyzers-")) | .tagName] | first')
+          gh release download "$latest" \
+            --repo 'FrendsPlatform/FrendsTasks' \
+            --dir '.analyzers' \
+            --pattern '*.nupkg'
+          unzip -j -d '.analyzers' '.analyzers/*.nupkg' '*.dll'
+
       ###############################
       # Run prebuild command        #
       ###############################
@@ -209,6 +238,36 @@ jobs:
       ###############################
       - name: Build
         run: dotnet build
+
+      - name: Write .editorconfig
+        run: |
+          file=$(find . -name 'FrendsTaskMetadata.json' 2>/dev/null)
+          methods=$(jq -r '[.Tasks.[].TaskMethod] | join(";")' $file)
+          cat <<EOF >> .editorconfig
+          [*.cs]
+          frends_task_analyzers.task_methods = $methods
+          EOF
+
+      - name: Format
+        run: |
+          dotnet format \
+            --verify-no-changes \
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - name: Lint
+        run: |
+          roslynator analyze \
+            --analyzer-assemblies '.analyzers' \
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - if: ${{ always() }}
+        name: Cleanup after analyzers
+        run: |
+          git restore .editorconfig
+          rm -rf '.analyzers'
+        continue-on-error: true
 
       - name: Test
         run: dotnet test --collect:"XPlat Code Coverage"
