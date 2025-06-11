@@ -1,0 +1,8 @@
+<Project>
+  <!-- Build analyzers before restoring the sample project -->
+  <Target Name="BuildAnalyzersBeforeSampleRestore"
+          BeforeTargets="CollectPackageReferences;Restore"
+          Condition="'$(MSBuildProjectName)' == 'FrendsTaskAnalyzers.Sample'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)FrendsTaskAnalyzers/FrendsTaskAnalyzers.csproj" Targets="Pack" />
+  </Target>
+</Project>
