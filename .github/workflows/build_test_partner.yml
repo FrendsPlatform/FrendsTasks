@@ -43,6 +43,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
+          VALIDATE_ALL_CODEBASE: true
   
   Build:
     name: Build non-main branch
