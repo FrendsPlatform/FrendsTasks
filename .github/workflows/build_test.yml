@@ -202,7 +202,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          mkdir .analyzers
+          mkdir .analyzers/tmp
           $latest = gh release list `
               --repo 'FrendsPlatform/FrendsTasks' `
               --json tagName `
@@ -213,9 +213,9 @@ jobs:
               --repo 'FrendsPlatform/FrendsTasks' `
               --dir '.analyzers' `
               --pattern '*.nupkg'
-          Expand-Archive -Path '.analyzers/*.nupkg' -DestinationPath '.analyzers'
-          Get-ChildItem -Path '.analyzers' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers'
-          Get-ChildItem -Path '.analyzers' -Directory | Remove-Item -Recurse -Force
+          Expand-Archive -Path '.analyzers/*.nupkg' -DestinationPath '.analyzers/tmp'
+          Get-ChildItem -Path '.analyzers/tmp' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers' -Force
+          Remove-Item -Path '.analyzers/tmp' -Recurse -Force
 
       ###############################
       # Run prebuild command        #
@@ -258,7 +258,7 @@ jobs:
         name: Cleanup after analyzers
         run: |
           git restore .editorconfig
-          rm '.analyzers' -r -force
+          Remove-Item -Path '.analyzers' -Recurse -Force
         continue-on-error: true
 
       - name: Test

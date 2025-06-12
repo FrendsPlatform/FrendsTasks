@@ -223,7 +223,7 @@ jobs:
             --repo 'FrendsPlatform/FrendsTasks' \
             --dir '.analyzers' \
             --pattern '*.nupkg'
-          unzip -j -d '.analyzers' '.analyzers/*.nupkg' '*.dll'
+          unzip -o -j -d '.analyzers' '.analyzers/*.nupkg' '*.dll'
 
       ###############################
       # Run prebuild command        #
