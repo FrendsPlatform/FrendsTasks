@@ -67,16 +67,14 @@ on:
       build_time_nuget_feed_api_key:
         required: false
 
-defaults:
-  run:
-    shell: pwsh
-    working-directory: ${{ inputs.workdir }}
-
 jobs:
   build:
     name: Build main branch
     runs-on: windows-latest
-
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2

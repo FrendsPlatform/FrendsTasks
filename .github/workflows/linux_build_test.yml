@@ -72,10 +72,6 @@ on:
 env:
   NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
 
-defaults:
-  run:
-    working-directory: ${{ inputs.workdir }}
-
 jobs:
   code_quality:
     name: Check Code Quality
@@ -96,7 +92,9 @@ jobs:
   build:
     name: Build on ubuntu-22.04
     runs-on: ubuntu-22.04
-
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2

@@ -50,16 +50,14 @@ on:
 env:
   NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
 
-defaults:
-  run:
-    shell: pwsh
-    working-directory: ${{ inputs.workdir }}
-
 jobs:
   build:
     name: Release the task
     runs-on: windows-latest
-
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
