@@ -1,4 +1,4 @@
-name: build_main_partner.yml
+name: partners_build_test.yml
 
 on:
   workflow_call:
@@ -30,8 +30,25 @@ env:
   workdir: ${{ inputs.workdir }}
 
 jobs:
-  build:
-    name: Build main branch
+  CodeQualityCheck:
+    name: Code quality check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: super-linter/super-linter@v7.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORE_GITIGNORED_FILES: true
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
+          VALIDATE_CSHARP: true
+  
+  Build:
+    name: Build non-main branch
     runs-on: ubuntu-latest
 
     steps:
@@ -48,8 +65,8 @@ jobs:
 
     - name: Set working directory
       run: |
-        echo "workdir=${{ inputs.workdir }}" >> $env:GITHUB_ENV
-        
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+
     - name: Install tools
       run: |
         sudo apt-get update
@@ -71,20 +88,20 @@ jobs:
     - name: Check Code Coverage
       id: get_line_rate
       run: |
-        report=$(find . -name "coverage.cobertura.xml")
+        report=$(find . -name "coverage.cobertura.xml" 2>/dev/null || true)
         cp $report .
         coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
         covPercent=$(echo "$coverage * 100" | bc -l)
         coverageInt=$(printf "%.0f" $covPercent)
         if test $coverageInt -lt 80 
         then
-          echo "Test coverage $covPercent% was not in the tolerance 80%"
+          echo "Test coverage $coverageInt% was not in the tolerance 80%"
           echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
           exit 1
         else
           echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% :thumbsup:" >> $GITHUB_STEP_SUMMARY
         fi
 
     - name: Pack release version of task
@@ -96,24 +113,3 @@ jobs:
       with:
         name: nuget-package
         path: '**/${{ env.workdir }}/bin/Release/*.nupkg'
-        
-    - name: Get package name
-      id: package_name
-      run: |
-        pkg=$(find . -type f -name '*.nupkg' ! -name '*.symbols.nupkg' -printf '%f\n' | head -n 1)
-        echo "package_name=$pkg" >> $GITHUB_OUTPUT
-      working-directory: "${{ env.workdir }}"
-  
-    - name: Get current date
-      id: date
-      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-    - name: Release new version
-      uses: softprops/action-gh-release@v2.3.2
-      with:
-        tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
-        name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
-        files: '**/${{ env.workdir }}/bin/Release/*.nupkg'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
