@@ -5,11 +5,27 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <!-- Check if analyzers package exists -->
+    <PropertyGroup>
+        <AnalyzerPackageExists
+            Condition="Exists('$(SolutionPackagesPath)') And
+                       $([System.IO.Directory]::GetFiles('$(SolutionPackagesPath)', 'FrendsTaskAnalyzers.*.nupkg').Length) > 0">
+            true
+        </AnalyzerPackageExists>
+        <AnalyzerPackageExists Condition="'$(AnalyzerPackageExists)' == ''">false</AnalyzerPackageExists>
+    </PropertyGroup>
+
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
 
         <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+
+        <PackageReference Include="FrendsTaskAnalyzers" Version="*"
+                          Condition="'$(AnalyzerPackageExists)' == 'true'">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>
