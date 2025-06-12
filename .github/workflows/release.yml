@@ -226,7 +226,7 @@ jobs:
 
       - name: Push NuGet package(s)
         run: |
-          dotnet nuget push **/*.nupkg `
+          dotnet nuget push "**/${{ steps.package_name.outputs.package_name }}" `
               --source ${{ env.NUGET_SOURCE_URL }} `
               --api-key ${{ secrets.feed_api_key }} `
               --no-symbols

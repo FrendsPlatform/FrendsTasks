@@ -321,5 +321,4 @@ jobs:
           dotnet nuget push **/*.nupkg `
               --api-key ${{ secrets.test_feed_api_key }} `
               --source ${{ env.NUGET_SOURCE_URL }} `
-              --no-symbols `
               --skip-duplicate
