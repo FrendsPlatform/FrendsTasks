@@ -211,7 +211,10 @@ jobs:
       - name: Write .editorconfig
         run: |
           $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse
-          $methods = cat $file | ConvertFrom-Json | %{$_.Tasks} | Join-String -Property TaskMethod -Separator ';'
+          $contents = Get-Content $file -Raw -Encoding UTF8
+          $contents = $contents.Trim()
+          $json = $contents | ConvertFrom-Json
+          $methods = $json.Tasks | Join-String -Property TaskMethod -Separator ';'
           $lines = @"
           [*.cs]
           frends_task_analyzers.task_methods = $methods

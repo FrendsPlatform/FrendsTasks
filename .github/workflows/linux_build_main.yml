@@ -219,7 +219,7 @@ jobs:
       - name: Write .editorconfig
         run: |
           file=$(find . -name 'FrendsTaskMetadata.json' 2>/dev/null)
-          methods=$(jq -r '[.Tasks.[].TaskMethod] | join(";")' $file)
+          methods=$(jq -r '[.Tasks[].TaskMethod] | join(";")' "$file")
           cat <<EOF >> .editorconfig
           [*.cs]
           frends_task_analyzers.task_methods = $methods
