@@ -240,7 +240,7 @@ jobs:
 
       - name: Write .editorconfig
         run: |
-          file=$(find . -name 'FrendsTaskMetadata.json' 2>/dev/null)
+          file=$(find . -name 'FrendsTaskMetadata.json' 2>/dev/null | head -n 1)
           methods=$(jq -r '[.Tasks[].TaskMethod] | join(";")' "$file")
           cat <<EOF >> .editorconfig
           [*.cs]

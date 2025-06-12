@@ -169,7 +169,7 @@ jobs:
 
       - name: Write .editorconfig
         run: |
-          $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse
+          $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse | select -First 1
           $contents = Get-Content $file -Raw -Encoding UTF8
           $contents = $contents.Trim()
           $json = $contents | ConvertFrom-Json
