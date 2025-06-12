@@ -282,7 +282,7 @@ jobs:
           curl \
             -X POST \
             -H "Content-Type: application/json" \
-            -H "x-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}" \
+            -H "x-api-key: ${{ secrets.badge_service_api_key }}" \
             -d $json \
             https://app-github-custom-badges.azurewebsites.net/Badge
 

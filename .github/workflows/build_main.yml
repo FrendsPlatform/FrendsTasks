@@ -277,12 +277,12 @@ jobs:
           $json = @{
             key = $badgeKey
             displayName = "Coverage"
-            value = "${{ steps.code_coverage.outputs.lineRatePct }}%"
+            value = "${{ steps.code_coverage.outputs.coverage }}%"
           } | ConvertTo-Json -Compress
           Invoke-WebRequest `
               -Method POST `
               -ContentType "application/json" `
-              -Headers @{ "x-api-key" = "${{ secrets.BADGE_SERVICE_API_KEY }}" } `
+              -Headers @{ "x-api-key" = "${{ secrets.badge_service_api_key }}" } `
               -Body $json `
               https://app-github-custom-badges.azurewebsites.net/Badge
 

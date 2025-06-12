@@ -123,14 +123,14 @@ jobs:
             echo "defined=true" >> $GITHUB_OUTPUT
           fi
 
-      - if: ${{ steps.build_time_nuget_feed_url.outputs.defined == 'false' }}
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'false' }}
         name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
       # If a custom nuget feed is used, we need to add it when setting up dotnet
-      - if: ${{ steps.build_time_nuget_feed_url.outputs.defined == 'true' }}
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'true' }}
         name: Setup .NET SDK (with custom feed)
         uses: actions/setup-dotnet@v4.3.1
         with:
@@ -304,7 +304,7 @@ jobs:
           curl \
             -X POST \
             -H "Content-Type: application/json" \
-            -H "x-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}" \
+            -H "x-api-key: ${{ secrets.badge_service_api_key }}" \
             -d $json \
             https://app-github-custom-badges.azurewebsites.net/Badge
 
