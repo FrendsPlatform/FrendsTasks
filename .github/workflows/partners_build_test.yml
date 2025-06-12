@@ -1,0 +1,115 @@
+name: partners_build_test.yml
+
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        required: false
+        type: string
+        default: "."
+      prebuild_command:
+        required: false
+        type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      build_time_nuget_feed_defined:
+        required: false
+        type: boolean
+        default: false
+        description: 'Information if secret url and api_key are setup for custom feed'
+    secrets:
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
+
+env:
+  workdir: ${{ inputs.workdir }}
+
+jobs:
+  CodeQualityCheck:
+    name: Code quality check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: super-linter/super-linter@v7.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORE_GITIGNORED_FILES: true
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/"
+          VALIDATE_CSHARP: true
+  
+  Build:
+    name: Build non-main branch
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4.3.1
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_url || '' }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_api_key || '' }}
+
+    - name: Set working directory
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet -y
+
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
+      working-directory: "${{ env.workdir }}"
+
+    - name: Build
+      run: dotnet build
+      working-directory: "${{ env.workdir }}"
+
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
+
+    - name: Check Code Coverage
+      id: get_line_rate
+      run: |
+        report=$(find . -name "coverage.cobertura.xml" 2>/dev/null || true)
+        cp $report .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if test $coverageInt -lt 80 
+        then
+          echo "Test coverage $coverageInt% was not in the tolerance 80%"
+          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $coverageInt% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Pack release version of task
+      run: dotnet pack -c Release
+      working-directory: "${{ env.workdir }}"
+
+    - name: Upload NuGet artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: '**/${{ env.workdir }}/bin/Release/*.nupkg'

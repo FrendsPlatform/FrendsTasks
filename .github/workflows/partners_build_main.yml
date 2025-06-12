@@ -1,0 +1,119 @@
+name: partners_build_main.yml
+
+on:
+  workflow_call:
+    inputs:
+      workdir:
+        required: false
+        type: string
+        default: "."
+      prebuild_command:
+        required: false
+        type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      build_time_nuget_feed_defined:
+        required: false
+        type: boolean
+        default: false
+        description: 'Information if secret url and api_key are setup for custom feed'
+    secrets:
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
+
+env:
+  workdir: ${{ inputs.workdir }}
+
+jobs:
+  build:
+    name: Build main branch
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4.3.1
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_url || '' }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.build_time_nuget_feed_defined && secrets.build_time_nuget_feed_api_key || '' }}
+
+    - name: Set working directory
+      run: |
+        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+        
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install xmlstarlet -y
+
+    - name: Run prebuild command
+      if: ${{ inputs.prebuild_command != '' }}
+      run: ${{ inputs.prebuild_command }}
+      working-directory: "${{ env.workdir }}"
+
+    - name: Build
+      run: dotnet build
+      working-directory: "${{ env.workdir }}"
+
+    - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage"
+      working-directory: "${{ env.workdir }}"
+
+    - name: Check Code Coverage
+      id: get_line_rate
+      run: |
+        report=$(find . -name "coverage.cobertura.xml")
+        cp $report .
+        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
+        covPercent=$(echo "$coverage * 100" | bc -l)
+        coverageInt=$(printf "%.0f" $covPercent)
+        if test $coverageInt -lt 80 
+        then
+          echo "Test coverage $covPercent% was not in the tolerance 80%"
+          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
+          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Pack release version of task
+      run: dotnet pack -c Release
+      working-directory: "${{ env.workdir }}"
+
+    - name: Upload NuGet artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package
+        path: '**/${{ env.workdir }}/bin/Release/*.nupkg'
+        
+    - name: Get package name
+      id: package_name
+      run: |
+        pkg=$(find . -type f -name '*.nupkg' ! -name '*.symbols.nupkg' -printf '%f\n' | head -n 1)
+        echo "package_name=$pkg" >> $GITHUB_OUTPUT
+      working-directory: "${{ env.workdir }}"
+  
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+    - name: Release new version
+      uses: softprops/action-gh-release@v2.3.2
+      with:
+        tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
+        name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
+        files: '**/${{ env.workdir }}/bin/Release/*.nupkg'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
