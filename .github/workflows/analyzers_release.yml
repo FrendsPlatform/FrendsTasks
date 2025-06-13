@@ -10,6 +10,7 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_VERSION: '8.0.x'
+  PROJECT_DIRECTORY: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers'
 
 defaults:
   run:
@@ -18,10 +19,27 @@ defaults:
 jobs:
   release:
     name: Release
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
+      - name: Install xmlstarlet
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y xmlstarlet
+        working-directory: '.'
+
       - name: Checkout
         uses: actions/checkout@v4.2.2
+
+      - id: project_version
+        name: Extract project version
+        run: |
+          file=$(find . -name 'FrendsTaskAnalyzers.csproj' 2>/dev/null | head -n 1)
+          version=$(xmlstarlet sel -t -v '//Version' "$file")
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4.3.1
@@ -39,8 +57,20 @@ jobs:
 
       - name: Push NuGet package
         env:
+          VERSION: ${{ steps.project_version.outputs.version }}
           NUGET_AUTH_TOKEN: '' # TODO: Add NuGet secret
         run: |
-          dotnet nuget push "FrendsTaskAnalyzers/bin/Release/*.nupkg" \
+          dotnet nuget push "FrendsTaskAnalyzers/bin/Release/*.$VERSION.nupkg" \
             --source https://api.nuget.org/v3/index.json \
             --api-key $NUGET_AUTH_TOKEN
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.PROJECT_DIRECTORY }}/*.${{ steps.project_version.outputs.version }}.nupkg
+          name: Release FrendsTaskAnalyzers v${{ steps.project_version.outputs.version }}
+          tag_name: analyzers-v${{ steps.project_version.outputs.version }}
+          fail_on_unmatched_files: true
