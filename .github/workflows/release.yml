@@ -197,7 +197,8 @@ jobs:
 
       - name: Cleanup after analyzers
         run: |
-          if (git ls-files --error-unmatch .editorconfig 2>&1 > $null)
+          git ls-files --error-unmatch .editorconfig 2>&1 > $null
+          if ($?)
           {
             git restore .editorconfig
           }
