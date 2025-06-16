@@ -197,14 +197,14 @@ jobs:
 
       - name: Cleanup after analyzers
         run: |
-          git ls-files --error-unmatch .editorconfig 2>&1 > $null
-          if ($?)
+          try
           {
-            git restore .editorconfig
+              git ls-files --error-unmatch .editorconfig 2>&1 > $null
+              git restore .editorconfig
           }
-          else
+          catch
           {
-            Remove-Item -Path '.editorconfig' -Force -ErrorAction SilentlyContinue
+              Remove-Item -Path '.editorconfig' -Force -ErrorAction SilentlyContinue
           }
           Remove-Item -Path '.analyzers' -Recurse -Force -ErrorAction SilentlyContinue
 
