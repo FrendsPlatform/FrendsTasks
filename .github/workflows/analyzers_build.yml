@@ -6,7 +6,6 @@ on:
       - '**'
     paths:
       - 'FrendsTaskAnalyzers/**'
-      - '.github/workflows/analyzers_*.yml' # TODO: Remove after testing
 
 env:
   DOTNET_NOLOGO: true
