@@ -30,6 +30,7 @@ on:
       workdir:
         required: false
         type: string
+        default: '.'
       prebuild_command:
         required: false
         type: string
@@ -38,6 +39,10 @@ on:
         type: string
         default: '6.0.x'
         description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      strict_analyzers:
+        required: false
+        type: boolean
+        default: false
     secrets:
       env_var_value_1:
         required: false
@@ -63,182 +68,228 @@ on:
         required: false
 
 env:
-  workdir: ${{ inputs.workdir }}
+  ROSLYNATOR_VERSION: 0.10.1
 
 jobs:
   build:
     name: Build on ubuntu-22.04
     runs-on: ubuntu-22.04
-    
+    defaults:
+      run:
+        working-directory: ${{ inputs.workdir }}
     steps:
-    - uses: actions/checkout@v4.2.2
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
 
-    # An alias is needed so that docker-compose works with the dash in between.
-    - name: Create alias for docker-compose
-      run: |
-        sudo touch /usr/bin/docker-compose
-        sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
-        sudo chmod +x /usr/bin/docker-compose
-    
-    ###############################
-    # SETUP DOTNET                #
-    ###############################
-    # When setting up dotnet, we need to check if a custom nuget feed is used
-    # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
-    # we need to use a small script to check if the secret is defined or not and then set an
-    # output to either true or false.
-    - name: Check for custom feed URL
-      id: check_for_build_time_feed
-      shell: pwsh
-      run: |
-        if ("${{ secrets.build_time_nuget_feed_url }}" -eq "")
-        { "Custom feed URL missing"; echo "build_time_nuget_feed_defined=false" >> $env:GITHUB_OUTPUT }
-        else 
-        { "Custom feed URL present"; echo "build_time_nuget_feed_defined=true" >> $env:GITHUB_OUTPUT }
+      # An alias is needed so that docker-compose works with the dash in between.
+      - name: Create alias for docker-compose
+        run: |
+          sudo touch /usr/bin/docker-compose
+          sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
+          sudo chmod +x /usr/bin/docker-compose
 
-    - uses: actions/setup-dotnet@v4.3.1
-      name: Setup dotnet (no custom feed)
-      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'false' }}
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-    
-    # If a custom nuget feed is used, we need to add it when setting up dotnet
-    - uses: actions/setup-dotnet@v4.3.1
-      name: Setup dotnet (with custom feed)
-      if: ${{ steps.check_for_build_time_feed.outputs.build_time_nuget_feed_defined == 'true' }}
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ secrets.build_time_nuget_feed_url }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }} 
+      ###############################
+      # SETUP DOTNET                #
+      ###############################
+      # When setting up dotnet, we need to check if a custom nuget feed is used
+      # However in GitHub Actions, in 'if' statements we cannot refer to 'secret' values, thus
+      # we need to use a small script to check if the secret is defined or not and then set an
+      # output to either true or false.
+      - id: check_build_time_feed
+        name: Check if custom NuGet feed is set
+        run: |
+          if [ -z "${{ secrets.build_time_nuget_feed_url }}" ]; then
+            echo "defined=false" >> $GITHUB_OUTPUT
+          else
+            echo "defined=true" >> $GITHUB_OUTPUT
+          fi
 
-    ###############################
-    # SETUP ENVIRONMENT IF NEEDED #
-    ###############################
-    - name: Set env var 1
-      if: ${{ inputs.env_var_name_1 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_1 }}"
-        echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
-        
-    - name: Set env var 2
-      if: ${{ inputs.env_var_name_2 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_2 }}"
-        echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
-        
-    - name: Set env var 3
-      if: ${{ inputs.env_var_name_3 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_3 }}"
-        echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
-        
-    - name: Set env var 4
-      if: ${{ inputs.env_var_name_4 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_4 }}"
-        echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'false' }}
+        name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
 
-    - name: Set env var 5
-      if: ${{ inputs.env_var_name_5 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_5 }}"
-        echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $GITHUB_ENV
+      # If a custom nuget feed is used, we need to add it when setting up dotnet
+      - if: ${{ steps.check_build_time_feed.outputs.defined == 'true' }}
+        name: Setup .NET SDK (with custom feed)
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ secrets.build_time_nuget_feed_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.build_time_nuget_feed_api_key }}
 
-    - name: Set env var 6
-      if: ${{ inputs.env_var_name_6 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_6 }}"
-        echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $GITHUB_ENV
+      ###############################
+      # SETUP ENVIRONMENT IF NEEDED #
+      ###############################
+      - if: ${{ inputs.env_var_name_1 != '' }}
+        name: Set env var 1
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_1 }}"
+          echo "${{ inputs.env_var_name_1 }}=${{ secrets.env_var_value_1 }}" >> $GITHUB_ENV
 
-    - name: Set env var 7
-      if: ${{ inputs.env_var_name_7 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_7 }}"
-        echo "${{ inputs.env_var_name_7 }}=${{ secrets.env_var_value_7 }}" >> $GITHUB_ENV
+      - if: ${{ inputs.env_var_name_2 != '' }}
+        name: Set env var 2
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_2 }}"
+          echo "${{ inputs.env_var_name_2 }}=${{ secrets.env_var_value_2 }}" >> $GITHUB_ENV
 
-    - name: Set env var 8
-      if: ${{ inputs.env_var_name_8 != '' }}
-      run: |
-        echo "::add-mask::${{ secrets.env_var_value_8 }}"
-        echo "${{ inputs.env_var_name_8 }}=${{ secrets.env_var_value_8 }}" >> $GITHUB_ENV
+      - if: ${{ inputs.env_var_name_3 != '' }}
+        name: Set env var 3
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_3 }}"
+          echo "${{ inputs.env_var_name_3 }}=${{ secrets.env_var_value_3 }}" >> $GITHUB_ENV
 
-    - name: Set working directory if provided
-      if: ${{ inputs.workdir != '' }}
-      run: |
-        echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
+      - if: ${{ inputs.env_var_name_4 != '' }}
+        name: Set env var 4
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_4 }}"
+          echo "${{ inputs.env_var_name_4 }}=${{ secrets.env_var_value_4 }}" >> $GITHUB_ENV
 
-    - name: Set working directory to default if not provided
-      if: ${{ inputs.workdir == '' }}
-      run: |
-        echo "workdir=." >> $GITHUB_ENV
+      - if: ${{ inputs.env_var_name_5 != '' }}
+        name: Set env var 5
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_5 }}"
+          echo "${{ inputs.env_var_name_5 }}=${{ secrets.env_var_value_5 }}" >> $GITHUB_ENV
 
-    ###############################
-    # Install required tools      #
-    ###############################
-    - name: Install tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install xmlstarlet -y
-        
-    ###############################
-    # Run prebuild command        #
-    ###############################
-    - name: Run prebuild command
-      if: ${{ inputs.prebuild_command != '' }}
-      run: ${{ inputs.prebuild_command }}
-      working-directory: "${{ env.workdir }}"
-      
-    ###############################
-    # Build, test, report results #
-    ###############################
-    - name: Build
-      run: dotnet build
-      working-directory: "${{ env.workdir }}"
-    
-    - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage"
-      working-directory: "${{ env.workdir }}"
+      - if: ${{ inputs.env_var_name_6 != '' }}
+        name: Set env var 6
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_6 }}"
+          echo "${{ inputs.env_var_name_6 }}=${{ secrets.env_var_value_6 }}" >> $GITHUB_ENV
 
-    - name: Check Code Coverage
-      id: get_line_rate
-      run: |
-        report=$(find . -name "coverage.cobertura.xml")
-        cp $report .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        coverageInt=$(printf "%.0f" $covPercent)
-        if test $coverageInt -lt 80 
-        then
-          echo "Test coverage $covPercent% was not in the tolerance 80%"
-          echo "The Code Check failed! :x:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% was not in the tolerance 80% :thumbsdown:" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        else
-          echo "The Code Check passed :raised_hands:" >> $GITHUB_STEP_SUMMARY
-          echo "## Test coverage $covPercent% :thumbsup:" >> $GITHUB_STEP_SUMMARY
-        fi
+      - if: ${{ inputs.env_var_name_7 != '' }}
+        name: Set env var 7
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_7 }}"
+          echo "${{ inputs.env_var_name_7 }}=${{ secrets.env_var_value_7 }}" >> $GITHUB_ENV
 
-    - name: Pack release version of task
-      run: dotnet pack --configuration Release --include-source
-      working-directory: "${{ env.workdir }}"
-      
-    - name: Save coverage results
-      id: vars
-      run: |
-        badgeKey="${{ github.repository }}|${{ github.ref_name }}"
-        apiKey="${{ secrets.badge_service_api_key }}"
-        if [ "${{ env.workdir }}" != '.' ]; then
-          badgeKey="${{ github.repository }}/${{ env.workdir }}|${{ github.ref_name }}"
-        fi
-        pathToCoverageFile=$(find . -name "coverage.cobertura.xml")
-        mv $pathToCoverageFile .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        coverageInt=$(printf "%.0f" $covPercent)
-        json="{\"key\":\"$badgeKey\",\"displayName\":\"Coverage\",\"value\":\"$coverageInt%\"}"
-        curl -X POST -H "x-api-key: $apiKey" -H "Content-Type: application/json" -d $json https://app-github-custom-badges.azurewebsites.net/Badge
-      working-directory: "${{ env.workdir }}"
+      - if: ${{ inputs.env_var_name_8 != '' }}
+        name: Set env var 8
+        run: |
+          echo "::add-mask::${{ secrets.env_var_value_8 }}"
+          echo "${{ inputs.env_var_name_8 }}=${{ secrets.env_var_value_8 }}" >> $GITHUB_ENV
+
+      ###############################
+      # Install required tools      #
+      ###############################
+      - name: Install xmlstarlet
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y xmlstarlet
+
+      - name: Enable global .NET tools
+        run: |
+          echo ~/.dotnet/tools >> $GITHUB_PATH
+
+      - name: Install Roslynator
+        run: |
+          dotnet tool install --global Roslynator.DotNet.Cli --version ${{ env.ROSLYNATOR_VERSION }}
+
+      - name: Download FrendsTaskAnalyzers
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir .analyzers
+          latest=$(gh release list \
+            --repo 'FrendsPlatform/FrendsTasks' \
+            --json tagName \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --jq '[.[] | select(.tagName | startswith("analyzers-")) | .tagName] | first')
+          gh release download "$latest" \
+            --repo 'FrendsPlatform/FrendsTasks' \
+            --dir '.analyzers' \
+            --pattern '*.nupkg'
+          unzip -o -j -d '.analyzers' '.analyzers/*.nupkg' '*.dll'
+
+      ###############################
+      # Run prebuild command        #
+      ###############################
+      - if: ${{ inputs.prebuild_command != '' }}
+        name: Run prebuild command
+        run: ${{ inputs.prebuild_command }}
+
+      ###############################
+      # Build, test, report results #
+      ###############################
+      - name: Build
+        run: dotnet build
+
+      - name: Write .editorconfig
+        run: |
+          file=$(find . -name 'FrendsTaskMetadata.json' 2>/dev/null | head -n 1)
+          methods=$(jq -r '[.Tasks[].TaskMethod] | join(";")' "$file")
+          cat <<EOF >> .editorconfig
+          [*.cs]
+          frends_task_analyzers.task_methods = $methods
+          EOF
+
+      - name: Format
+        run: |
+          dotnet format \
+            --verify-no-changes \
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - name: Lint
+        run: |
+          roslynator analyze \
+            --analyzer-assemblies '.analyzers' \
+            --verbosity detailed
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+
+      - name: Cleanup after analyzers
+        run: |
+          if git ls-files --error-unmatch .editorconfig >/dev/null 2>&1; then
+            git restore .editorconfig
+          else
+            rm -f .editorconfig
+          fi
+          rm -rf .analyzers
+
+      - name: Test
+        run: dotnet test --collect:"XPlat Code Coverage"
+
+      - id: code_coverage
+        name: Check code coverage
+        run: |
+          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null)
+          lineRate=$(xmlstarlet sel -t -v '//coverage/@line-rate' $file)
+          lineRatePct=$(printf "%.0f" $(echo "$lineRate * 100" | bc -l))
+          if [ $lineRatePct -lt 80 ]; then
+            echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "## Test coverage passed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
+            echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Pack
+        run: dotnet pack --configuration Release --include-source
+
+      - name: Save coverage report
+        run: |
+          badgeKey="${{ github.repository }}|${{ github.ref_name }}"
+          if [ "${{ inputs.workdir }}" != '.' ]; then
+            badgeKey="${{ github.repository }}/${{ inputs.workdir }}|${{ github.ref_name }}"
+          fi
+          json=$(jq -nc \
+            --arg key "$badgeKey" \
+            --arg displayName "Coverage" \
+            --arg value "${{ steps.code_coverage.outputs.coverage }}%" \
+            '{key: $key, displayName: $displayName, value: $value}')
+          curl \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: ${{ secrets.badge_service_api_key }}" \
+            -d $json \
+            https://app-github-custom-badges.azurewebsites.net/Badge
 
     ### WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
     ### USE release.yml TO CREATE THE RELEASE AND PUSH    ###
