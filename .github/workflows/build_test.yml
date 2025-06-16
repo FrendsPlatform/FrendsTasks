@@ -270,6 +270,7 @@ jobs:
             Remove-Item -Path '.editorconfig' -Force -ErrorAction SilentlyContinue
           }
           Remove-Item -Path '.analyzers' -Recurse -Force -ErrorAction SilentlyContinue
+          exit 0
 
       - name: Test
         run: dotnet test --collect:"XPlat Code Coverage"

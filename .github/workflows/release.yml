@@ -207,6 +207,7 @@ jobs:
             Remove-Item -Path '.editorconfig' -Force -ErrorAction SilentlyContinue
           }
           Remove-Item -Path '.analyzers' -Recurse -Force -ErrorAction SilentlyContinue
+          exit 0
 
       - name: Pack
         run: dotnet pack --configuration Release --include-source
