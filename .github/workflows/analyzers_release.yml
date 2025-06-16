@@ -72,6 +72,6 @@ jobs:
           prerelease: false
           files: |
             ${{ env.PROJECT_DIRECTORY }}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
-          name: Release FrendsTaskAnalyzers v${{ steps.project_version.outputs.version }}
+          name: FrendsTaskAnalyzers v${{ steps.project_version.outputs.version }}
           tag_name: analyzers-v${{ steps.project_version.outputs.version }}
           fail_on_unmatched_files: true
