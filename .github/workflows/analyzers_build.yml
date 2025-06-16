@@ -106,7 +106,7 @@ jobs:
           if [ $lineRatePct -lt 80 ]; then
             echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
             echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
-            #exit 1 # TODO: Uncomment after testing
+            exit 1
           else
             echo "## Test coverage passed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
             echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
