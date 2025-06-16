@@ -71,6 +71,7 @@ on:
 
 env:
   NUGET_SOURCE_URL: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+  ROSLYNATOR_VERSION: 0.10.1
 
 jobs:
   code_quality:
@@ -206,7 +207,7 @@ jobs:
 
       - name: Install Roslynator
         run: |
-          dotnet tool install --global Roslynator.DotNet.Cli
+          dotnet tool install --global Roslynator.DotNet.Cli --version ${{ env.ROSLYNATOR_VERSION }}
 
       - name: Download FrendsTaskAnalyzers
         env:
@@ -261,12 +262,14 @@ jobs:
             --verbosity detailed
         continue-on-error: ${{ !inputs.strict_analyzers }}
 
-      - if: ${{ always() }}
-        name: Cleanup after analyzers
+      - name: Cleanup after analyzers
         run: |
-          git restore .editorconfig
-          rm -rf '.analyzers'
-        continue-on-error: true
+          if git ls-files --error-unmatch .editorconfig >/dev/null 2>&1; then
+            git restore .editorconfig
+          else
+            rm -f .editorconfig
+          fi
+          rm -rf .analyzers
 
       - name: Test
         run: dotnet test --collect:"XPlat Code Coverage"
