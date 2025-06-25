@@ -40,6 +40,10 @@ jobs:
         run: |
           file=$(find . -name 'FrendsTaskAnalyzers.csproj' 2>/dev/null | head -n 1)
           version=$(xmlstarlet sel -t -v '//Version' "$file")
+          if [ -z "$version" ]; then
+            echo "Error: Version number not found in the project file." >&2
+            exit 1
+          fi
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Setup .NET SDK
