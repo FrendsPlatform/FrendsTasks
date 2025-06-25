@@ -7,6 +7,9 @@ on:
     paths:
       - 'FrendsTaskAnalyzers/**'
 
+permissions:
+  contents: read
+
 env:
   DOTNET_NOLOGO: true
   DOTNET_VERSION: '8.0.x'
