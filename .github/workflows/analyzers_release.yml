@@ -1,0 +1,84 @@
+name: Analyzers Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'FrendsTaskAnalyzers/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_DIRECTORY: 'FrendsTaskAnalyzers/FrendsTaskAnalyzers'
+
+defaults:
+  run:
+    working-directory: 'FrendsTaskAnalyzers'
+
+jobs:
+  release:
+    name: Release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install xmlstarlet
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y xmlstarlet
+        working-directory: '.'
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - id: project_version
+        name: Extract project version
+        run: |
+          file=$(find . -name 'FrendsTaskAnalyzers.csproj' 2>/dev/null | head -n 1)
+          version=$(xmlstarlet sel -t -v '//Version' "$file")
+          if [ -z "$version" ]; then
+            echo "Error: Version number not found in the project file." >&2
+            exit 1
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Pack
+        run: dotnet pack --no-restore --no-build --configuration Release
+
+      - name: Push NuGet package
+        env:
+          VERSION: ${{ steps.project_version.outputs.version }}
+          NUGET_AUTH_TOKEN: ${{ secrets.NUGETORG_API_KEY }}
+        run: |
+          dotnet nuget push FrendsTaskAnalyzers/bin/Release/*.$VERSION.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key $NUGET_AUTH_TOKEN
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          draft: false
+          prerelease: false
+          files: |
+            ${{ env.PROJECT_DIRECTORY }}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
+          name: FrendsTaskAnalyzers v${{ steps.project_version.outputs.version }}
+          tag_name: analyzers-v${{ steps.project_version.outputs.version }}
+          fail_on_unmatched_files: true
