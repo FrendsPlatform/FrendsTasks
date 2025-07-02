@@ -11,29 +11,33 @@ namespace FrendsTaskAnalyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class NamingAnalyzer : DiagnosticAnalyzer
 {
-    private static readonly DiagnosticDescriptor NamespaceRule =
+    public static readonly DiagnosticDescriptor NamespaceRule =
         new("FT0001",
             "Namespace does not follow the standard format",
             "Standard namespace format is 'Vendor.System.Action'",
             "Naming",
             DiagnosticSeverity.Warning, true);
 
-    private static readonly DiagnosticDescriptor TypeRule =
+    public static readonly DiagnosticDescriptor TypeRule =
         new("FT0002",
             "Type should match the task system",
             "Type name should be '{0}'",
             "Naming",
             DiagnosticSeverity.Warning, true);
 
-    private static readonly DiagnosticDescriptor MethodRule =
+    public static readonly DiagnosticDescriptor MethodRule =
         new("FT0003",
             "Method should match the task action",
             "Method name should be '{0}'",
             "Naming",
             DiagnosticSeverity.Warning, true);
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
-        [NamespaceRule, TypeRule, MethodRule];
+    private static readonly SymbolDisplayFormat TaskMethodFormat = new(
+        SymbolDisplayGlobalNamespaceStyle.Omitted,
+        SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NamespaceRule, TypeRule, MethodRule];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -54,11 +58,6 @@ public class NamingAnalyzer : DiagnosticAnalyzer
         context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, taskMethods),
             SymbolKind.Method);
     }
-
-    private static readonly SymbolDisplayFormat TaskMethodFormat = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType);
 
     private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
     {

@@ -2,9 +2,9 @@
 
  Rule ID | Category    | Severity | Notes              
 ---------|-------------|----------|--------------------
- FT0001  | Naming      | Warning  | NameAnalyzer       
- FT0002  | Naming      | Warning  | NameAnalyzer       
- FT0003  | Naming      | Warning  | NameAnalyzer       
+ FT0001  | Naming      | Warning  | NamingAnalyzer     
+ FT0002  | Naming      | Warning  | NamingAnalyzer     
+ FT0003  | Naming      | Warning  | NamingAnalyzer     
  FTA0001 | Correctness | Warning  | TaskMethodAnalyzer 
  FTA0002 | Correctness | Warning  | TaskMethodAnalyzer 
  FTA0003 | Correctness | Warning  | TaskMethodAnalyzer 
