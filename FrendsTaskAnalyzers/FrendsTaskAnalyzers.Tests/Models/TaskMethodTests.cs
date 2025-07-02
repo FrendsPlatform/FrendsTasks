@@ -9,19 +9,11 @@ public class TaskMethodTests
     [Theory]
     [InlineData("Execute", null)]
     [InlineData("Test.Execute", null)]
-    [InlineData("Execute", "Frends.Test.Execute")]
-    [InlineData("Test.Execute", "Frends.Test.Execute")]
     [InlineData(".Frends.Test.Execute", null)]
     [InlineData("Frends.Test.Execute.", null)]
-    [InlineData(".Frends.Test.Execute", "Frends.Test.Execute")]
-    [InlineData("Frends.Test.Execute.", "Frends.Test.Execute")]
-    public void Parse_WithInvalidPath_ShouldThrow(string path, string? rootNamespace) =>
-        Assert.Throws<ArgumentException>(() => TaskMethod.Parse(path, rootNamespace));
-
-    [Theory]
     [InlineData("Frends.Test.Execute", ".Frends.Test.Execute")]
     [InlineData("Frends.Test.Execute", "Frends.Test.Execute.")]
-    public void Parse_WithInvalidRootNamespace_ShouldThrow(string path, string? rootNamespace) =>
+    public void Parse_WithInvalidPathOrRootNamespace_ShouldThrow(string path, string? rootNamespace) =>
         Assert.Throws<ArgumentException>(() => TaskMethod.Parse(path, rootNamespace));
 
     [Theory]
@@ -42,8 +34,11 @@ public class TaskMethodTests
     [Theory]
     [InlineData("Frends.Test.Execute", null)]
     [InlineData("Frends.Test.Execute", "Frends")]
-    [InlineData("Frends.TestA.Execute", "Frends.TestB.Execute")]
-    public void Parse_WithInvalidPathAndRootNamespace_ShouldReturnNoComponents(string path, string? rootNamespace)
+    [InlineData("Frends.Test.Execute", "Frends.Test")]
+    [InlineData("Frends.Test.Execute", "Frends.Test.Execute")]
+    [InlineData("Frends.Test.Execute.Test.Execute", "Frends")]
+    [InlineData("Frends.Test.Execute.Test.Execute", "Frends.Test")]
+    public void Parse_WithShortPathOrRootNamespace_ShouldReturnNoComponents(string path, string? rootNamespace)
     {
         var taskMethod = TaskMethod.Parse(path, rootNamespace);
         Assert.Equal(path, taskMethod.Path);

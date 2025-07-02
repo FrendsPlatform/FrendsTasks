@@ -29,7 +29,7 @@ public class TaskMethod
                 "Invalid task method path, must be at least three parts and not start or end with a dot.",
                 nameof(path));
 
-        if (rootNamespace != null && (rootNamespace.StartsWith(".") || rootNamespace.EndsWith(".")))
+        if (rootNamespace is not null && (rootNamespace.StartsWith(".") || rootNamespace.EndsWith(".")))
             throw new ArgumentException("Invalid root namespace, must not start or end with a dot.",
                 nameof(rootNamespace));
 
