@@ -15,9 +15,9 @@ public static class AnalyzerOptionsExtensions
 {
     private const string TaskMetadataFileName = "FrendsTaskMetadata.json";
 
+    private const string RootNamespaceKey = "build_property.rootnamespace";
     private const string KeyPrefix = "frends_task_analyzers";
     private const string TaskMethodsKey = $"{KeyPrefix}.task_methods";
-    private const string RootNamespaceKey = "build_property.rootnamespace";
 
     public static IImmutableList<TaskMethod> GetTaskMethods(
         this AnalyzerOptions options, SyntaxTree tree, CancellationToken cancellationToken)

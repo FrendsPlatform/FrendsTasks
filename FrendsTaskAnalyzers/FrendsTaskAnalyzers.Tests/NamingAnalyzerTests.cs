@@ -11,15 +11,20 @@ namespace FrendsTaskAnalyzers.Tests;
 
 public class NamingAnalyzerTests
 {
+    private const string TaskMetadataFileName = "FrendsTaskMetadata.json";
+
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ShouldReportExpectedDiagnostic(
+    public async Task ShouldReportExpectedDiagnostics(
         string metadata, string code, IEnumerable<DiagnosticResult> expected)
     {
         var analyzerTest = new CSharpAnalyzerTest<NamingAnalyzer, DefaultVerifier>
         {
             TestCode = code,
-            TestState = { AdditionalFiles = { ("FrendsTaskMetadata.json", metadata) } }
+            TestState =
+            {
+                AdditionalFiles = { (TaskMetadataFileName, metadata) }
+            }
         };
         analyzerTest.ExpectedDiagnostics.AddRange(expected);
         await analyzerTest.RunAsync();
