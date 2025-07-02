@@ -32,11 +32,6 @@ public class NamingAnalyzer : DiagnosticAnalyzer
             "Naming",
             DiagnosticSeverity.Warning, true);
 
-    private static readonly SymbolDisplayFormat TaskMethodFormat = new(
-        SymbolDisplayGlobalNamespaceStyle.Omitted,
-        SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType);
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NamespaceRule, TypeRule, MethodRule];
 
     public override void Initialize(AnalysisContext context)
@@ -64,7 +59,7 @@ public class NamingAnalyzer : DiagnosticAnalyzer
         if (context.Symbol is not IMethodSymbol symbol)
             return;
 
-        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToDisplayString(TaskMethodFormat));
+        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
         if (taskMethod is null)
             return;
 
