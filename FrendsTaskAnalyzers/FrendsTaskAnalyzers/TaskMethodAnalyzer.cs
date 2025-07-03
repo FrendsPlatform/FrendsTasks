@@ -46,15 +46,15 @@ public class TaskMethodAnalyzer : DiagnosticAnalyzer
             return;
 
         var taskMetadataFiltered = context.Options
-            .GetTaskMetadata(context.Node.SyntaxTree, context.CancellationToken)
+            .GetTaskMethods(context.Node.SyntaxTree, context.CancellationToken)
             .Where(t => t.System == classSyntax.Identifier.Text);
 
         // TODO: We should handle the case of multiple tasks in the same class. (Run analysis in a loop?)
         var taskMetadata = taskMetadataFiltered.FirstOrDefault();
-        if (taskMetadata == null)
-            return;
 
-        var taskAction = taskMetadata.Action;
+        var taskAction = taskMetadata?.Action;
+        if (taskAction == null)
+            return;
 
         var matchedTaskMethods = classSyntax.Members.OfType<MethodDeclarationSyntax>()
             .Where(m => m.Identifier.Text == taskAction).ToArray();
