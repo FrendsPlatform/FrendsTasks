@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace FrendsTaskAnalyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class NamingAnalyzer : DiagnosticAnalyzer
+public class NameAnalyzer : DiagnosticAnalyzer
 {
     public static readonly DiagnosticDescriptor NamespaceRule =
         new("FT0001",

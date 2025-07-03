@@ -9,7 +9,7 @@ using Xunit;
 
 namespace FrendsTaskAnalyzers.Tests;
 
-public class NamingAnalyzerTests
+public class NameAnalyzerTests
 {
     private const string TaskMetadataFileName = "FrendsTaskMetadata.json";
 
@@ -18,7 +18,7 @@ public class NamingAnalyzerTests
     public async Task ShouldReportExpectedDiagnostics(
         string metadata, string code, IEnumerable<DiagnosticResult> expected)
     {
-        var analyzerTest = new CSharpAnalyzerTest<NamingAnalyzer, DefaultVerifier>
+        var analyzerTest = new CSharpAnalyzerTest<NameAnalyzer, DefaultVerifier>
         {
             TestCode = code,
             TestState =
@@ -59,7 +59,7 @@ public class NamingAnalyzerTests
                 public void Execute() {}
             }
             """,
-            new[] { new DiagnosticResult(NamingAnalyzer.NamespaceRule).WithLocation(0) }
+            new[] { new DiagnosticResult(NameAnalyzer.NamespaceRule).WithLocation(0) }
         ];
 
         // Case 3: Incorrect type name should produce a diagnostic
@@ -74,7 +74,7 @@ public class NamingAnalyzerTests
                 public void Execute() {}
             }
             """,
-            new[] { new DiagnosticResult(NamingAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA") }
+            new[] { new DiagnosticResult(NameAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA") }
         ];
 
         // Case 4: Incorrect method name should produce a diagnostic
@@ -89,7 +89,7 @@ public class NamingAnalyzerTests
                 public void {|#0:ExecuteB|}() {}
             }
             """,
-            new[] { new DiagnosticResult(NamingAnalyzer.MethodRule).WithLocation(0).WithArguments("ExecuteA") }
+            new[] { new DiagnosticResult(NameAnalyzer.MethodRule).WithLocation(0).WithArguments("ExecuteA") }
         ];
 
         // Case 5: Incorrect type and method names should produce diagnostics
@@ -106,8 +106,8 @@ public class NamingAnalyzerTests
             """,
             new[]
             {
-                new DiagnosticResult(NamingAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA"),
-                new DiagnosticResult(NamingAnalyzer.MethodRule).WithLocation(1).WithArguments("ExecuteA")
+                new DiagnosticResult(NameAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA"),
+                new DiagnosticResult(NameAnalyzer.MethodRule).WithLocation(1).WithArguments("ExecuteA")
             }
         ];
 
@@ -134,10 +134,10 @@ public class NamingAnalyzerTests
             """,
             new[]
             {
-                new DiagnosticResult(NamingAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA"),
-                new DiagnosticResult(NamingAnalyzer.MethodRule).WithLocation(1).WithArguments("ExecuteA"),
-                new DiagnosticResult(NamingAnalyzer.TypeRule).WithLocation(2).WithArguments("TestB"),
-                new DiagnosticResult(NamingAnalyzer.MethodRule).WithLocation(3).WithArguments("ExecuteB")
+                new DiagnosticResult(NameAnalyzer.TypeRule).WithLocation(0).WithArguments("TestA"),
+                new DiagnosticResult(NameAnalyzer.MethodRule).WithLocation(1).WithArguments("ExecuteA"),
+                new DiagnosticResult(NameAnalyzer.TypeRule).WithLocation(2).WithArguments("TestB"),
+                new DiagnosticResult(NameAnalyzer.MethodRule).WithLocation(3).WithArguments("ExecuteB")
             }
         ];
     }
