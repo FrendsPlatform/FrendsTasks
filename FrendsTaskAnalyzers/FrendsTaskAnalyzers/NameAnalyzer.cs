@@ -87,7 +87,7 @@ public class NameAnalyzer : DiagnosticAnalyzer
             {
                 var syntax = syntaxReference.GetSyntax(context.CancellationToken);
                 if (syntax is not BaseNamespaceDeclarationSyntax namespaceSyntax)
-                    return;
+                    continue;
 
                 var location = namespaceSyntax.Name.GetLocation();
                 var diagnostic = Diagnostic.Create(NamespaceRule, location);
