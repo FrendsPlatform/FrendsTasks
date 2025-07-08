@@ -15,23 +15,26 @@ public static class AnalyzerOptionsExtensions
 {
     private const string TaskMetadataFileName = "FrendsTaskMetadata.json";
 
+    private const string RootNamespaceKey = "build_property.rootnamespace";
     private const string KeyPrefix = "frends_task_analyzers";
     private const string TaskMethodsKey = $"{KeyPrefix}.task_methods";
 
-    public static IImmutableList<TaskMetadata> GetTaskMetadata(
+    public static IImmutableList<TaskMethod> GetTaskMethods(
         this AnalyzerOptions options, SyntaxTree tree, CancellationToken cancellationToken)
     {
-        if (TaskMetadataFromJsonFile(options, cancellationToken) is { } jsonTaskMetadata)
-            return jsonTaskMetadata;
+        options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(RootNamespaceKey, out var rootNamespace);
 
-        if (TaskMetadataFromConfig(options, tree) is { } configTaskMetadata)
-            return configTaskMetadata;
+        if (TaskMethodsFromConfig(options, rootNamespace, tree) is { } configTaskMethods)
+            return configTaskMethods;
 
-        throw new InvalidOperationException("Task metadata could not be found.");
+        if (TaskMethodsFromJsonFile(options, rootNamespace, cancellationToken) is { } jsonTaskMethods)
+            return jsonTaskMethods;
+
+        throw new InvalidOperationException("Task methods could not be found.");
     }
 
-    private static IImmutableList<TaskMetadata>? TaskMetadataFromJsonFile(
-        AnalyzerOptions options, CancellationToken cancellationToken)
+    private static IImmutableList<TaskMethod>? TaskMethodsFromJsonFile(
+        AnalyzerOptions options, string? rootNamespace, CancellationToken cancellationToken)
     {
         var text = options.AdditionalFiles
             .FirstOrDefault(f => Path.GetFileName(f.Path) == TaskMetadataFileName)
@@ -50,30 +53,24 @@ public static class AnalyzerOptionsExtensions
         var taskMethods = tasks.EnumerateArray()
             .Select(t => t.TryGetProperty("TaskMethod", out var taskMethod) ? taskMethod.GetString() : null);
 
-        return ParseTaskMethods(taskMethods);
+        return ParseTaskMethods(taskMethods, rootNamespace);
     }
 
-    private static IImmutableList<TaskMetadata>? TaskMetadataFromConfig(AnalyzerOptions options, SyntaxTree tree)
+    private static IImmutableList<TaskMethod>? TaskMethodsFromConfig(
+        AnalyzerOptions options, string? rootNamespace, SyntaxTree tree)
     {
         var config = options.AnalyzerConfigOptionsProvider.GetOptions(tree);
 
         if (!config.TryGetValue(TaskMethodsKey, out var taskMethods) || string.IsNullOrWhiteSpace(taskMethods))
             return null;
 
-        return ParseTaskMethods(taskMethods.Split(';'));
+        return ParseTaskMethods(taskMethods.Split(';'), rootNamespace);
     }
 
-    private static IImmutableList<TaskMetadata> ParseTaskMethods(IEnumerable<string?> taskMethods) => taskMethods
+    private static IImmutableList<TaskMethod>
+        ParseTaskMethods(IEnumerable<string?> taskMethods, string? rootNamespace) => taskMethods
         .Select(taskMethod =>
-        {
-            if (string.IsNullOrWhiteSpace(taskMethod))
-                return null;
-
-            var parts = taskMethod!.Split('.');
-            return parts.Length >= 3
-                ? new TaskMetadata(parts[0], parts[1], parts[2])
-                : null;
-        })
+            !string.IsNullOrWhiteSpace(taskMethod) ? TaskMethod.Parse(taskMethod!, rootNamespace) : null)
         .Where(t => t != null)
         .ToImmutableList()!;
 }

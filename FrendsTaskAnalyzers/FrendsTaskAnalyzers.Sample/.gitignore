@@ -3,6 +3,7 @@
 
 # Include only shared files
 !.gitignore
+!nuget.config
 !FrendsTaskAnalyzers.Sample.csproj
 !Frends.Echo.Execute.cs
 !FrendsTaskMetadata.json
