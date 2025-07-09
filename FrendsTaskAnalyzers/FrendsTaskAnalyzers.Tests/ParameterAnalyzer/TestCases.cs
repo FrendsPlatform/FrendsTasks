@@ -127,7 +127,7 @@ public static class TestCases
                 [
                     new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(1),
                     new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(2),
-                    new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(3),
+                    new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(3)
                 ]
             },
 
@@ -148,7 +148,7 @@ public static class TestCases
                         public class Input;
                         public class Connection;
                         public class Options;
-                        public void Execute ([PropertyTab] Options options, CancellationToken cancellationToken, string {|#0:foobar|})
+                        public void Execute (string {|#0:foobar0|}, [PropertyTab] Options options, string {|#1:foobar1|}, CancellationToken cancellationToken, string {|#2:foobar2|})
                         {
                             throw new NotImplementedException();
                         }
@@ -157,6 +157,8 @@ public static class TestCases
                 ExpectedDiagnostics =
                 [
                     new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(0).WithArguments("string"),
+                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(1).WithArguments("string"),
+                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(2).WithArguments("string")
                 ]
             },
 

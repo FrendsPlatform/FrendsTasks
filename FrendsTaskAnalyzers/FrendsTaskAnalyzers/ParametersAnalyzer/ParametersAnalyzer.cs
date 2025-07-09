@@ -119,7 +119,7 @@ public class ParametersAnalyzer : DiagnosticAnalyzer
             }
 
             //FT0019
-            if (!orderHandled && ExpectedParameters.Any(ep => ep.Type == parameterType))
+            if (!orderHandled)
             {
                 var orderedParameter = ExpectedParameters.Skip(orderIndex)
                     .FirstOrDefault(ep => ep.Type == parameterType);

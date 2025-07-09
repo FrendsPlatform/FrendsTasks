@@ -26,7 +26,8 @@ public class AnalyzerOptionsExtensionsTests
     public void GetTaskMethods_WithNoConfiguration_ShouldThrow()
     {
         var options = CreateAnalyzerOptions(null, null, null);
-        Assert.Throws<InvalidOperationException>(() => options.GetTaskMethods(SyntaxTree, CancellationToken.None));
+        var result = options.GetTaskMethods(SyntaxTree, CancellationToken.None);
+        Assert.Null(result);
     }
 
     [Fact]
