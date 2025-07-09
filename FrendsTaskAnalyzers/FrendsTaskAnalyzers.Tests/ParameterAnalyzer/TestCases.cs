@@ -1,4 +1,4 @@
-﻿using FrendsTaskAnalyzers.ParametersAnalyzer;
+using FrendsTaskAnalyzers.ParametersAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
@@ -21,7 +21,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -47,7 +47,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -78,7 +78,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -111,7 +111,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -142,7 +142,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -171,7 +171,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
@@ -200,7 +200,7 @@ public static class TestCases
                     using System;
                     using System.ComponentModel;
                     using System.Threading;
-                    namespace Frends.Echo.Execute;
+                    namespace Frends.Test.Execute;
                     public class Test
                     {
                         public class Input;
