@@ -6,33 +6,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace FrendsTaskAnalyzers;
+namespace FrendsTaskAnalyzers.NameAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class NameAnalyzer : DiagnosticAnalyzer
 {
-    public static readonly DiagnosticDescriptor NamespaceRule =
-        new("FT0001",
-            "Namespace does not follow the standard format",
-            "Standard namespace format is 'Vendor.System.Action'",
-            "Naming",
-            DiagnosticSeverity.Warning, true);
-
-    public static readonly DiagnosticDescriptor TypeRule =
-        new("FT0002",
-            "Type should match the task system",
-            "Type name should be '{0}'",
-            "Naming",
-            DiagnosticSeverity.Warning, true);
-
-    public static readonly DiagnosticDescriptor MethodRule =
-        new("FT0003",
-            "Method should match the task action",
-            "Method name should be '{0}'",
-            "Naming",
-            DiagnosticSeverity.Warning, true);
-
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [NamespaceRule, TypeRule, MethodRule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule, GeneralRules.MetadataMissing];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -54,10 +34,15 @@ public class NameAnalyzer : DiagnosticAnalyzer
             SymbolKind.Method);
     }
 
-    private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
+    private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
     {
         if (context.Symbol is not IMethodSymbol symbol)
             return;
+        if (taskMethods is null || !taskMethods.Any())
+        {
+            context.ReportDiagnostic(Diagnostic.Create(GeneralRules.MetadataMissing, Location.None));
+            return;
+        }
 
         var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
         if (taskMethod is null)
@@ -67,7 +52,7 @@ public class NameAnalyzer : DiagnosticAnalyzer
         {
             foreach (var location in symbol.Locations)
             {
-                var diagnostic = Diagnostic.Create(MethodRule, location, action);
+                var diagnostic = Diagnostic.Create(NameRules.MethodRule, location, action);
                 context.ReportDiagnostic(diagnostic);
             }
         }
@@ -76,7 +61,7 @@ public class NameAnalyzer : DiagnosticAnalyzer
         {
             foreach (var location in symbol.ContainingType.Locations)
             {
-                var diagnostic = Diagnostic.Create(TypeRule, location, system);
+                var diagnostic = Diagnostic.Create(NameRules.TypeRule, location, system);
                 context.ReportDiagnostic(diagnostic);
             }
         }
@@ -90,7 +75,7 @@ public class NameAnalyzer : DiagnosticAnalyzer
                     continue;
 
                 var location = namespaceSyntax.Name.GetLocation();
-                var diagnostic = Diagnostic.Create(NamespaceRule, location);
+                var diagnostic = Diagnostic.Create(NameRules.NamespaceRule, location);
                 context.ReportDiagnostic(diagnostic);
             }
         }
