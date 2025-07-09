@@ -52,7 +52,7 @@ Alternatively, you can specify the task methods in your `.editorconfig` file.
 This is useful if you cannot change the `FrendsTaskMetadata.json` file to an `AdditionalFiles` item.
 
 Add the `frends_task_analyzers.task_methods` key to your `.editorconfig` file with a semicolon-separated list of your
-fully qualified task method names.
+complete task method names.
 
 ```ini
 [*.cs]
