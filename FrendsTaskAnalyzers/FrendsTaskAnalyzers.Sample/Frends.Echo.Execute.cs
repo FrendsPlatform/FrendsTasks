@@ -7,30 +7,21 @@
 using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using Frends.Echo.Execute.Definitions;
 
 namespace Frends.Echo.Execute
-{
+{  
     public class Echo
     {
-        public Result Execute(
-            [PropertyTab] EchoInput input,
+        [Category("HTTP")]
+        public Task<Result> Execute(
+            [PropertyTab] Input input,
             Options options,
             [PropertyTab] Destination destination,
             CancellationToken token)
         {
             throw new NotImplementedException();
         }
-    }
-
-    namespace Definitions
-    {
-        public class Options;
-
-        public class Result;
-
-        public class Destination;
-
-        public class EchoInput;
     }
 }
