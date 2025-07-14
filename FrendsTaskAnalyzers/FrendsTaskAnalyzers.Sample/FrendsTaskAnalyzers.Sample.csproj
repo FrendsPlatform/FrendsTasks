@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
@@ -8,16 +8,16 @@
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
 
-        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
-                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <!--<ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
     </ItemGroup>
 
-    <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
-        <PackageReference Include="FrendsTaskAnalyzers" Version="*"
+     <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
+        <PackageReference Include="FrendsTaskAnalyzers" Version="3.3.0"
                           Condition="$([System.IO.Directory]::GetFiles('$(SolutionPackagesPath)', 'FrendsTaskAnalyzers.*.nupkg').Length) > 0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
+        </PackageReference> 
+     </ItemGroup> 
 
 </Project>
