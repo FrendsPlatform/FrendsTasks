@@ -9,44 +9,24 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace FrendsTaskAnalyzers.NameAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class NameAnalyzer : DiagnosticAnalyzer
+public class NameAnalyzer : BaseAnalyzer.BaseAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule, GeneralRules.MetadataMissing];
+    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
+        [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule];
 
-    public override void Initialize(AnalysisContext context)
+    protected override void OnCompilationStart(CompilationStartAnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-        context.EnableConcurrentExecution();
-
-        context.RegisterCompilationStartAction(OnCompilationStart);
-    }
-
-    private static void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        if (tree is null)
-            return;
-
-        var taskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
-
-        context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, taskMethods),
+        base.OnCompilationStart(context);
+        context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, TaskMethods),
             SymbolKind.Method);
     }
 
     private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
     {
-        if (context.Symbol is not IMethodSymbol symbol)
-            return;
-        if (taskMethods is null || !taskMethods.Any())
-        {
-            context.ReportDiagnostic(Diagnostic.Create(GeneralRules.MetadataMissing, Location.None));
-            return;
-        }
+        if (context.Symbol is not IMethodSymbol symbol) return;
 
-        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
-        if (taskMethod is null)
-            return;
+        var taskMethod = taskMethods?.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
+        if (taskMethod is null) return;
 
         if (taskMethod.Action is { } action && symbol.Name != action)
         {

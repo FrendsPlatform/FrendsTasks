@@ -189,38 +189,6 @@ public static class TestCases
                 [
                     new DiagnosticResult(ParametersRules.ParametersOrder).WithLocation(0)
                 ]
-            },
-
-            // Case 7: Missing metadata
-            new TestCase
-            {
-                Aid = 7,
-                MetadataJson = Helpers.CreateMetadataJson(""),
-                Code =
-                    // language=csharp
-                    """
-                    using System;
-                    using System.ComponentModel;
-                    using System.Threading;
-                    namespace Frends.Test.Execute;
-                    public class Test
-                    {
-                        public class Input;
-                        public class Connection;
-                        public class Options;
-                        public void Execute ([PropertyTab] Input input, [PropertyTab] Connection connection, [PropertyTab] Options options, CancellationToken cancellationToken)
-                        {
-                            throw new NotImplementedException();
-                        }
-                    }
-                    """,
-                ExpectedDiagnostics =
-                [
-                    new DiagnosticResult(GeneralRules.MetadataMissing),
-                    new DiagnosticResult(GeneralRules.MetadataMissing),
-                    new DiagnosticResult(GeneralRules.MetadataMissing),
-                    new DiagnosticResult(GeneralRules.MetadataMissing)
-                ]
             }
         ];
     }

@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Linq;
-using FrendsTaskAnalyzers.Extensions;
 using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -10,16 +9,15 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace FrendsTaskAnalyzers.ParametersAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ParametersAnalyzer : DiagnosticAnalyzer
+public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics { get; } =
     [
         ParametersRules.RequiredParameter,
         ParametersRules.ParameterName,
         ParametersRules.ParameterPropertyTabAttribute,
         ParametersRules.ParameterUnknown,
         ParametersRules.ParametersOrder,
-        GeneralRules.MetadataMissing
     ];
 
     private static readonly ImmutableArray<ExpectedParameter> ExpectedParameters =
@@ -30,33 +28,18 @@ public class ParametersAnalyzer : DiagnosticAnalyzer
         new() { Type = "CancellationToken", Name = "cancellationToken", Required = true, IsProperty = false }
     ];
 
-    public override void Initialize(AnalysisContext context)
+    protected override void OnCompilationStart(CompilationStartAnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-        context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(OnCompilationStart);
-    }
-
-    private static void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        if (tree is null)
-            return;
-        var taskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
-        context.RegisterSyntaxNodeAction(symbolContext => AnalyzeParameters(symbolContext, taskMethods),
+        base.OnCompilationStart(context);
+        context.RegisterSyntaxNodeAction(symbolContext => AnalyzeParameters(symbolContext, TaskMethods),
             SyntaxKind.ClassDeclaration);
     }
 
     private static void AnalyzeParameters(SyntaxNodeAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
     {
         if (context.Node is not ClassDeclarationSyntax classSyntax) return;
-        if (taskMethods is null || !taskMethods.Any())
-        {
-            context.ReportDiagnostic(Diagnostic.Create(GeneralRules.MetadataMissing, Location.None));
-            return;
-        }
 
-        var taskMethod = taskMethods.FirstOrDefault(t => t.System == classSyntax.Identifier.Text);
+        var taskMethod = taskMethods?.FirstOrDefault(t => t.System == classSyntax.Identifier.Text);
         if (taskMethod is null) return;
 
         var method = classSyntax.Members.OfType<MethodDeclarationSyntax>()
