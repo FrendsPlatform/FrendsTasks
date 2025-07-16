@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Linq;
-using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -31,30 +30,25 @@ public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
     protected override void OnCompilationStart(CompilationStartAnalysisContext context)
     {
         base.OnCompilationStart(context);
-        context.RegisterSyntaxNodeAction(symbolContext => AnalyzeParameters(symbolContext, TaskMethods),
-            SyntaxKind.ClassDeclaration);
+        context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
     }
 
-    private static void AnalyzeParameters(SyntaxNodeAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
+    private static void AnalyzeParameters(SyntaxNodeAnalysisContext context)
     {
-        if (context.Node is not ClassDeclarationSyntax classSyntax) return;
-
-        var taskMethod = taskMethods?.FirstOrDefault(t => t.System == classSyntax.Identifier.Text);
-        if (taskMethod is null) return;
-
-        var method = classSyntax.Members.OfType<MethodDeclarationSyntax>()
-            .FirstOrDefault(m => m.Identifier.Text == taskMethod.Action);
-        if (method is null) return;
-        var parameters = method.ParameterList.Parameters.ToArray();
+        if (context.Node is not MethodDeclarationSyntax methodSyntax) return;
+        var symbol = context.SemanticModel.GetDeclaredSymbol(methodSyntax);
+        var parameters = symbol?.Parameters.ToArray();
+        if (parameters is null)
+            return;
 
         //FT0007
         var foundExpectedParameters =
-            ExpectedParameters.Where(ep => parameters.Any(p => p.Type?.ToString() == ep.Type)).ToArray();
+            ExpectedParameters.Where(ep => parameters.Any(p => p.Type.Name == ep.Type)).ToArray();
         var missingRequiredParameters = ExpectedParameters.Where(p => p.Required).Except(foundExpectedParameters);
         foreach (var missingRequiredParameter in missingRequiredParameters)
         {
             context.ReportDiagnostic(
-                Diagnostic.Create(ParametersRules.RequiredParameter, method.Identifier.GetLocation(),
+                Diagnostic.Create(ParametersRules.RequiredParameter, symbol?.Locations.FirstOrDefault(),
                     missingRequiredParameter.Type)
             );
         }
@@ -63,26 +57,24 @@ public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
         var orderHandled = false;
         foreach (var parameter in parameters)
         {
-            var parameterType = parameter.Type?.ToString();
-            if (parameterType is null) continue;
             var matchedExpectedParameter =
-                ExpectedParameters.FirstOrDefault(ep => ep.Type == parameterType);
+                ExpectedParameters.FirstOrDefault(ep => ep.Type == parameter.Type.Name);
 
             //FT0018
             if (matchedExpectedParameter is null)
             {
                 context.ReportDiagnostic(
-                    Diagnostic.Create(ParametersRules.ParameterUnknown, parameter.Identifier.GetLocation(),
-                        parameterType)
+                    Diagnostic.Create(ParametersRules.ParameterUnknown, parameter.Locations.FirstOrDefault(),
+                        parameter.Type.Name)
                 );
                 continue;
             }
 
             //FT0008
-            if (parameter.Identifier.Text != matchedExpectedParameter.Name)
+            if (parameter.Name != matchedExpectedParameter.Name)
             {
                 context.ReportDiagnostic(
-                    Diagnostic.Create(ParametersRules.ParameterName, parameter.Identifier.GetLocation(),
+                    Diagnostic.Create(ParametersRules.ParameterName, parameter.Locations.FirstOrDefault(),
                         matchedExpectedParameter.Name)
                 );
             }
@@ -90,13 +82,23 @@ public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
             //FT0009
             if (matchedExpectedParameter.IsProperty)
             {
-                var correctAttributes = parameter.AttributeLists
-                    .Where(aList => aList.Attributes.Any(a => a.Name.ToString() == "PropertyTab"));
-                if (!correctAttributes.Any())
+                var propertyTabAttributeSymbol =
+                    context.Compilation.GetTypeByMetadataName("System.ComponentModel.PropertyTabAttribute");
+                if (propertyTabAttributeSymbol is null) continue;
+
+                var attributes = parameter.GetAttributes().ToList();
+                var hasPropertyTabAttribute = attributes.Any(a =>
+                {
+                    var attributeSymbol = a.AttributeClass;
+                    return attributeSymbol is not null &&
+                           attributeSymbol.Equals(propertyTabAttributeSymbol, SymbolEqualityComparer.Default);
+                });
+
+                if (!hasPropertyTabAttribute)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(ParametersRules.ParameterPropertyTabAttribute,
-                            parameter.Identifier.GetLocation())
+                            parameter.Locations.FirstOrDefault())
                     );
                 }
             }
@@ -105,11 +107,11 @@ public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
             if (!orderHandled)
             {
                 var orderedParameter = ExpectedParameters.Skip(orderIndex)
-                    .FirstOrDefault(ep => ep.Type == parameterType);
+                    .FirstOrDefault(ep => ep.Type == parameter.Type.Name);
                 if (orderedParameter is null)
                 {
                     context.ReportDiagnostic(
-                        Diagnostic.Create(ParametersRules.ParametersOrder, method.Identifier.GetLocation())
+                        Diagnostic.Create(ParametersRules.ParametersOrder, symbol?.Locations.FirstOrDefault())
                     );
                     orderHandled = true;
                 }

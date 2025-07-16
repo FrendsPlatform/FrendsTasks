@@ -156,9 +156,9 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(0).WithArguments("string"),
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(1).WithArguments("string"),
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(2).WithArguments("string")
+                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(0).WithArguments("String"),
+                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(1).WithArguments("String"),
+                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(2).WithArguments("String")
                 ]
             },
 

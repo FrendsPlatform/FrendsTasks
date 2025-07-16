@@ -8,16 +8,12 @@ namespace FrendsTaskAnalyzers.Tests.ParameterAnalyzer;
 public class Tests
 {
     [Theory, MemberData(nameof(TestCases.Data), MemberType = typeof(TestCases))]
-    public async Task ShouldReportExpectedDiagnostics(
-        TestCase testCase)
+    public async Task ShouldReportExpectedDiagnostics(TestCase testCase)
     {
         var analyzerTest = new CSharpAnalyzerTest<ParametersAnalyzer.ParametersAnalyzer, DefaultVerifier>
         {
             TestCode = testCase.Code,
-            TestState =
-            {
-                AdditionalFiles = { (Helpers.TaskMetadataFileName, testCase.MetadataJson) }
-            }
+            TestState = { AdditionalFiles = { (Helpers.TaskMetadataFileName, testCase.MetadataJson) } }
         };
         analyzerTest.ExpectedDiagnostics.AddRange(testCase.ExpectedDiagnostics);
         await analyzerTest.RunAsync();

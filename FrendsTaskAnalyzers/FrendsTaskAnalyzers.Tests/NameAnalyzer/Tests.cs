@@ -8,8 +8,7 @@ namespace FrendsTaskAnalyzers.Tests.NameAnalyzer;
 public class Tests
 {
     [Theory, MemberData(nameof(TestCases.Data), MemberType = typeof(TestCases))]
-    public async Task ShouldReportExpectedDiagnostics(
-        TestCase testCase)
+    public async Task ShouldReportExpectedDiagnostics(TestCase testCase)
     {
         var analyzerTest = new CSharpAnalyzerTest<FrendsTaskAnalyzers.NameAnalyzer.NameAnalyzer, DefaultVerifier>
         {

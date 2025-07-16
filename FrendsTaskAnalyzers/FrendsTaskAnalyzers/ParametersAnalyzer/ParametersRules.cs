@@ -9,7 +9,7 @@ public static class ParametersRules
             "Missing a required parameter",
             "Task method is missing required parameter of type '{0}'",
             "Parameters",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ParameterName =
         new("FT0008",
@@ -23,7 +23,7 @@ public static class ParametersRules
             "Missing PropertyTab attribute",
             "Parameter should be attributed with 'System.ComponentModel.PropertyTabAttribute'",
             "Parameters",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ParameterUnknown =
         new("FT0018",

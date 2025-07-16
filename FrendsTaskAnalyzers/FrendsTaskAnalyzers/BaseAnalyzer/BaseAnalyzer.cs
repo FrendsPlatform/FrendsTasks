@@ -33,7 +33,7 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
             TaskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
         }
 
-        context.RegisterSyntaxNodeAction(symbolContext => AnalyzeBaseRules(symbolContext, TaskMethods),
+        context.RegisterSyntaxNodeAction(syntaxContext => AnalyzeBaseRules(syntaxContext, TaskMethods),
             SyntaxKind.ClassDeclaration);
     }
 

@@ -23,7 +23,7 @@ public class AnalyzerOptionsExtensionsTests
     private static readonly SyntaxTree SyntaxTree = CSharpSyntaxTree.ParseText("");
 
     [Fact]
-    public void GetTaskMethods_WithNoConfiguration_ShouldThrow()
+    public void GetTaskMethods_WithNoConfiguration_ShouldReturnNull()
     {
         var options = CreateAnalyzerOptions(null, null, null);
         var result = options.GetTaskMethods(SyntaxTree, CancellationToken.None);
