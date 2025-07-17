@@ -8,8 +8,7 @@
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
 
-        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
-                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
