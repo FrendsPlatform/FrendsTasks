@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -37,6 +36,7 @@ public class AnalyzerOptionsExtensionsTests
             "Frends.TestA.Execute;Frends.TestB.Execute.TestB.Execute", null);
 
         var taskMethods = options.GetTaskMethods(SyntaxTree, CancellationToken.None);
+        if(taskMethods is null) Assert.Fail("TaskMethods should not be null");
 
         Assert.Equal(2, taskMethods.Count);
 
@@ -64,6 +64,7 @@ public class AnalyzerOptionsExtensionsTests
         var options = CreateAnalyzerOptions(null, null, metadata);
 
         var taskMethods = options.GetTaskMethods(SyntaxTree, CancellationToken.None);
+        if(taskMethods is null) Assert.Fail("TaskMethods should not be null");
 
         Assert.Equal(2, taskMethods.Count);
 
@@ -92,6 +93,7 @@ public class AnalyzerOptionsExtensionsTests
             "Frends.TestC.Execute;Frends.TestD.Execute.TestD.Execute", metadata);
 
         var taskMethods = options.GetTaskMethods(SyntaxTree, CancellationToken.None);
+        if(taskMethods is null) Assert.Fail("TaskMethods should not be null");
 
         Assert.Equal(2, taskMethods.Count);
 
