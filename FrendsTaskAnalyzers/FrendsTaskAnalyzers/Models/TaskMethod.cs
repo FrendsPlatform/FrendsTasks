@@ -33,14 +33,12 @@ public class TaskMethod
             throw new ArgumentException("Invalid root namespace, must not start or end with a dot.",
                 nameof(rootNamespace));
 
-        if (parts.Length < 5)
-            return new TaskMethod(path);
+        if (parts.Length < 5) return new TaskMethod(path);
 
         if (!string.IsNullOrEmpty(rootNamespace) && path.StartsWith(rootNamespace + "."))
         {
             var rootNamespaceParts = rootNamespace.Count(c => c == '.') + 1;
-            if (rootNamespaceParts != 3)
-                return new TaskMethod(path);
+            if (rootNamespaceParts != 3) return new TaskMethod(path);
         }
 
         var vendor = parts[0];

@@ -12,50 +12,71 @@ namespace FrendsTaskAnalyzers.Analyzers.NameAnalyzer;
 public class NameAnalyzer : BaseAnalyzer
 {
     protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
-        [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule];
+        [NameRules.NamespaceFormat, NameRules.TypeName, NameRules.MethodName];
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
-        => context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, TaskMethods),
+    {
+        var syntaxTree = context.Compilation.SyntaxTrees.FirstOrDefault();
+        if (syntaxTree is null) return;
+
+        var taskMethods = context.Options.GetTaskMethods(syntaxTree, context.CancellationToken);
+        if (taskMethods is null) return;
+
+        context.RegisterSymbolAction(symbolContext => AnalyzeMethods(symbolContext, taskMethods),
             SymbolKind.Method);
 
+        context.RegisterSymbolAction(symbolContext => AnalyzeNamedType(symbolContext, taskMethods),
+            SymbolKind.NamedType);
 
-    private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
+        context.RegisterSymbolAction(symbolContext => AnalyzeNamespace(symbolContext, taskMethods),
+            SymbolKind.Namespace);
+    }
+
+    private static void AnalyzeMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
     {
         if (context.Symbol is not IMethodSymbol symbol) return;
 
-        var taskMethod = taskMethods?.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
+        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
+        if (taskMethod?.Action is not { } action || symbol.Name == action) return;
+
+        foreach (var location in symbol.Locations)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(NameRules.MethodName, location, action));
+        }
+    }
+
+    private static void AnalyzeNamedType(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
+    {
+        if (context.Symbol is not INamedTypeSymbol symbol) return;
+
+        var taskMethod = taskMethods.FirstOrDefault(t =>
+            symbol.GetMembers().OfType<IMethodSymbol>().Any(m => t.Path == m.ToReferenceString()));
+        if (taskMethod?.System is not { } system || symbol.Name == system) return;
+
+        foreach (var location in symbol.Locations)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(NameRules.TypeName, location, system));
+        }
+    }
+
+    private static void AnalyzeNamespace(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
+    {
+        if (context.Symbol is not INamespaceSymbol symbol) return;
+
+        var taskMethod = taskMethods.FirstOrDefault(t =>
+            symbol.GetTypeMembers().Any(n =>
+                n.GetMembers().OfType<IMethodSymbol>().Any(m => t.Path == m.ToReferenceString())));
         if (taskMethod is null) return;
 
-        if (taskMethod.Action is { } action && symbol.Name != action)
-        {
-            foreach (var location in symbol.Locations)
-            {
-                var diagnostic = Diagnostic.Create(NameRules.MethodRule, location, action);
-                context.ReportDiagnostic(diagnostic);
-            }
-        }
+        if (taskMethod.Vendor is not null && taskMethod.System is not null && taskMethod.Action is not null) return;
 
-        if (taskMethod.System is { } system && symbol.ContainingType.Name != system)
+        foreach (var syntaxReference in symbol.ContainingNamespace.DeclaringSyntaxReferences)
         {
-            foreach (var location in symbol.ContainingType.Locations)
-            {
-                var diagnostic = Diagnostic.Create(NameRules.TypeRule, location, system);
-                context.ReportDiagnostic(diagnostic);
-            }
-        }
+            var syntax = syntaxReference.GetSyntax(context.CancellationToken);
+            if (syntax is not BaseNamespaceDeclarationSyntax namespaceSyntax) continue;
 
-        if (taskMethod.Vendor is null)
-        {
-            foreach (var syntaxReference in symbol.ContainingNamespace.DeclaringSyntaxReferences)
-            {
-                var syntax = syntaxReference.GetSyntax(context.CancellationToken);
-                if (syntax is not BaseNamespaceDeclarationSyntax namespaceSyntax)
-                    continue;
-
-                var location = namespaceSyntax.Name.GetLocation();
-                var diagnostic = Diagnostic.Create(NameRules.NamespaceRule, location);
-                context.ReportDiagnostic(diagnostic);
-            }
+            var location = namespaceSyntax.Name.GetLocation();
+            context.ReportDiagnostic(Diagnostic.Create(NameRules.NamespaceFormat, location));
         }
     }
 }
