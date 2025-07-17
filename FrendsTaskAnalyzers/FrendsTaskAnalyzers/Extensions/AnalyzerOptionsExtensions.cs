@@ -38,9 +38,7 @@ public static class AnalyzerOptionsExtensions
         var text = options.AdditionalFiles
             .FirstOrDefault(f => Path.GetFileName(f.Path) == TaskMetadataFileName)
             ?.GetText(cancellationToken);
-
-        if (text == null)
-            return null;
+        if (text == null) return null;
 
         using var document = JsonDocument.Parse(text.ToString());
         var root = document.RootElement;

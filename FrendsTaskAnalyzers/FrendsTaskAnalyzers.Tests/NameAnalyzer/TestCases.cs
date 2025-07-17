@@ -43,7 +43,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(NameRules.NamespaceRule).WithLocation(0)
+                    new DiagnosticResult(NameRules.NamespaceFormat).WithLocation(0)
                 ]
             },
 
@@ -63,7 +63,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(NameRules.TypeRule).WithLocation(0).WithArguments("TestA")
+                    new DiagnosticResult(NameRules.TypeName).WithLocation(0).WithArguments("TestA")
                 ]
             },
 
@@ -83,7 +83,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(NameRules.MethodRule).WithLocation(0).WithArguments("ExecuteA")
+                    new DiagnosticResult(NameRules.MethodName).WithLocation(0).WithArguments("ExecuteA")
                 ]
             },
 
@@ -103,8 +103,8 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(NameRules.TypeRule).WithLocation(0).WithArguments("TestA"),
-                    new DiagnosticResult(NameRules.MethodRule).WithLocation(1).WithArguments("ExecuteA")
+                    new DiagnosticResult(NameRules.TypeName).WithLocation(0).WithArguments("TestA"),
+                    new DiagnosticResult(NameRules.MethodName).WithLocation(1).WithArguments("ExecuteA")
                 ]
             },
 
@@ -134,10 +134,10 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(NameRules.TypeRule).WithLocation(0).WithArguments("TestA"),
-                    new DiagnosticResult(NameRules.MethodRule).WithLocation(1).WithArguments("ExecuteA"),
-                    new DiagnosticResult(NameRules.TypeRule).WithLocation(2).WithArguments("TestB"),
-                    new DiagnosticResult(NameRules.MethodRule).WithLocation(3).WithArguments("ExecuteB")
+                    new DiagnosticResult(NameRules.TypeName).WithLocation(0).WithArguments("TestA"),
+                    new DiagnosticResult(NameRules.MethodName).WithLocation(1).WithArguments("ExecuteA"),
+                    new DiagnosticResult(NameRules.TypeName).WithLocation(2).WithArguments("TestB"),
+                    new DiagnosticResult(NameRules.MethodName).WithLocation(3).WithArguments("ExecuteB")
                 ]
             }
         ];
