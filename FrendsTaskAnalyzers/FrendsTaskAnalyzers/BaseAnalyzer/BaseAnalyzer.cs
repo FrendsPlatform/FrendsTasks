@@ -22,27 +22,25 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(OnCompilationStart);
-    }
 
-    protected virtual void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        if (tree is not null)
+        context.RegisterCompilationAction(compilationContext =>
         {
-            TaskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
-        }
+            var tree = compilationContext.Compilation.SyntaxTrees.FirstOrDefault();
+            TaskMethods = tree is not null
+                ? compilationContext.Options.GetTaskMethods(tree, compilationContext.CancellationToken)
+                : null;
 
-        context.RegisterCompilationEndAction(compilationContext => AnalyzeBaseRules(compilationContext, TaskMethods));
+            if (TaskMethods is null || !TaskMethods.Any())
+            {
+                compilationContext.ReportDiagnostic(
+                    Diagnostic.Create(BaseRules.ConfigurationMissing, Location.None));
+            }
+        });
+
+        context.RegisterCompilationStartAction(RegisterActions);
     }
 
-    private static void AnalyzeBaseRules(CompilationAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
-    {
-        if (taskMethods is null || !taskMethods.Any())
-        {
-            context.ReportDiagnostic(Diagnostic.Create(BaseRules.ConfigurationMissing, Location.None));
-        }
-    }
+    protected abstract void RegisterActions(CompilationStartAnalysisContext context);
 
     private static ImmutableArray<DiagnosticDescriptor> InitializeSupportedDiagnostics(
         ImmutableArray<DiagnosticDescriptor> additionalDiagnostics)

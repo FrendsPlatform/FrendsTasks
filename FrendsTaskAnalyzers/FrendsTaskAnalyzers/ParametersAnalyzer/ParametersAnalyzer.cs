@@ -27,11 +27,9 @@ public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
         new() { Type = "CancellationToken", Name = "cancellationToken", Required = true, IsProperty = false }
     ];
 
-    protected override void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        base.OnCompilationStart(context);
-        context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
-    }
+    protected override void RegisterActions(CompilationStartAnalysisContext context)
+        => context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
+
 
     private static void AnalyzeParameters(SyntaxNodeAnalysisContext context)
     {

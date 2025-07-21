@@ -14,12 +14,10 @@ public class NameAnalyzer : BaseAnalyzer.BaseAnalyzer
     protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
         [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule];
 
-    protected override void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        base.OnCompilationStart(context);
-        context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, TaskMethods),
+    protected override void RegisterActions(CompilationStartAnalysisContext context)
+        => context.RegisterSymbolAction(symbolContext => AnalyzeTaskMethods(symbolContext, TaskMethods),
             SymbolKind.Method);
-    }
+
 
     private static void AnalyzeTaskMethods(SymbolAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
     {
