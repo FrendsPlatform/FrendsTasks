@@ -33,13 +33,7 @@ public static class TestCases
                         }
                     }
                     """,
-                ExpectedDiagnostics =
-                [
-                    new DiagnosticResult(BaseRules.ConfigurationMissing),
-                    new DiagnosticResult(BaseRules.ConfigurationMissing),
-                    new DiagnosticResult(BaseRules.ConfigurationMissing),
-                    new DiagnosticResult(BaseRules.ConfigurationMissing),
-                ]
+                ExpectedDiagnostics = [new DiagnosticResult(BaseRules.ConfigurationMissing)]
             }
         ];
     }

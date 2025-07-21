@@ -33,11 +33,10 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
             TaskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
         }
 
-        context.RegisterSyntaxNodeAction(syntaxContext => AnalyzeBaseRules(syntaxContext, TaskMethods),
-            SyntaxKind.ClassDeclaration);
+        context.RegisterCompilationEndAction(compilationContext => AnalyzeBaseRules(compilationContext, TaskMethods));
     }
 
-    private static void AnalyzeBaseRules(SyntaxNodeAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
+    private static void AnalyzeBaseRules(CompilationAnalysisContext context, IImmutableList<TaskMethod>? taskMethods)
     {
         if (taskMethods is null || !taskMethods.Any())
         {
