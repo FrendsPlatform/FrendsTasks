@@ -3,7 +3,6 @@ using System.Linq;
 using FrendsTaskAnalyzers.Extensions;
 using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace FrendsTaskAnalyzers.BaseAnalyzer;

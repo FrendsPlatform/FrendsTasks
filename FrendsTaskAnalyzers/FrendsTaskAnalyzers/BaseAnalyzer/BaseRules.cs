@@ -9,5 +9,7 @@ public static class BaseRules
             "Metadata is missing",
             "There is no metadata in the project",
             "General",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Warning, true,
+            customTags: [WellKnownDiagnosticTags.CompilationEnd]
+        );
 }
