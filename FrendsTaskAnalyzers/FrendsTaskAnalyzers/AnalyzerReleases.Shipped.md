@@ -19,4 +19,3 @@ FT0008  | Parameters    | Info     | Parameter name is not recommended
 FT0009  | Parameters    | Error    | Parameter is missing PropertyTab attribute
 FT0018  | Parameters    | Warning  | Parameter is not recognized
 FT0019  | Parameters    | Warning  | Parameters are not in the correct order
-FT0020  | Configuration | Warning  | Metadata is missing
