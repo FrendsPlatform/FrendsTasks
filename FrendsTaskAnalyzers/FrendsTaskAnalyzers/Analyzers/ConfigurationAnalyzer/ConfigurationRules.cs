@@ -8,7 +8,7 @@ public static class ConfigurationRules
         new("FT0020",
             "Metadata is missing",
             "There is no metadata in the project",
-            "General",
+            "Configuration",
             DiagnosticSeverity.Warning, true,
             customTags: [WellKnownDiagnosticTags.CompilationEnd]
         );
