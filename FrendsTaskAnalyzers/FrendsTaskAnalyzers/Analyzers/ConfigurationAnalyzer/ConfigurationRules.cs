@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 
-namespace FrendsTaskAnalyzers.BaseAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ConfigurationAnalyzer;
 
-public static class BaseRules
+public static class ConfigurationRules
 {
     public static readonly DiagnosticDescriptor ConfigurationMissing =
         new("FT0020",
@@ -12,4 +12,5 @@ public static class BaseRules
             DiagnosticSeverity.Warning, true,
             customTags: [WellKnownDiagnosticTags.CompilationEnd]
         );
+
 }

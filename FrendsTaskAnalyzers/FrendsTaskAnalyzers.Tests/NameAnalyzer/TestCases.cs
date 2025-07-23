@@ -1,4 +1,4 @@
-using FrendsTaskAnalyzers.NameAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.NameAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 

@@ -1,4 +1,4 @@
-namespace FrendsTaskAnalyzers.ParametersAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
 
 public class ExpectedParameter
 {

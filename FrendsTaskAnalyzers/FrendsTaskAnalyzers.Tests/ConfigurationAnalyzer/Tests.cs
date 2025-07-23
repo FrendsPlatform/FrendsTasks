@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
-namespace FrendsTaskAnalyzers.Tests.BaseAnalyzer;
+namespace FrendsTaskAnalyzers.Tests.ConfigurationAnalyzer;
 
 public class Tests
 {
@@ -11,7 +11,7 @@ public class Tests
     public async Task ShouldReportExpectedDiagnostics(
         TestCase testCase)
     {
-        var analyzerTest = new CSharpAnalyzerTest<TestBaseAnalyzer, DefaultVerifier>
+        var analyzerTest = new CSharpAnalyzerTest<Analyzers.ConfigurationAnalyzer.ConfigurationAnalyzer, DefaultVerifier>
         {
             TestCode = testCase.Code,
             TestState =

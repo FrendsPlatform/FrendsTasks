@@ -10,7 +10,7 @@ public class Tests
     [Theory, MemberData(nameof(TestCases.Data), MemberType = typeof(TestCases))]
     public async Task ShouldReportExpectedDiagnostics(TestCase testCase)
     {
-        var analyzerTest = new CSharpAnalyzerTest<FrendsTaskAnalyzers.NameAnalyzer.NameAnalyzer, DefaultVerifier>
+        var analyzerTest = new CSharpAnalyzerTest<Analyzers.NameAnalyzer.NameAnalyzer, DefaultVerifier>
         {
             TestCode = testCase.Code,
             TestState = { AdditionalFiles = { (Helpers.TaskMetadataFileName, testCase.MetadataJson) } }

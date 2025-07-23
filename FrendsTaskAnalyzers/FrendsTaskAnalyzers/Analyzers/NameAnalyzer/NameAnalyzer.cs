@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace FrendsTaskAnalyzers.NameAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.NameAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class NameAnalyzer : BaseAnalyzer.BaseAnalyzer
+public class NameAnalyzer : BaseAnalyzer
 {
     protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
         [NameRules.NamespaceRule, NameRules.TypeRule, NameRules.MethodRule];

@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace FrendsTaskAnalyzers.ParametersAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
 
 public static class ParametersRules
 {

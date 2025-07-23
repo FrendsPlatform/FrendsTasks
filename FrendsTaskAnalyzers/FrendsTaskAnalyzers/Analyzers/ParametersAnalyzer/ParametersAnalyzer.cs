@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace FrendsTaskAnalyzers.ParametersAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ParametersAnalyzer : BaseAnalyzer.BaseAnalyzer
+public class ParametersAnalyzer : BaseAnalyzer
 {
     protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics { get; } =
     [

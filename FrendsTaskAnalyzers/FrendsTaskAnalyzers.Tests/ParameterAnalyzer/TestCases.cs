@@ -1,4 +1,4 @@
-using FrendsTaskAnalyzers.ParametersAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 

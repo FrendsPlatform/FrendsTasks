@@ -1,8 +1,8 @@
-using FrendsTaskAnalyzers.BaseAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.ConfigurationAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
-namespace FrendsTaskAnalyzers.Tests.BaseAnalyzer;
+namespace FrendsTaskAnalyzers.Tests.ConfigurationAnalyzer;
 
 public static class TestCases
 {
@@ -33,7 +33,7 @@ public static class TestCases
                         }
                     }
                     """,
-                ExpectedDiagnostics = [new DiagnosticResult(BaseRules.ConfigurationMissing)]
+                ExpectedDiagnostics = [new DiagnosticResult(ConfigurationRules.ConfigurationMissing)]
             }
         ];
     }

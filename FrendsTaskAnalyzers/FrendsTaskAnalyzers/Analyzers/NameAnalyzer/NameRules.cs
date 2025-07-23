@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace FrendsTaskAnalyzers.NameAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.NameAnalyzer;
 
 public static class NameRules
 {

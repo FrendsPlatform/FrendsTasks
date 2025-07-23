@@ -5,9 +5,8 @@ using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace FrendsTaskAnalyzers.BaseAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
 public abstract class BaseAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
@@ -24,16 +23,9 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationAction(compilationContext =>
         {
-            var tree = compilationContext.Compilation.SyntaxTrees.FirstOrDefault();
-            TaskMethods = tree is not null
-                ? compilationContext.Options.GetTaskMethods(tree, compilationContext.CancellationToken)
-                : null;
-
-            if (TaskMethods is null || !TaskMethods.Any())
-            {
-                compilationContext.ReportDiagnostic(
-                    Diagnostic.Create(BaseRules.ConfigurationMissing, Location.None));
-            }
+            TaskMethods = compilationContext.Compilation.SyntaxTrees
+                .Select(tree => compilationContext.Options.GetTaskMethods(tree, compilationContext.CancellationToken))
+                .FirstOrDefault(methods => methods?.Any() == true);
         });
 
         context.RegisterCompilationStartAction(RegisterActions);
@@ -44,7 +36,7 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
     private static ImmutableArray<DiagnosticDescriptor> InitializeSupportedDiagnostics(
         ImmutableArray<DiagnosticDescriptor> additionalDiagnostics)
     {
-        ImmutableArray<DiagnosticDescriptor> baseDiagnostics = [BaseRules.ConfigurationMissing];
+        ImmutableArray<DiagnosticDescriptor> baseDiagnostics = [];
         return baseDiagnostics.AddRange(additionalDiagnostics);
     }
 }
