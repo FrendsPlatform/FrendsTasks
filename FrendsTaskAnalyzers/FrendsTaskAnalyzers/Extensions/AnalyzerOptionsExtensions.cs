@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -19,7 +18,7 @@ public static class AnalyzerOptionsExtensions
     private const string KeyPrefix = "frends_task_analyzers";
     private const string TaskMethodsKey = $"{KeyPrefix}.task_methods";
 
-    public static IImmutableList<TaskMethod> GetTaskMethods(
+    public static IImmutableList<TaskMethod>? GetTaskMethods(
         this AnalyzerOptions options, SyntaxTree tree, CancellationToken cancellationToken)
     {
         options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(RootNamespaceKey, out var rootNamespace);
@@ -30,7 +29,7 @@ public static class AnalyzerOptionsExtensions
         if (TaskMethodsFromJsonFile(options, rootNamespace, cancellationToken) is { } jsonTaskMethods)
             return jsonTaskMethods;
 
-        throw new InvalidOperationException("Task methods could not be found.");
+        return null;
     }
 
     private static IImmutableList<TaskMethod>? TaskMethodsFromJsonFile(
