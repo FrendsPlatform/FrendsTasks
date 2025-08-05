@@ -24,4 +24,11 @@ namespace Frends.Echo.Execute
             throw new NotImplementedException();
         }
     }
+
+    public class Options { }
+    public class Result
+    {
+    }
+    public class Destination { }
+    public class Input { }
 }
