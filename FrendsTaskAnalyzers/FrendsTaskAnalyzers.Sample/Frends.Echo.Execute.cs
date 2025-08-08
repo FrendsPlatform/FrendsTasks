@@ -7,14 +7,15 @@
 using System;
 using System.ComponentModel;
 using System.Threading;
-using Frends.Echo.Execute.Definitions;
+using System.Threading.Tasks;
 
 namespace Frends.Echo.Execute
 {
     public class Echo
     {
-        public Result Execute(
-            [PropertyTab] EchoInput input,
+        [Category("HTTP")]
+        public Task<Result> Execute(
+            [PropertyTab] Input input,
             Options options,
             [PropertyTab] Destination destination,
             CancellationToken token)
@@ -23,14 +24,10 @@ namespace Frends.Echo.Execute
         }
     }
 
-    namespace Definitions
+    public class Options { }
+    public class Result
     {
-        public class Options;
-
-        public class Result;
-
-        public class Destination;
-
-        public class EchoInput;
     }
+    public class Destination { }
+    public class Input { }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text.Json.Nodes;
 
@@ -13,4 +14,9 @@ public static class Helpers
             .ToArray<JsonNode?>();
         return new JsonObject { ["Tasks"] = new JsonArray(tasks) }.ToJsonString();
     }
+}
+
+public class CategoryAttribute : Attribute
+{
+    public CategoryAttribute(string name) { }
 }
