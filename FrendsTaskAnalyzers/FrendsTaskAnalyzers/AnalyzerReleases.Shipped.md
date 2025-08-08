@@ -21,7 +21,7 @@ FT0018  | Parameters    | Warning  | Parameter is not recognized
 FT0019  | Parameters    | Warning  | Parameters are not in the correct order
 FT0020  | Configuration | Warning  | Metadata is missing
 
-## 1.3.0
+## Release 1.3.0
 
 ### New Rules
 
