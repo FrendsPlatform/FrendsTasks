@@ -13,7 +13,7 @@
     </ItemGroup>
 
      <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
-        <PackageReference Include="FrendsTaskAnalyzers" Version="3.3.0"
+        <PackageReference Include="FrendsTaskAnalyzers" Version="1.3.0"
                           Condition="$([System.IO.Directory]::GetFiles('$(SolutionPackagesPath)', 'FrendsTaskAnalyzers.*.nupkg').Length) > 0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

@@ -7,41 +7,28 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Generic;
 
-namespace FrendsTaskAnalyzers.StructureAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.StructureAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class StructureAnalyzer : DiagnosticAnalyzer
+public class StructureAnalyzer : BaseAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        [StructureRules.ClassShouldBeStaticRule,
+    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics => [StructureRules.ClassShouldBeStaticRule,
         StructureRules.MethodShouldBeStaticRule,
         StructureRules.MethodOverloadNotAllowedRule,
         StructureRules.ReturnTypeIncorrectRule,
         StructureRules.ReturnTypeMissingPropertiesRule];
 
-    public override void Initialize(AnalysisContext context)
+    protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-        context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(OnCompilationStart);
-    }
-
-    private static void OnCompilationStart(CompilationStartAnalysisContext context)
-    {
-        var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        if (tree is null) return;
-
-        var taskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken);
-
         var reportedDiagnostics = new HashSet<(ISymbol Symbol, string DiagnosticId)>();
         var reportedMissingProperties = new HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)>();
 
         context.RegisterSymbolAction(
-            ctx => AnalyzeMethod(ctx, taskMethods, reportedDiagnostics, reportedMissingProperties),
+            ctx => AnalyzeMethod(ctx, TaskMethods, reportedDiagnostics, reportedMissingProperties),
             SymbolKind.Method);
 
         context.RegisterSymbolAction(
-            ctx => AnalyzeClass(ctx, taskMethods, reportedDiagnostics),
+            ctx => AnalyzeClass(ctx, TaskMethods, reportedDiagnostics),
             SymbolKind.NamedType);
     }
 

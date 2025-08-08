@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using FrendsTaskAnalyzers.StructureAnalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
@@ -11,7 +10,7 @@ public class Tests
     [Theory, MemberData(nameof(TestCases.Data), MemberType = typeof(TestCases))]
     public async Task ShouldReportExpectedDiagnostics(TestCase testCase)
     {
-        var test = new CSharpAnalyzerTest<FrendsTaskAnalyzers.StructureAnalyzer.StructureAnalyzer, DefaultVerifier>
+        var test = new CSharpAnalyzerTest<Analyzers.StructureAnalyzer.StructureAnalyzer, DefaultVerifier>
         {
             TestCode = testCase.Code,
             TestState =

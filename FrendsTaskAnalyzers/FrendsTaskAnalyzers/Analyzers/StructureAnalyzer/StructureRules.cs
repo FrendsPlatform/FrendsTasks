@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace FrendsTaskAnalyzers.StructureAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.StructureAnalyzer;
 public static class StructureRules
 {
     public static readonly DiagnosticDescriptor ClassShouldBeStaticRule = new(

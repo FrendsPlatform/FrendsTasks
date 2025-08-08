@@ -1,4 +1,4 @@
-using FrendsTaskAnalyzers.StructureAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.StructureAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
