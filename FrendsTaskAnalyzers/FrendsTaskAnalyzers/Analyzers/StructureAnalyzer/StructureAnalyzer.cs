@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using FrendsTaskAnalyzers.Extensions;
@@ -5,7 +6,7 @@ using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Generic;
+
 
 namespace FrendsTaskAnalyzers.Analyzers.StructureAnalyzer;
 

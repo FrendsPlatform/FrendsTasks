@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Frends.Echo.Execute.Definitions;
 
 namespace Frends.Echo.Execute
-{  
+{
     public class Echo
     {
         [Category("HTTP")]
