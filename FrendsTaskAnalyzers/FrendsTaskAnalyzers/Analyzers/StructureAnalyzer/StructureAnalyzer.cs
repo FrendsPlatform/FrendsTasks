@@ -21,19 +21,22 @@ public class StructureAnalyzer : BaseAnalyzer
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
-        if (TaskMethods is null)
-            return;
-
         var reportedDiagnostics = new HashSet<(ISymbol Symbol, string DiagnosticId)>();
         var reportedMissingProperties = new HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)>();
 
-        context.RegisterSymbolAction(
-            ctx => AnalyzeMethod(ctx, TaskMethods, reportedDiagnostics, reportedMissingProperties),
-            SymbolKind.Method);
+        context.RegisterSymbolAction(ctx =>
+        {
+            if (TaskMethods is null)
+                return;
+            AnalyzeMethod(ctx, TaskMethods, reportedDiagnostics, reportedMissingProperties);
+        }, SymbolKind.Method);
 
-        context.RegisterSymbolAction(
-            ctx => AnalyzeClass(ctx, TaskMethods, reportedDiagnostics),
-            SymbolKind.NamedType);
+        context.RegisterSymbolAction(ctx =>
+        {
+            if (TaskMethods is null)
+                return;
+            AnalyzeClass(ctx, TaskMethods, reportedDiagnostics);
+        }, SymbolKind.NamedType);
     }
 
     private static void AnalyzeClass(
