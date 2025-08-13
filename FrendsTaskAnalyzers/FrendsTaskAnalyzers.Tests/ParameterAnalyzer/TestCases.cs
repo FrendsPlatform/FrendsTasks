@@ -25,7 +25,6 @@ public static class TestCases
                     public class Test
                     {
                         public class Input;
-                        public class Connection;
                         public class Options;
                         public void Execute ([PropertyTab] Input input, [PropertyTab] Options options, CancellationToken cancellationToken)
                         {
@@ -52,7 +51,6 @@ public static class TestCases
                     {
                         public class Input;
                         public class Connection;
-                        public class Options;
                         public void {|#0:Execute|} ([PropertyTab] Input input, [PropertyTab] Connection connection)
                         {
                             throw new NotImplementedException();
@@ -146,9 +144,8 @@ public static class TestCases
                     public class Test
                     {
                         public class Input;
-                        public class Connection;
                         public class Options;
-                        public void Execute (string {|#0:foobar0|}, [PropertyTab] Options options, string {|#1:foobar1|}, CancellationToken cancellationToken, string {|#2:foobar2|})
+                        public void Execute (string {|#0:foobar0|}, [PropertyTab] Input input, [PropertyTab] Options options, string {|#1:foobar1|}, CancellationToken cancellationToken, string {|#2:foobar2|})
                         {
                             throw new NotImplementedException();
                         }
@@ -177,9 +174,8 @@ public static class TestCases
                     public class Test
                     {
                         public class Input;
-                        public class Connection;
                         public class Options;
-                        public void {|#0:Execute|} (CancellationToken cancellationToken, [PropertyTab] Options options)
+                        public void {|#0:Execute|} (CancellationToken cancellationToken, [PropertyTab] Options options, [PropertyTab] Input input)
                         {
                             throw new NotImplementedException();
                         }
