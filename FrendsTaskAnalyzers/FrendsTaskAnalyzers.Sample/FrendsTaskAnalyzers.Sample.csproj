@@ -8,16 +8,16 @@
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
 
-        <!--<ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"
-                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
+<!--        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"-->
+<!--                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
     </ItemGroup>
 
-     <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
-        <PackageReference Include="FrendsTaskAnalyzers" Version="1.3.0"
+    <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
+        <PackageReference Include="FrendsTaskAnalyzers" Version="1.4.0"
                           Condition="$([System.IO.Directory]::GetFiles('$(SolutionPackagesPath)', 'FrendsTaskAnalyzers.*.nupkg').Length) > 0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-        </PackageReference> 
-     </ItemGroup> 
+        </PackageReference>
+    </ItemGroup>
 
 </Project>
