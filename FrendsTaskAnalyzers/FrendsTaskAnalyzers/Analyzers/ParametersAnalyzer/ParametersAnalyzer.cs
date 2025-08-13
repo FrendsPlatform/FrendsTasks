@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using FrendsTaskAnalyzers.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,7 +22,7 @@ public class ParametersAnalyzer : BaseAnalyzer
 
     private static readonly ImmutableArray<ExpectedParameter> ExpectedParameters =
     [
-        new() { Type = "Input", Name = "input" },
+        new() { Type = "Input", Name = "input", Required = true },
         new() { Type = "Connection", Name = "connection" },
         new() { Type = "Options", Name = "options", Required = true },
         new() { Type = "CancellationToken", Name = "cancellationToken", Required = true, IsProperty = false }
@@ -30,14 +31,15 @@ public class ParametersAnalyzer : BaseAnalyzer
     protected override void RegisterActions(CompilationStartAnalysisContext context)
         => context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
 
-
-    private static void AnalyzeParameters(SyntaxNodeAnalysisContext context)
+    private void AnalyzeParameters(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not MethodDeclarationSyntax methodSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(methodSyntax);
-        var parameters = symbol?.Parameters.ToArray();
-        if (parameters is null)
-            return;
+        if (symbol is null) return;
+
+        if (TaskMethods?.Any(t => t.Path == symbol.ToReferenceString()) != true) return;
+
+        var parameters = symbol.Parameters.ToArray();
 
         //FT0007
         var foundExpectedParameters =
@@ -50,6 +52,9 @@ public class ParametersAnalyzer : BaseAnalyzer
                     missingRequiredParameter.Type)
             );
         }
+
+        var propertyTabAttributeSymbol =
+            context.Compilation.GetTypeByMetadataName("System.ComponentModel.PropertyTabAttribute");
 
         var orderIndex = 0;
         var orderHandled = false;
@@ -80,8 +85,6 @@ public class ParametersAnalyzer : BaseAnalyzer
             //FT0009
             if (matchedExpectedParameter.IsProperty)
             {
-                var propertyTabAttributeSymbol =
-                    context.Compilation.GetTypeByMetadataName("System.ComponentModel.PropertyTabAttribute");
                 if (propertyTabAttributeSymbol is null) continue;
 
                 var attributes = parameter.GetAttributes().ToList();
