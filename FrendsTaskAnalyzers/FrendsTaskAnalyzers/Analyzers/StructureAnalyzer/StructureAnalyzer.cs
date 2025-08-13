@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -13,11 +14,14 @@ namespace FrendsTaskAnalyzers.Analyzers.StructureAnalyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class StructureAnalyzer : BaseAnalyzer
 {
-    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics => [StructureRules.ClassShouldBeStaticRule,
+    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
+    [
+        StructureRules.ClassShouldBeStaticRule,
         StructureRules.MethodShouldBeStaticRule,
         StructureRules.MethodOverloadNotAllowedRule,
         StructureRules.ReturnTypeIncorrectRule,
-        StructureRules.ReturnTypeMissingPropertiesRule];
+        StructureRules.ReturnTypeMissingPropertiesRule
+    ];
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
@@ -50,7 +54,8 @@ public class StructureAnalyzer : BaseAnalyzer
         if (!anyTaskMethod) return;
 
         if (!classSymbol.IsStatic)
-            ReportOnce(context, StructureRules.ClassShouldBeStaticRule, classSymbol, reportedDiagnostics, classSymbol.Name);
+            ReportOnce(context, StructureRules.ClassShouldBeStaticRule, classSymbol, reportedDiagnostics,
+                classSymbol.Name);
     }
 
     private static void AnalyzeMethod(
@@ -68,11 +73,13 @@ public class StructureAnalyzer : BaseAnalyzer
 
         // 1. Class static
         if (!containingClass.IsStatic)
-            ReportOnce(context, StructureRules.ClassShouldBeStaticRule, containingClass, reportedDiagnostics, containingClass.Name);
+            ReportOnce(context, StructureRules.ClassShouldBeStaticRule, containingClass, reportedDiagnostics,
+                containingClass.Name);
 
         // 2. Method static
         if (!methodSymbol.IsStatic)
-            ReportOnce(context, StructureRules.MethodShouldBeStaticRule, methodSymbol, reportedDiagnostics, methodSymbol.Name);
+            ReportOnce(context, StructureRules.MethodShouldBeStaticRule, methodSymbol, reportedDiagnostics,
+                methodSymbol.Name);
 
         // 3. Method overloads
         var overloads = containingClass
@@ -81,19 +88,21 @@ public class StructureAnalyzer : BaseAnalyzer
             .ToList();
 
         if (overloads.Count > 1 && SymbolEqualityComparer.Default.Equals(overloads[0], methodSymbol))
-            ReportOnce(context, StructureRules.MethodOverloadNotAllowedRule, methodSymbol, reportedDiagnostics, methodSymbol.Name);
+            ReportOnce(context, StructureRules.MethodOverloadNotAllowedRule, methodSymbol, reportedDiagnostics,
+                methodSymbol.Name);
 
         // 4. Return type
         var returnType = methodSymbol.ReturnType;
         if (!IsValidReturnType(returnType))
-            ReportOnce(context, StructureRules.ReturnTypeIncorrectRule, methodSymbol, reportedDiagnostics, "Result or Task<Result>");
+            ReportOnce(context, StructureRules.ReturnTypeIncorrectRule, methodSymbol, reportedDiagnostics,
+                "Result or Task<Result>");
         else
         {
             var actualReturnType = returnType.Name == "Result"
                 ? returnType
                 : ((INamedTypeSymbol)returnType).TypeArguments.First();
 
-            var category = methodSymbol.GetCategory();
+            var category = methodSymbol.GetCategory(context.Compilation);
             CheckRequiredProperties(context, methodSymbol, actualReturnType, category, reportedMissingProperties);
         }
     }
@@ -134,7 +143,7 @@ public class StructureAnalyzer : BaseAnalyzer
         SymbolAnalysisContext context,
         IMethodSymbol methodSymbol,
         ITypeSymbol returnType,
-        string? category,
+        TaskCategory category,
         HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)> reportedMissingProperties)
     {
         var properties = returnType.GetMembers().OfType<IPropertySymbol>().ToList();
@@ -146,23 +155,30 @@ public class StructureAnalyzer : BaseAnalyzer
         if (!HasProperty("Error"))
             ReportMissingProperty(context, methodSymbol, returnType, "Error", reportedMissingProperties);
 
-        if (category == "Database" && !HasProperty("Data"))
-            ReportMissingProperty(context, methodSymbol, returnType, "Data", reportedMissingProperties);
-        else if (category == "HTTP")
+        switch (category)
         {
-            if (!HasProperty("Body"))
-                ReportMissingProperty(context, methodSymbol, returnType, "Body", reportedMissingProperties);
-            if (!HasProperty("StatusCode"))
-                ReportMissingProperty(context, methodSymbol, returnType, "StatusCode", reportedMissingProperties);
-        }
-        else if (category == "Converter")
-        {
-            if (!HasProperty("TargetFormat"))
-                ReportMissingProperty(context, methodSymbol, returnType, "TargetFormat", reportedMissingProperties);
-        }
-        else if (category == "File" && !HasProperty("FilePath"))
-        {
-            ReportMissingProperty(context, methodSymbol, returnType, "FilePath", reportedMissingProperties);
+            case TaskCategory.Database when !HasProperty("Data"):
+                ReportMissingProperty(context, methodSymbol, returnType, "Data", reportedMissingProperties);
+                break;
+            case TaskCategory.Http:
+                {
+                    if (!HasProperty("Body"))
+                        ReportMissingProperty(context, methodSymbol, returnType, "Body", reportedMissingProperties);
+                    if (!HasProperty("StatusCode"))
+                        ReportMissingProperty(context, methodSymbol, returnType, "StatusCode",
+                            reportedMissingProperties);
+                    break;
+                }
+            case TaskCategory.Converter:
+                {
+                    if (!HasProperty("TargetFormat"))
+                        ReportMissingProperty(context, methodSymbol, returnType, "TargetFormat",
+                            reportedMissingProperties);
+                    break;
+                }
+            case TaskCategory.File when !HasProperty("FilePath"):
+                ReportMissingProperty(context, methodSymbol, returnType, "FilePath", reportedMissingProperties);
+                break;
         }
     }
 
@@ -194,15 +210,16 @@ public class StructureAnalyzer : BaseAnalyzer
             location = methodSymbol.Locations.FirstOrDefault() ?? Location.None;
 
         if (location != Location.None)
-            context.ReportDiagnostic(Diagnostic.Create(StructureRules.ReturnTypeMissingPropertiesRule, location, propertyName));
+            context.ReportDiagnostic(Diagnostic.Create(StructureRules.ReturnTypeMissingPropertiesRule, location,
+                propertyName));
     }
 
     private static bool IsValidReturnType(ITypeSymbol returnType)
     {
         return returnType.Name == "Result"
                || returnType is INamedTypeSymbol namedType
-                   && namedType.IsGenericType
-                   && namedType.Name == "Task"
-                   && namedType.TypeArguments.FirstOrDefault()?.Name == "Result";
+               && namedType.IsGenericType
+               && namedType.Name == "Task"
+               && namedType.TypeArguments.FirstOrDefault()?.Name == "Result";
     }
 }

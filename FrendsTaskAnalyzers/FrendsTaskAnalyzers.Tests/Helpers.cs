@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Text.Json.Nodes;
 
@@ -7,6 +6,7 @@ namespace FrendsTaskAnalyzers.Tests;
 public static class Helpers
 {
     public const string TaskMetadataFileName = "FrendsTaskMetadata.json";
+
     public static string CreateMetadataJson(params string[] taskMethods)
     {
         var tasks = taskMethods
@@ -14,9 +14,4 @@ public static class Helpers
             .ToArray<JsonNode?>();
         return new JsonObject { ["Tasks"] = new JsonArray(tasks) }.ToJsonString();
     }
-}
-
-public class CategoryAttribute : Attribute
-{
-    public CategoryAttribute(string name) { }
 }
