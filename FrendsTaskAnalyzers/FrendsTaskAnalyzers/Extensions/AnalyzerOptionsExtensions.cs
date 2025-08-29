@@ -19,7 +19,9 @@ public static class AnalyzerOptionsExtensions
     private const string TaskMethodsKey = $"{KeyPrefix}.task_methods";
 
     public static IImmutableList<TaskMethod>? GetTaskMethods(
-        this AnalyzerOptions options, SyntaxTree tree, CancellationToken cancellationToken)
+        this AnalyzerOptions options,
+        SyntaxTree tree,
+        CancellationToken cancellationToken)
     {
         options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(RootNamespaceKey, out var rootNamespace);
 
@@ -33,7 +35,9 @@ public static class AnalyzerOptionsExtensions
     }
 
     private static IImmutableList<TaskMethod>? TaskMethodsFromJsonFile(
-        AnalyzerOptions options, string? rootNamespace, CancellationToken cancellationToken)
+        AnalyzerOptions options,
+        string? rootNamespace,
+        CancellationToken cancellationToken)
     {
         var text = options.AdditionalFiles
             .FirstOrDefault(f => Path.GetFileName(f.Path) == TaskMetadataFileName)
@@ -54,7 +58,9 @@ public static class AnalyzerOptionsExtensions
     }
 
     private static IImmutableList<TaskMethod>? TaskMethodsFromConfig(
-        AnalyzerOptions options, string? rootNamespace, SyntaxTree tree)
+        AnalyzerOptions options,
+        string? rootNamespace,
+        SyntaxTree tree)
     {
         var config = options.AnalyzerConfigOptionsProvider.GetOptions(tree);
 
@@ -64,8 +70,9 @@ public static class AnalyzerOptionsExtensions
         return ParseTaskMethods(taskMethods.Split(';'), rootNamespace);
     }
 
-    private static IImmutableList<TaskMethod>
-        ParseTaskMethods(IEnumerable<string?> taskMethods, string? rootNamespace) => taskMethods
+    private static IImmutableList<TaskMethod> ParseTaskMethods(
+        IEnumerable<string?> taskMethods,
+        string? rootNamespace) => taskMethods
         .Select(taskMethod =>
             !string.IsNullOrWhiteSpace(taskMethod) ? TaskMethod.Parse(taskMethod!, rootNamespace) : null)
         .Where(t => t != null)

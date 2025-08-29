@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.ParameterAnalyzer;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
@@ -11,7 +11,7 @@ public class Tests
     [Theory, MemberData(nameof(TestCases.Data), MemberType = typeof(TestCases))]
     public async Task ShouldReportExpectedDiagnostics(TestCase testCase)
     {
-        var analyzerTest = new CSharpAnalyzerTest<ParametersAnalyzer, DefaultVerifier>
+        var analyzerTest = new CSharpAnalyzerTest<Analyzers.ParameterAnalyzer.ParameterAnalyzer, DefaultVerifier>
         {
             TestCode = testCase.Code,
             TestState = { AdditionalFiles = { (Helpers.TaskMetadataFileName, testCase.MetadataJson) } }

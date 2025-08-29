@@ -8,26 +8,28 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Frends.Definitions;
 
 namespace Frends.Echo.Execute
 {
     public class Echo
     {
-        [Category("HTTP")]
-        public Task<Result> Execute(
-            [PropertyTab] Input input,
-            Options options,
-            [PropertyTab] Destination destination,
-            CancellationToken token)
+        public static Task<Result> Execute(Options options)
         {
             throw new NotImplementedException();
         }
     }
 
-    public class Options { }
-    public class Result
+    public class Options
+    {
+        public string Test { get; set; }
+    }
+
+    public class Destination
     {
     }
-    public class Destination { }
-    public class Input { }
+
+    public class Input
+    {
+    }
 }

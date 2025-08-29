@@ -1,0 +1,3 @@
+[*.cs]
+dotnet_diagnostic.FT0007.severity = warning
+dotnet_diagnostic.FT0009.severity = warning

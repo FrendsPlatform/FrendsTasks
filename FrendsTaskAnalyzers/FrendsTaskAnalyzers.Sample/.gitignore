@@ -2,6 +2,7 @@
 *
 
 # Include only shared files
+!.editorconfig
 !.gitignore
 !nuget.config
 !FrendsTaskAnalyzers.Sample.csproj

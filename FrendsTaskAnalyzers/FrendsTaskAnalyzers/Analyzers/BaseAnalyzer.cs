@@ -9,11 +9,6 @@ namespace FrendsTaskAnalyzers.Analyzers;
 
 public abstract class BaseAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        InitializeSupportedDiagnostics(AdditionalDiagnostics);
-
-    protected abstract ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics { get; }
-
     protected IImmutableList<TaskMethod>? TaskMethods;
 
     public override void Initialize(AnalysisContext context)
@@ -21,10 +16,10 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
 
-        context.RegisterCompilationAction(compilationContext =>
+        context.RegisterCompilationAction(ctx =>
         {
-            TaskMethods = compilationContext.Compilation.SyntaxTrees
-                .Select(tree => compilationContext.Options.GetTaskMethods(tree, compilationContext.CancellationToken))
+            TaskMethods = ctx.Compilation.SyntaxTrees
+                .Select(tree => ctx.Options.GetTaskMethods(tree, ctx.CancellationToken))
                 .FirstOrDefault(methods => methods?.Any() == true);
         });
 
@@ -32,11 +27,4 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
     }
 
     protected abstract void RegisterActions(CompilationStartAnalysisContext context);
-
-    private static ImmutableArray<DiagnosticDescriptor> InitializeSupportedDiagnostics(
-        ImmutableArray<DiagnosticDescriptor> additionalDiagnostics)
-    {
-        ImmutableArray<DiagnosticDescriptor> baseDiagnostics = [];
-        return baseDiagnostics.AddRange(additionalDiagnostics);
-    }
 }

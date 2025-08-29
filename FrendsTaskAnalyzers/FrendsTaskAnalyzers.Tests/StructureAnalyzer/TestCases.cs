@@ -29,7 +29,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ClassShouldBeStaticRule).WithLocation(0).WithArguments("Test")
+                    new DiagnosticResult(StructureRules.ClassShouldBeStatic).WithLocation(0).WithArguments("Test")
                 ]
             },
 
@@ -72,7 +72,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.MethodShouldBeStaticRule)
+                    new DiagnosticResult(StructureRules.MethodShouldBeStatic)
                         .WithLocation(0).WithArguments("Execute")
                 ]
             },
@@ -97,7 +97,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.MethodOverloadNotAllowedRule)
+                    new DiagnosticResult(StructureRules.MethodOverloadNotAllowed)
                         .WithLocation(0).WithArguments("Execute")
                 ]
             },
@@ -121,7 +121,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ReturnTypeIncorrectRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeIncorrect)
                         .WithLocation(0).WithArguments("Result or Task<Result>")
                 ]
             },
@@ -133,6 +133,7 @@ public static class TestCases
                 // language=C#
                 Code =
                     """
+                    using System.Threading.Tasks;
                     namespace Frends.Test.Execute;
                     public static class Test
                     {
@@ -164,9 +165,9 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(0).WithArguments("Error"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(0).WithArguments("Success")
                 ]
             },
@@ -196,7 +197,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(0).WithArguments("Data")
                 ]
             },
@@ -224,9 +225,9 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(0).WithArguments("Body"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(0).WithArguments("StatusCode")
                 ]
             },
@@ -250,21 +251,21 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(StructureRules.ClassShouldBeStaticRule)
+                    new DiagnosticResult(StructureRules.ClassShouldBeStatic)
                         .WithLocation(0).WithArguments("Test"),
-                    new DiagnosticResult(StructureRules.MethodShouldBeStaticRule)
+                    new DiagnosticResult(StructureRules.MethodShouldBeStatic)
                         .WithLocation(1).WithArguments("Execute"),
-                    new DiagnosticResult(StructureRules.MethodShouldBeStaticRule)
+                    new DiagnosticResult(StructureRules.MethodShouldBeStatic)
                         .WithLocation(2).WithArguments("Execute"),
-                    new DiagnosticResult(StructureRules.MethodOverloadNotAllowedRule)
+                    new DiagnosticResult(StructureRules.MethodOverloadNotAllowed)
                         .WithLocation(1).WithArguments("Execute"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(3).WithArguments("Success"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(3).WithArguments("Error"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(4).WithArguments("Success"),
-                    new DiagnosticResult(StructureRules.ReturnTypeMissingPropertiesRule)
+                    new DiagnosticResult(StructureRules.ReturnTypeMissingProperties)
                         .WithLocation(4).WithArguments("Error"),
                 ]
             }

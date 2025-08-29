@@ -13,13 +13,13 @@ public static class MethodSymbolExtensions
 
     public static string ToReferenceString(this IMethodSymbol symbol) => symbol.ToDisplayString(ReferenceFormat);
 
-    public static TaskCategory GetCategory(this IMethodSymbol symbol, Compilation compilation)
+    public static TaskCategory GetTaskCategory(this IMethodSymbol symbol, Compilation compilation)
     {
         var categoryAttributeSymbol = compilation.GetTypeByMetadataName("System.ComponentModel.CategoryAttribute");
         if (categoryAttributeSymbol is null) return TaskCategory.Generic;
 
         var attribute = symbol.GetAttributes().FirstOrDefault(a =>
-            a.AttributeClass?.Equals(categoryAttributeSymbol, SymbolEqualityComparer.Default) == true);
+            SymbolEqualityComparer.Default.Equals(a.AttributeClass, categoryAttributeSymbol));
 
         var category = (attribute?.ConstructorArguments.FirstOrDefault().Value as string)?.ToLowerInvariant();
 

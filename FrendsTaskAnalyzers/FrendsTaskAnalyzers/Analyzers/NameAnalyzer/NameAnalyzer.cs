@@ -11,7 +11,7 @@ namespace FrendsTaskAnalyzers.Analyzers.NameAnalyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class NameAnalyzer : BaseAnalyzer
 {
-    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         [NameRules.NamespaceFormat, NameRules.TypeName, NameRules.MethodName];
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
@@ -25,10 +25,10 @@ public class NameAnalyzer : BaseAnalyzer
         context.RegisterSymbolAction(symbolContext => AnalyzeMethods(symbolContext, taskMethods),
             SymbolKind.Method);
 
-        context.RegisterSymbolAction(symbolContext => AnalyzeNamedType(symbolContext, taskMethods),
+        context.RegisterSymbolAction(symbolContext => AnalyzeNamedTypes(symbolContext, taskMethods),
             SymbolKind.NamedType);
 
-        context.RegisterSymbolAction(symbolContext => AnalyzeNamespace(symbolContext, taskMethods),
+        context.RegisterSymbolAction(symbolContext => AnalyzeNamespaces(symbolContext, taskMethods),
             SymbolKind.Namespace);
     }
 
@@ -39,13 +39,10 @@ public class NameAnalyzer : BaseAnalyzer
         var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
         if (taskMethod?.Action is not { } action || symbol.Name == action) return;
 
-        foreach (var location in symbol.Locations)
-        {
-            context.ReportDiagnostic(Diagnostic.Create(NameRules.MethodName, location, action));
-        }
+        context.ReportDiagnostic(Diagnostic.Create(NameRules.MethodName, symbol.Locations.FirstOrDefault(), action));
     }
 
-    private static void AnalyzeNamedType(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
+    private static void AnalyzeNamedTypes(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
     {
         if (context.Symbol is not INamedTypeSymbol symbol) return;
 
@@ -53,13 +50,10 @@ public class NameAnalyzer : BaseAnalyzer
             symbol.GetMembers().OfType<IMethodSymbol>().Any(m => t.Path == m.ToReferenceString()));
         if (taskMethod?.System is not { } system || symbol.Name == system) return;
 
-        foreach (var location in symbol.Locations)
-        {
-            context.ReportDiagnostic(Diagnostic.Create(NameRules.TypeName, location, system));
-        }
+        context.ReportDiagnostic(Diagnostic.Create(NameRules.TypeName, symbol.Locations.FirstOrDefault(), system));
     }
 
-    private static void AnalyzeNamespace(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
+    private static void AnalyzeNamespaces(SymbolAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
     {
         if (context.Symbol is not INamespaceSymbol symbol) return;
 
