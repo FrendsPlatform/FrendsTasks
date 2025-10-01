@@ -33,7 +33,7 @@
  FT0010  | Structure | Warning  | StructureAnalyzer 
  FT0011  | Structure | Warning  | StructureAnalyzer 
 
- ## Release 1.5.0
+## Release 1.5.0
 
 ### New Rules
 

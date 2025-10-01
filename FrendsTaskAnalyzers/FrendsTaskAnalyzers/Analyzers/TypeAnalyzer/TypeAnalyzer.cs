@@ -241,16 +241,19 @@ public class TypeAnalyzer : BaseAnalyzer
 
             case INamedTypeSymbol namedType:
                 {
-                    if (!IsAllowedType(namedType, taskNamespace))
+                    var ns = namedType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
+                    var isCollection = namedType.IsGenericType &&
+                                       (ns.StartsWith("System.Collections", StringComparison.Ordinal) ||
+                                        ns.StartsWith("System.Collections.Immutable", StringComparison.Ordinal));
+
+                    if (!isCollection && !IsAllowedType(namedType, taskNamespace))
                         return false;
 
                     if (namedType.IsGenericType)
                     {
                         foreach (var typeArg in namedType.TypeArguments)
-                        {
                             if (!IsPropertyTypeAllowed(typeArg, taskNamespace))
                                 return false;
-                        }
                     }
                     return true;
                 }
