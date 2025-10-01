@@ -5,8 +5,11 @@
 // ReSharper disable UnusedType.Global
 
 using System;
+using System.ComponentModel;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Frends.Echo.Execute.Definitions;
+using Newtonsoft.Json.Linq;
 
 namespace Frends.Echo.Execute
 {
@@ -21,10 +24,6 @@ namespace Frends.Echo.Execute
 
 namespace Frends.Echo.Execute.Definitions
 {
-    using System.Net.Http;
-    using System.ComponentModel;
-    using Newtonsoft.Json.Linq;
-
     public class Options
     {
         public string? Test { get; set; }
