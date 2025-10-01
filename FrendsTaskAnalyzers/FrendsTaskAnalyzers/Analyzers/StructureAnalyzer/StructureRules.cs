@@ -16,7 +16,7 @@ public static class StructureRules
             "Task method must be static",
             "Task method '{0}' must be static",
             "Structure",
-            DiagnosticSeverity.Error, true);
+            DiagnosticSeverity.Warning, true);
 
     public static readonly DiagnosticDescriptor MethodOverloadNotAllowed =
         new("FT0006",

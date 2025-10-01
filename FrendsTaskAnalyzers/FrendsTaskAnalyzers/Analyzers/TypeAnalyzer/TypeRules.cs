@@ -23,7 +23,8 @@ public static class TypeRules
     public static readonly DiagnosticDescriptor ExposedThirdPartyType =
         new("FT0017",
             "Task exposes third-party types",
-            "",
+            "Property '{0}' exposes a third-party type",
             "Types",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Warning,
+            true);
 }

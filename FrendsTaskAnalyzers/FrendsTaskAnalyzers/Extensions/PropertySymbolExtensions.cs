@@ -7,20 +7,36 @@ namespace FrendsTaskAnalyzers.Extensions;
 
 public static class PropertySymbolExtensions
 {
-    public static (object?, Location)? GetDefaultValue(this IPropertySymbol symbol, Compilation compilation,
+    public static (object? Value, Location Location)? GetDefaultValue(
+        this IPropertySymbol symbol,
+        Compilation compilation,
         CancellationToken cancellationToken)
     {
-        var defaultValueAttributeSymbol =
-            compilation.GetTypeByMetadataName("System.ComponentModel.DefaultValueAttribute");
+        if (symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken) is PropertyDeclarationSyntax propDecl)
+        {
+            if (propDecl.Initializer?.Value is ExpressionSyntax expr)
+            {
+                var model = compilation.GetSemanticModel(propDecl.SyntaxTree);
+                var constValue = model.GetConstantValue(expr, cancellationToken);
+                if (constValue.HasValue)
+                {
+                    return (constValue.Value, expr.GetLocation());
+                }
+            }
+        }
 
+        var defaultValueAttr = compilation.GetTypeByMetadataName("System.ComponentModel.DefaultValueAttribute");
         var attribute = symbol.GetAttributes().FirstOrDefault(a =>
-            SymbolEqualityComparer.Default.Equals(a.AttributeClass, defaultValueAttributeSymbol));
+            SymbolEqualityComparer.Default.Equals(a.AttributeClass, defaultValueAttr));
 
-        var syntax = attribute?.ApplicationSyntaxReference?.GetSyntax(cancellationToken) as AttributeSyntax;
-        var location = syntax?.ArgumentList?.Arguments.FirstOrDefault()?.Expression.GetLocation() ??
-                       syntax?.Name.GetLocation();
-        if (location is null) return null;
+        if (attribute is not null)
+        {
+            var location = attribute.ApplicationSyntaxReference?.GetSyntax(cancellationToken)?.GetLocation();
+            var value = attribute.ConstructorArguments.FirstOrDefault().Value;
+            if (location is not null)
+                return (value, location);
+        }
 
-        return (attribute?.ConstructorArguments.FirstOrDefault().Value, location);
+        return null;
     }
 }

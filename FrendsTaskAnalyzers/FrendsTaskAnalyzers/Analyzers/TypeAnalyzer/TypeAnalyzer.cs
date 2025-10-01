@@ -1,9 +1,7 @@
-using System.Collections.Concurrent;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FrendsTaskAnalyzers.Extensions;
 using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
@@ -32,25 +30,44 @@ public class TypeAnalyzer : BaseAnalyzer
         var types = FindTypesForAnalysis(context.Compilation, taskMethods);
 
         context.RegisterSymbolAction(ctx => AnalyzeNamedTypes(ctx, types), SymbolKind.NamedType);
-        // context.RegisterSymbolAction(ctx => AnalyzeMethods(ctx, TaskMethods), SymbolKind.Method);
     }
 
     private static ImmutableDictionary<INamedTypeSymbol, ImmutableArray<(TaskMethod TaskMethod, TaskCategory Category)>>
-        FindTypesForAnalysis(Compilation compilation, IImmutableList<TaskMethod> taskMethods) =>
-        compilation.GlobalNamespace
-            .GetMembers()
-            .OfType<INamedTypeSymbol>()
+        FindTypesForAnalysis(Compilation compilation, IImmutableList<TaskMethod> taskMethods)
+    {
+        var allNamedTypes = GetAllNamedTypesFromSource(compilation).ToList();
+
+        var allMethodSymbols = allNamedTypes
             .SelectMany(t => t.GetMembers().OfType<IMethodSymbol>())
+            .ToList();
+
+        var query = allMethodSymbols
             .SelectMany(m =>
             {
-                var taskMethod = taskMethods.FirstOrDefault(t => t.Path == m.ToReferenceString());
-                if (taskMethod is null) return [];
+                var taskMethod = taskMethods.FirstOrDefault(t =>
+                    m.ToReferenceString().StartsWith(t.Path, StringComparison.Ordinal));
+
+                if (taskMethod is null)
+                    return Enumerable.Empty<(INamedTypeSymbol Type, TaskMethod TaskMethod, TaskCategory Category)>();
 
                 var taskCategory = m.GetTaskCategory(compilation);
 
                 var types = m.Parameters.Select(p => p.Type).OfType<INamedTypeSymbol>().ToImmutableArray();
+
+                // Handle Task<T>
                 if (m.ReturnType is INamedTypeSymbol returnTypeSymbol)
+                {
                     types = types.Add(returnTypeSymbol);
+
+                    if (returnTypeSymbol.IsGenericType &&
+                        returnTypeSymbol.ConstructedFrom.ToDisplayString() == "System.Threading.Tasks.Task<TResult>")
+                    {
+                        if (returnTypeSymbol.TypeArguments.FirstOrDefault() is INamedTypeSymbol innerType)
+                        {
+                            types = types.Add(innerType);
+                        }
+                    }
+                }
 
                 return types.Select(t => (Type: t, TaskMethod: taskMethod, Category: taskCategory));
             })
@@ -59,6 +76,9 @@ public class TypeAnalyzer : BaseAnalyzer
                 g => g.Key,
                 g => g.Select(x => (x.TaskMethod, x.Category)).ToImmutableArray(),
                 NamedTypeSymbolEqualityComparer.Instance);
+
+        return query;
+    }
 
     private static void AnalyzeNamedTypes(
         SymbolAnalysisContext context,
@@ -70,43 +90,7 @@ public class TypeAnalyzer : BaseAnalyzer
         foreach (var (taskMethod, category) in array)
         {
             CheckRequiredProperties(context, symbol, taskMethod, category);
-        }
-    }
-
-    private static void AnalyzeMethods(
-        SymbolAnalysisContext context,
-        IImmutableList<TaskMethod> taskMethods,
-        ConcurrentDictionary<INamedTypeSymbol, ImmutableArray<(TaskCategory, TaskMethod)>> types)
-    {
-        if (context.Symbol is not IMethodSymbol symbol) return;
-
-        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == symbol.ToReferenceString());
-        if (taskMethod is null) return;
-
-        var taskCategory = symbol.GetTaskCategory(context.Compilation);
-
-        var parameterTypeSymbols = symbol.Parameters.Select(p => p.Type).OfType<INamedTypeSymbol>();
-
-        foreach (var parameterTypeSymbol in parameterTypeSymbols)
-        {
-            types.AddOrUpdate(
-                parameterTypeSymbol,
-                _ => [(taskCategory, taskMethod)],
-                (_, array) => array.Add((taskCategory, taskMethod)));
-        }
-
-        INamedTypeSymbol? resultTypeSymbol = null;
-        if (symbol.ReturnType.IsValidTaskReturnType(context.Compilation) &&
-            symbol.ReturnType is INamedTypeSymbol returnTypeSymbol)
-        {
-            if (returnTypeSymbol is { IsGenericType: true })
-            {
-                resultTypeSymbol = returnTypeSymbol.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
-            }
-            else
-            {
-                resultTypeSymbol = returnTypeSymbol;
-            }
+            CheckExposedThirdPartyTypes(context, symbol, taskMethod);
         }
     }
 
@@ -150,26 +134,36 @@ public class TypeAnalyzer : BaseAnalyzer
         }
     }
 
-    private static void CheckDefaultValue(
-        SymbolAnalysisContext context,
-        IPropertySymbol property)
+    private static void CheckDefaultValue(SymbolAnalysisContext context, IPropertySymbol property)
     {
         var tuple = property.GetDefaultValue(context.Compilation, context.CancellationToken);
         if (tuple is null) return;
-        var (value, location) = tuple.Value;
+        var (value, _) = tuple.Value;
 
+        var diagnosticLocation = property.DeclaringSyntaxReferences
+            .FirstOrDefault()
+            ?.GetSyntax(context.CancellationToken) is PropertyDeclarationSyntax propSyntax
+            ? propSyntax.Identifier.GetLocation()
+            : property.Locations.FirstOrDefault();
 
         switch (property.Name)
         {
             case "ThrowErrorOnFailure":
                 if (value is true) break;
-                context.ReportDiagnostic(Diagnostic.Create(TypeRules.IncorrectPropertyDefaultValue, location,
-                    property.Name, "true"));
+                context.ReportDiagnostic(Diagnostic.Create(
+                    TypeRules.IncorrectPropertyDefaultValue,
+                    diagnosticLocation,
+                    property.Name,
+                    "true"));
                 break;
+
             case "ErrorMessageOnFailure":
                 if (value is "") break;
-                context.ReportDiagnostic(Diagnostic.Create(TypeRules.IncorrectPropertyDefaultValue, location,
-                    property.Name, "\"\""));
+                context.ReportDiagnostic(Diagnostic.Create(
+                    TypeRules.IncorrectPropertyDefaultValue,
+                    diagnosticLocation,
+                    property.Name,
+                    "\"\""));
                 break;
         }
     }
@@ -183,5 +177,110 @@ public class TypeAnalyzer : BaseAnalyzer
 
         public int GetHashCode(INamedTypeSymbol obj) =>
             SymbolEqualityComparer.Default.GetHashCode(obj);
+    }
+
+    private static void CheckExposedThirdPartyTypes(
+    SymbolAnalysisContext context,
+    INamedTypeSymbol symbol,
+    TaskMethod taskMethod)
+    {
+        var taskNamespace = GetNamespacePrefix(taskMethod.Path);
+
+        if (!IsAllowedType(symbol, taskNamespace))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                TypeRules.ExposedThirdPartyType,
+                symbol.Locations.FirstOrDefault(),
+                symbol.Name));
+        }
+
+        foreach (var property in symbol.GetMembers().OfType<IPropertySymbol>())
+        {
+            if (!IsPropertyTypeAllowed(property.Type, taskNamespace))
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    TypeRules.ExposedThirdPartyType,
+                    property.Locations.FirstOrDefault(),
+                    property.Name));
+            }
+        }
+    }
+
+    private static bool IsAllowedType(INamedTypeSymbol type, string taskNamespace)
+    {
+        if (type.ContainingNamespace == null)
+            return true;
+
+        var ns = type.ContainingNamespace.ToDisplayString();
+
+        // Allowed: in same namespace prefix as task method
+        if (ns.StartsWith(taskNamespace, StringComparison.Ordinal))
+            return true;
+
+        // Allowed: primitives, string, object, arrays
+        if (type.SpecialType != SpecialType.None)
+            return true;
+
+        // Allowed: Task / Task<T>
+        if (ns == "System.Threading.Tasks" && type.Name == "Task")
+            return true;
+
+        // Allowed: JToken adn JObject (explicit whitelist)
+        if (ns == "Newtonsoft.Json.Linq" && (type.Name == "JToken" || type.Name == "JObject"))
+            return true;
+
+        return false;
+    }
+
+    private static bool IsPropertyTypeAllowed(ITypeSymbol type, string taskNamespace)
+    {
+        switch (type)
+        {
+            case IArrayTypeSymbol arrayType:
+                return IsPropertyTypeAllowed(arrayType.ElementType, taskNamespace);
+
+            case INamedTypeSymbol namedType:
+                {
+                    if (!IsAllowedType(namedType, taskNamespace))
+                        return false;
+
+                    if (namedType.IsGenericType)
+                    {
+                        foreach (var typeArg in namedType.TypeArguments)
+                        {
+                            if (!IsPropertyTypeAllowed(typeArg, taskNamespace))
+                                return false;
+                        }
+                    }
+                    return true;
+                }
+            default:
+                return true;
+        }
+    }
+
+    private static string GetNamespacePrefix(string taskPath)
+    {
+        var parts = taskPath.Split('.');
+        if (parts.Length > 2)
+            return string.Join(".", parts.Take(parts.Length - 2));
+        return taskPath;
+    }
+
+    #pragma warning disable RS1030
+    private static IEnumerable<INamedTypeSymbol> GetAllNamedTypesFromSource(Compilation compilation)
+    {
+        foreach (var tree in compilation.SyntaxTrees)
+        {
+            var model = compilation.GetSemanticModel(tree);
+            var root = tree.GetRoot();
+
+            foreach (var node in root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax>())
+            {
+                var symbol = model.GetDeclaredSymbol(node) as INamedTypeSymbol;
+                if (symbol != null)
+                    yield return symbol;
+            }
+        }
     }
 }

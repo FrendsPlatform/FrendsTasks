@@ -5,31 +5,47 @@
 // ReSharper disable UnusedType.Global
 
 using System;
-using System.ComponentModel;
-using System.Threading;
+using Frends.Echo.Execute.Definitions;
 using System.Threading.Tasks;
-using Frends.Definitions;
 
 namespace Frends.Echo.Execute
 {
     public class Echo
     {
-        public static Task<Result> Execute(Options options)
+        public static Task<Result> Execute(Options options, Input input)
         {
             throw new NotImplementedException();
         }
     }
+}
+
+namespace Frends.Echo.Execute.Definitions
+{
+    using System.ComponentModel;
+    using Newtonsoft.Json.Linq;
+    using System.Net.Http;
 
     public class Options
     {
-        public string Test { get; set; }
-    }
+        public string? Test { get; set; }
 
-    public class Destination
-    {
+        [DefaultValue(false)]
+        public bool ThrowErrorOnFailure { get; set; }
+
+        public HttpClient Client { get; set; }
+
+        public JObject JsonData { get; set; }
     }
 
     public class Input
     {
+        public string Message { get; set; }
+    }
+
+    public class Result
+    {
+        public string Output { get; set; }
+
+        public JToken Token { get; set; }
     }
 }

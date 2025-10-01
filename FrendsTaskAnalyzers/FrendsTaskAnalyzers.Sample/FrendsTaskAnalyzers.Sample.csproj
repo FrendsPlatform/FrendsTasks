@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
         <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
 
