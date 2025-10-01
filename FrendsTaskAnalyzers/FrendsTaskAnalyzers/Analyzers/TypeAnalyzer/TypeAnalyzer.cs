@@ -267,7 +267,7 @@ public class TypeAnalyzer : BaseAnalyzer
         return taskPath;
     }
 
-    #pragma warning disable RS1030
+#pragma warning disable RS1030
     private static IEnumerable<INamedTypeSymbol> GetAllNamedTypesFromSource(Compilation compilation)
     {
         foreach (var tree in compilation.SyntaxTrees)

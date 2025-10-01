@@ -247,7 +247,7 @@ public static class TestCases
             },
 
             new TestCase
-            {   
+            {
                 Aid = 8,
                 MetadataJson = Helpers.CreateMetadataJson("Frends.Echo.Execute.Echo.Execute"),
                 Code =
