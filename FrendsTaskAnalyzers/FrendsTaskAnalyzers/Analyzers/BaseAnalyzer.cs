@@ -15,14 +15,6 @@ public abstract class BaseAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-
-        context.RegisterCompilationAction(ctx =>
-        {
-            TaskMethods = ctx.Compilation.SyntaxTrees
-                .Select(tree => ctx.Options.GetTaskMethods(tree, ctx.CancellationToken))
-                .FirstOrDefault(methods => methods?.Any() == true);
-        });
-
         context.RegisterCompilationStartAction(RegisterActions);
     }
 

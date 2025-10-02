@@ -10,11 +10,6 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
         <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
-
-<!--        <PackageReference Include="FrendsTaskAnalyzers" Version="$(FrendsTaskAnalyzersVersion)">-->
-<!--            <PrivateAssets>all</PrivateAssets>-->
-<!--            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>-->
-<!--        </PackageReference>-->
      </ItemGroup>
 
 </Project>

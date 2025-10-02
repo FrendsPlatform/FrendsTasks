@@ -20,14 +20,12 @@ public class ConfigurationAnalyzer : BaseAnalyzer
 
     private void AnalyzeCompilationEnd(CompilationAnalysisContext context)
     {
-        // TODO: Ensure consistent behavior with normal reading of TaskMethods. No need to assign to TaskMethods.
-
         var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        TaskMethods = tree is not null
+        var taskMethods = tree is not null
             ? context.Options.GetTaskMethods(tree, context.CancellationToken)
             : null;
 
-        if (TaskMethods is null || !TaskMethods.Any())
+        if (taskMethods is null || !taskMethods.Any())
         {
             context.ReportDiagnostic(Diagnostic.Create(ConfigurationRules.ConfigurationMissing, Location.None));
         }

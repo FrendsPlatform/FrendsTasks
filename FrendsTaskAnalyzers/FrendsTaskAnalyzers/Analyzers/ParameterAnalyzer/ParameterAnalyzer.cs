@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using FrendsTaskAnalyzers.Extensions;
+using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -29,15 +30,25 @@ public class ParameterAnalyzer : BaseAnalyzer
     ];
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
-        => context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
+    {
+        var syntaxTree = context.Compilation.SyntaxTrees.FirstOrDefault();
+        if (syntaxTree is null) return;
 
-    private void AnalyzeParameters(SyntaxNodeAnalysisContext context)
+        var taskMethods = context.Options.GetTaskMethods(syntaxTree, context.CancellationToken);
+        if (taskMethods is null) return;
+
+        context.RegisterSyntaxNodeAction(
+            syntaxContext => AnalyzeParameters(syntaxContext, taskMethods),
+            SyntaxKind.MethodDeclaration);
+    }
+
+    private void AnalyzeParameters(SyntaxNodeAnalysisContext context, IImmutableList<TaskMethod> taskMethods)
     {
         if (context.Node is not MethodDeclarationSyntax methodSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(methodSyntax);
         if (symbol is null) return;
 
-        if (TaskMethods?.Any(t => t.Path == symbol.ToReferenceString()) != true) return;
+        if (!taskMethods.Any(t => t.Path == symbol.ToReferenceString())) return;
 
         var parameters = symbol.Parameters.ToArray();
 

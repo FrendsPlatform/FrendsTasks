@@ -22,15 +22,6 @@ public class TaskMethod
 
     public string? Action { get; }
 
-    public (string From, string To)? GetConverterTypes()
-    {
-        var target = Action ?? Path.Split('.').Last();
-        var match = Regex.Match(target, @"Convert(\w+)To(\w+)",
-            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
-        return match.Success ? (match.Groups[1].Value, match.Groups[2].Value) : null;
-    }
-
     public static TaskMethod Parse(string path, string? rootNamespace)
     {
         var parts = path.Split('.');

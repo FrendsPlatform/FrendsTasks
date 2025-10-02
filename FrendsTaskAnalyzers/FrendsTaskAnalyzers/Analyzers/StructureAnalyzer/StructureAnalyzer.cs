@@ -24,19 +24,23 @@ public class StructureAnalyzer : BaseAnalyzer
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
+        var syntaxTree = context.Compilation.SyntaxTrees.FirstOrDefault();
+        if (syntaxTree is null) return;
+
+        var taskMethods = context.Options.GetTaskMethods(syntaxTree, context.CancellationToken);
+        if (taskMethods is null) return;
+
         var reportedDiagnostics = new HashSet<(ISymbol Symbol, string DiagnosticId)>();
         var reportedMissingProperties = new HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)>();
 
         context.RegisterSymbolAction(ctx =>
         {
-            if (TaskMethods is null) return;
-            AnalyzeMethod(ctx, TaskMethods, reportedDiagnostics, reportedMissingProperties);
+            AnalyzeMethod(ctx, taskMethods, reportedDiagnostics, reportedMissingProperties);
         }, SymbolKind.Method);
 
         context.RegisterSymbolAction(ctx =>
         {
-            if (TaskMethods is null) return;
-            AnalyzeClass(ctx, TaskMethods, reportedDiagnostics);
+            AnalyzeClass(ctx, taskMethods, reportedDiagnostics);
         }, SymbolKind.NamedType);
     }
 
@@ -50,6 +54,7 @@ public class StructureAnalyzer : BaseAnalyzer
         var anyTaskMethod = taskMethods.Any(t => t.Path.Contains(classSymbol.Name));
         if (!anyTaskMethod) return;
 
+        // 1. Class static
         if (!classSymbol.IsStatic)
             ReportOnce(context, StructureRules.ClassShouldBeStatic, classSymbol, reportedDiagnostics,
                 classSymbol.Name);
@@ -67,11 +72,6 @@ public class StructureAnalyzer : BaseAnalyzer
         if (taskMethod is null) return;
 
         var containingClass = methodSymbol.ContainingType;
-
-        // 1. Class static
-        // if (!containingClass.IsStatic)
-        //     ReportOnce(context, StructureRules.ClassShouldBeStatic, containingClass, reportedDiagnostics,
-        //         containingClass.Name);
 
         // 2. Method static
         if (!methodSymbol.IsStatic)
@@ -162,8 +162,6 @@ public class StructureAnalyzer : BaseAnalyzer
                 }
             case TaskCategory.Converter:
                 {
-                    // TODO: This is supposed to be name from the task name if possible:
-                    //  e.g. "Json" for "ConvertXmlToJson"
                     if (!HasProperty("TargetFormat"))
                         ReportMissingProperty(context, methodSymbol, "TargetFormat",
                             reportedMissingProperties);
