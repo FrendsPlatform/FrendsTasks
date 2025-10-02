@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 using FrendsTaskAnalyzers.Extensions;
 using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
@@ -24,34 +23,29 @@ public class StructureAnalyzer : BaseAnalyzer
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
-        var syntaxTree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        if (syntaxTree is null) return;
-
-        var taskMethods = context.Options.GetTaskMethods(syntaxTree, context.CancellationToken);
-        if (taskMethods is null) return;
+        if (!AssignTaskMethods(context)) return;
 
         var reportedDiagnostics = new HashSet<(ISymbol Symbol, string DiagnosticId)>();
         var reportedMissingProperties = new HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)>();
 
         context.RegisterSymbolAction(ctx =>
         {
-            AnalyzeMethod(ctx, taskMethods, reportedDiagnostics, reportedMissingProperties);
+            AnalyzeMethod(ctx, reportedDiagnostics, reportedMissingProperties);
         }, SymbolKind.Method);
 
         context.RegisterSymbolAction(ctx =>
         {
-            AnalyzeClass(ctx, taskMethods, reportedDiagnostics);
+            AnalyzeClass(ctx, reportedDiagnostics);
         }, SymbolKind.NamedType);
     }
 
-    private static void AnalyzeClass(
+    private void AnalyzeClass(
         SymbolAnalysisContext context,
-        IImmutableList<TaskMethod> taskMethods,
         HashSet<(ISymbol Symbol, string DiagnosticId)> reportedDiagnostics)
     {
         if (context.Symbol is not INamedTypeSymbol classSymbol) return;
 
-        var anyTaskMethod = taskMethods.Any(t => t.Path.Contains(classSymbol.Name));
+        var anyTaskMethod = TaskMethods.Any(t => t.Path.Contains(classSymbol.Name));
         if (!anyTaskMethod) return;
 
         // 1. Class static
@@ -60,15 +54,14 @@ public class StructureAnalyzer : BaseAnalyzer
                 classSymbol.Name);
     }
 
-    private static void AnalyzeMethod(
+    private void AnalyzeMethod(
         SymbolAnalysisContext context,
-        IImmutableList<TaskMethod> taskMethods,
         HashSet<(ISymbol Symbol, string DiagnosticId)> reportedDiagnostics,
         HashSet<(ISymbol Symbol, string DiagnosticId, string PropertyName)> reportedMissingProperties)
     {
         if (context.Symbol is not IMethodSymbol methodSymbol) return;
 
-        var taskMethod = taskMethods.FirstOrDefault(t => t.Path == methodSymbol.ToReferenceString());
+        var taskMethod = TaskMethods.FirstOrDefault(t => t.Path == methodSymbol.ToReferenceString());
         if (taskMethod is null) return;
 
         var containingClass = methodSymbol.ContainingType;

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using FrendsTaskAnalyzers.Analyzers.ParameterAnalyzer;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;

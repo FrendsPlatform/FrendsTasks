@@ -21,13 +21,9 @@ public class ConfigurationAnalyzer : BaseAnalyzer
     private void AnalyzeCompilationEnd(CompilationAnalysisContext context)
     {
         var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        var taskMethods = tree is not null
-            ? context.Options.GetTaskMethods(tree, context.CancellationToken)
-            : null;
-
-        if (taskMethods is null || !taskMethods.Any())
-        {
+        if (tree is not null)
+            TaskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken) ?? [];
+        if (TaskMethods.Count == 0)
             context.ReportDiagnostic(Diagnostic.Create(ConfigurationRules.ConfigurationMissing, Location.None));
-        }
     }
 }
