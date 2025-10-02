@@ -6,45 +6,28 @@
 
 using System;
 using System.ComponentModel;
-using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using Frends.Echo.Execute.Definitions;
-using Newtonsoft.Json.Linq;
 
 namespace Frends.Echo.Execute
 {
     public class Echo
     {
-        public static Task<Result> Execute(Options options, Input input)
+        [Category("HTTP")]
+        public Task<Result> Execute(
+            [PropertyTab] Input input,
+            Options options,
+            [PropertyTab] Destination destination,
+            CancellationToken token)
         {
             throw new NotImplementedException();
         }
     }
-}
 
-namespace Frends.Echo.Execute.Definitions
-{
-    public class Options
-    {
-        public string? Test { get; set; }
-
-        [DefaultValue(false)]
-        public bool ThrowErrorOnFailure { get; set; }
-
-        public HttpClient Client { get; set; }
-
-        public JObject JsonData { get; set; }
-    }
-
-    public class Input
-    {
-        public string Message { get; set; }
-    }
-
+    public class Options { }
     public class Result
     {
-        public string Output { get; set; }
-
-        public JToken Token { get; set; }
     }
+    public class Destination { }
+    public class Input { }
 }
