@@ -32,8 +32,8 @@ public static class Echo
 /// <example>bar</example>
 public class Options
 {
-    public bool ThrowErrorOnFailure { get; set; } = true;
-    public string ErrorMessageOnFailure { get; set; } = "";
+    protected bool ThrowErrorOnFailure { get; set; } = true;
+    protected string ErrorMessageOnFailure { get; set; } = "";
 }
 
 /// <summary>foo</summary>
