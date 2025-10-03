@@ -33,7 +33,7 @@ jobs:
       - id: project_version
         name: Extract project version
         run: |
-          version=$(sed -n 's/.*<FrendsTaskAnalyzersVersion>\(.*\)<\/FrendsTaskAnalyzersVersion>.*/\1/p' "$GITHUB_WORKSPACE/Directory.Build.props")
+          version=$(sed -n 's/.*<FrendsTaskAnalyzersVersion>\(.*\)<\/FrendsTaskAnalyzersVersion>.*/\1/p' "$GITHUB_WORKSPACE/FrendsTaskAnalyzers/Directory.Build.props")
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Setup .NET SDK
