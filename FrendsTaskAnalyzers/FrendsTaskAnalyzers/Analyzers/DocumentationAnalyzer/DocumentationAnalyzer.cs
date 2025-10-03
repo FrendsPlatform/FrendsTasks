@@ -11,7 +11,7 @@ namespace FrendsTaskAnalyzers.Analyzers.DocumentationAnalyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class DocumentationAnalyzer : BaseAnalyzer
 {
-    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics { get; } =
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
     [
         DocumentationRules.DocumentationLinkMissing,
         DocumentationRules.UnsupportedTagsUsed,
@@ -24,6 +24,7 @@ public class DocumentationAnalyzer : BaseAnalyzer
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
+        if (!AssignTaskMethods(context)) return;
         context.RegisterSyntaxNodeAction(AnalyzeClassDocumentation, SyntaxKind.ClassDeclaration);
         context.RegisterSyntaxNodeAction(AnalyzeMemberDocumentation, SyntaxKind.MethodDeclaration);
         context.RegisterSyntaxNodeAction(AnalyzeMemberDocumentation, SyntaxKind.PropertyDeclaration);
@@ -32,7 +33,6 @@ public class DocumentationAnalyzer : BaseAnalyzer
     private void AnalyzeClassDocumentation(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not ClassDeclarationSyntax classSyntax) return;
-        if (TaskMethods is null) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
         var isTaskClass = TaskMethods!.Any(t => t.Path.StartsWith(symbol.ToDisplayString()));
@@ -43,7 +43,6 @@ public class DocumentationAnalyzer : BaseAnalyzer
     private void AnalyzeMemberDocumentation(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not MemberDeclarationSyntax memberSyntax) return;
-        if (TaskMethods is null) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(memberSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: context.CancellationToken);
