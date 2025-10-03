@@ -41,8 +41,8 @@ jobs:
       - id: project_version
         name: Extract project version
         run: |
-          file=$(find . -name 'FrendsTaskAnalyzers.csproj' 2>/dev/null | head -n 1)
-          version=$(xmlstarlet sel -t -v '//Version' "$file")
+          file=$(find . -name '../Directory.Build.props' 2>/dev/null | head -n 1)
+          version=$(xmlstarlet sel -t -v '//FrendsTaskAnalyzersVersion' "$file")
           if [ -z "$version" ]; then
             echo "Error: Version number not found in the project file." >&2
             exit 1
