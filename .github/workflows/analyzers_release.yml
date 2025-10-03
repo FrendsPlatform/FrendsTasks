@@ -41,7 +41,7 @@ jobs:
       - id: project_version
         name: Extract project version
         run: |
-          file=$(find . -name '../Directory.Build.props' 2>/dev/null | head -n 1)
+          file="$GITHUB_WORKSPACE/Directory.Build.props"
           version=$(xmlstarlet sel -t -v '//FrendsTaskAnalyzersVersion' "$file")
           if [ -z "$version" ]; then
             echo "Error: Version number not found in the project file." >&2
