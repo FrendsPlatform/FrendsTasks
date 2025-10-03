@@ -8,13 +8,18 @@
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        
+        <!-- Use ProjectReference for local development (Rider) -->
+        
+        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
 
-        <!--<ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />-->
-        <PackageReference Include="FrendsTaskAnalyzers" Version="$(FrendsTaskAnalyzersVersion)">
+        <!-- Use PackageReference for Visual Studio -->
+        
+        <!--<PackageReference Include="FrendsTaskAnalyzers" Version="$(FrendsTaskAnalyzersVersion)">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+        <PackageReference Include="System.Text.Json" Version="8.0.5" />-->
      </ItemGroup>
 
 </Project>
