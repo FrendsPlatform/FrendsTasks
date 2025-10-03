@@ -119,8 +119,10 @@ public static class TestCases
                         /// </summary>
                         /// <example>
                         /// dummy example
+                        /// <see cref="…"></see>
+                        /// <seealso cref="…"></seealso>
                         /// </example>
-                        public class Input;
+                        public class {|#0:Input|};
                         /// <summary>
                         /// dummy summary
                         /// </summary>
@@ -128,13 +130,17 @@ public static class TestCases
                         /// dummy example
                         /// <cref>code example</cref>
                         /// </example>
-                        public void {|#0:Execute|} ([PropertyTab] Input input)
+                        public void {|#1:Execute|} ([PropertyTab] Input input)
                         {
                             throw new NotImplementedException();
                         }
                     }
                     """,
-                ExpectedDiagnostics = [new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0).WithArguments("cref")]
+                ExpectedDiagnostics = [
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0).WithArguments("see", "cref"),
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0).WithArguments("seealso", "cref"),
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(1).WithArguments("cref", "<ANY>")
+                ]
             },
             // Case 4: Required tags missing
             new TestCase

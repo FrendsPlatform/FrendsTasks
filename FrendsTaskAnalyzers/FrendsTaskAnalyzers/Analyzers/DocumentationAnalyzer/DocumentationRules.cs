@@ -15,7 +15,7 @@ public static class DocumentationRules
     public static readonly DiagnosticDescriptor UnsupportedTagsUsed =
         new("FT0013",
             "Documentation is using unsupported tags",
-            "Task documentation should not use tags like cref and similar",
+            "Task documentation should not use tag '{0}' with '{1}' attribute",
             "Documentation",
             DiagnosticSeverity.Warning, true
         );

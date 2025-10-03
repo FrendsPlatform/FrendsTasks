@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
@@ -19,8 +20,11 @@ public class DocumentationAnalyzer : BaseAnalyzer
         DocumentationRules.DocumentationInvalid
     ];
 
-    private static readonly string[] RequiredTags = ["summary", "example"];
-    private static readonly string[] UnsupportedTags = ["cref"];
+    private static readonly ImmutableArray<string> RequiredTags = ["summary", "example"];
+
+    private static readonly ImmutableDictionary<string, string> UnsupportedTagsWithAttributes =
+        new Dictionary<string, string> { ["see"] = "cref", ["seealso"] = "cref", ["cref"] = "<ANY>" }
+            .ToImmutableDictionary();
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
@@ -35,7 +39,8 @@ public class DocumentationAnalyzer : BaseAnalyzer
         if (context.Node is not ClassDeclarationSyntax classSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
-        var isTaskClass = TaskMethods.Any(t => t.Path.StartsWith(symbol.ToDisplayString()));
+        var isTaskClass =
+            TaskMethods.Any(t => t.Path.StartsWith(symbol.ToDisplayString() + "."));
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: context.CancellationToken);
         ValidateXml(context, symbol, xml, checkForDocumentationLink: isTaskClass);
     }
@@ -89,22 +94,28 @@ public class DocumentationAnalyzer : BaseAnalyzer
             }
 
             // Unsupported tags
-            foreach (var tag in UnsupportedTags)
+            foreach (var tagWithAttribute in UnsupportedTagsWithAttributes)
             {
-                if (xDoc.Descendants(tag).Any())
+                bool foundUnsupportedTag =
+                    tagWithAttribute.Value == "<ANY>" && xDoc.Descendants(tagWithAttribute.Key).Any() ||
+                    tagWithAttribute.Value != "<ANY>" && xDoc.Descendants(tagWithAttribute.Key)
+                        .Attributes(tagWithAttribute.Value).Any();
+                if (foundUnsupportedTag)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(
                             DocumentationRules.UnsupportedTagsUsed,
                             symbol.Locations.First(),
-                            tag
+                            tagWithAttribute.Key,
+                            tagWithAttribute.Value
                         )
                     );
                 }
             }
 
             // [Documentation] check only on main class
-            if (checkForDocumentationLink && !xml!.Contains("[Documentation]"))
+            var hasDocLink = xDoc.Descendants().Any(e => e.Value.Contains("[Documentation]"));
+            if (checkForDocumentationLink && !hasDocLink)
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
