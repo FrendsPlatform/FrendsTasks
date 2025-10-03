@@ -32,3 +32,13 @@
  FT0006  | Structure | Warning  | StructureAnalyzer 
  FT0010  | Structure | Warning  | StructureAnalyzer 
  FT0011  | Structure | Warning  | StructureAnalyzer 
+
+ ## Release 1.6.0
+
+### New Rules
+
+ Rule ID | Category  | Severity | Notes             
+---------|-----------|----------|-------------------
+ FT0015  | Types | Warning  | TypeAnalyzer 
+ FT0016  | Types | Warning  | TypeAnalyzer 
+ FT0017  | Types | Warning  | TypeAnalyzer 
