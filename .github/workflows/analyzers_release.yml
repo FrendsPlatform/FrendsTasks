@@ -27,26 +27,13 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Install xmlstarlet
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y xmlstarlet
-        working-directory: '.'
-
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
       - id: project_version
         name: Extract project version
         run: |
-          file="$GITHUB_WORKSPACE/Directory.Build.props"
-          version=$(xmlstarlet sel -t -v '//FrendsTaskAnalyzersVersion' "$file")
-          if [ -z "$version" ]; then
-            echo "Error: Version number not found in the project file." >&2
-            exit 1
-          fi
+          version=$(sed -n 's/.*<FrendsTaskAnalyzersVersion>\(.*\)<\/FrendsTaskAnalyzersVersion>.*/\1/p' "$GITHUB_WORKSPACE/Directory.Build.props")
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Setup .NET SDK
