@@ -22,12 +22,10 @@ public class TypeAnalyzer : BaseAnalyzer
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
     {
-        var taskMethods = context.Compilation.SyntaxTrees
-            .Select(tree => context.Options.GetTaskMethods(tree, context.CancellationToken))
-            .FirstOrDefault(t => t?.Any() == true);
-        if (taskMethods is null) return;
+        if (!AssignTaskMethods(context))
+            return;
 
-        var types = FindTypesForAnalysis(context.Compilation, taskMethods);
+        var types = FindTypesForAnalysis(context.Compilation, TaskMethods);
 
         context.RegisterSymbolAction(ctx => AnalyzeNamedTypes(ctx, types), SymbolKind.NamedType);
     }
@@ -48,7 +46,7 @@ public class TypeAnalyzer : BaseAnalyzer
                     m.ToReferenceString().StartsWith(t.Path, StringComparison.Ordinal));
 
                 if (taskMethod is null)
-                    return Enumerable.Empty<(INamedTypeSymbol Type, TaskMethod TaskMethod, TaskCategory Category)>();
+                    return [];
 
                 var taskCategory = m.GetTaskCategory(compilation);
 
@@ -103,34 +101,20 @@ public class TypeAnalyzer : BaseAnalyzer
         var properties = symbol.GetMembers().OfType<IPropertySymbol>().ToList();
         bool HasProperty(string name) => properties.Any(p => p.Name == name);
 
-        switch (symbol.Name)
+        if (symbol.Name == "Options")
         {
-            case "Input" when category == TaskCategory.Converter:
-                {
-                    var types = taskMethod.GetConverterTypes();
-                    if (types.HasValue && !HasProperty(types.Value.From))
-                        context.ReportDiagnostic(Diagnostic.Create(TypeRules.RequiredPropertyMissing,
-                            symbol.Locations.FirstOrDefault(), types.Value.From));
+            if (!HasProperty("ThrowErrorOnFailure"))
+                context.ReportDiagnostic(Diagnostic.Create(TypeRules.RequiredPropertyMissing,
+                    symbol.Locations.FirstOrDefault(), symbol.Name, "ThrowErrorOnFailure"));
+            else
+                CheckDefaultValue(context, properties.First(p => p.Name == "ThrowErrorOnFailure"));
 
-                    break;
-                }
-            case "Options":
-                {
-                    if (!HasProperty("ThrowErrorOnFailure"))
-                        context.ReportDiagnostic(Diagnostic.Create(TypeRules.RequiredPropertyMissing,
-                            symbol.Locations.FirstOrDefault(), symbol.Name, "ThrowErrorOnFailure"));
-                    else
-                        CheckDefaultValue(context, properties.First(p => p.Name == "ThrowErrorOnFailure"));
-
-                    if (!HasProperty("ErrorMessageOnFailure"))
-                        context.ReportDiagnostic(Diagnostic.Create(TypeRules.RequiredPropertyMissing,
-                            symbol.Locations.FirstOrDefault(), symbol.Name, "ErrorMessageOnFailure"));
-                    else
-                        CheckDefaultValue(
-                            context, properties.First(p => p.Name == "ErrorMessageOnFailure"));
-
-                    break;
-                }
+            if (!HasProperty("ErrorMessageOnFailure"))
+                context.ReportDiagnostic(Diagnostic.Create(TypeRules.RequiredPropertyMissing,
+                    symbol.Locations.FirstOrDefault(), symbol.Name, "ErrorMessageOnFailure"));
+            else
+                CheckDefaultValue(
+                    context, properties.First(p => p.Name == "ErrorMessageOnFailure"));
         }
     }
 
