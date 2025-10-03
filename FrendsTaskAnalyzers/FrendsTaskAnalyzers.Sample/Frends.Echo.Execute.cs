@@ -30,7 +30,11 @@ public static class Echo
 
 /// <summary>foo</summary>
 /// <example>bar</example>
-public class Options;
+public class Options
+{
+    public bool ThrowErrorOnFailure { get; set; } = true;
+    public string ErrorMessageOnFailure { get; set; } = "";
+}
 
 /// <summary>foo</summary>
 /// <example>bar</example>
