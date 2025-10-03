@@ -209,7 +209,7 @@ public class TypeAnalyzer : BaseAnalyzer
         if (ns == "System.Threading.Tasks" && type.Name == "Task")
             return true;
 
-        // Allowed: JToken adn JObject (explicit whitelist)
+        // Allowed: JToken and JObject (explicit whitelist)
         if (ns == "Newtonsoft.Json.Linq" && (type.Name == "JToken" || type.Name == "JObject"))
             return true;
 
