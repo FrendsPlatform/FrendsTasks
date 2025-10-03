@@ -42,3 +42,14 @@
  FT0015  | Types | Warning  | TypeAnalyzer 
  FT0016  | Types | Warning  | TypeAnalyzer 
  FT0017  | Types | Warning  | TypeAnalyzer 
+
+## Release 1.7.0
+
+### New Rules
+
+ Rule ID | Category      | Severity | Notes                 
+---------|---------------|----------|-----------------------
+ FT0012  | Documentation | Warning  | DocumentationAnalyzer 
+ FT0013  | Documentation | Warning  | DocumentationAnalyzer 
+ FT0014  | Documentation | Warning  | DocumentationAnalyzer 
+ FT0021  | Documentation | Warning  | DocumentationAnalyzer 

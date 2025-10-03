@@ -9,7 +9,7 @@ public static class DocumentationRules
             "Documentation link is missing",
             "Missing the task '[Documentation]' link",
             "Documentation",
-            DiagnosticSeverity.Error, true
+            DiagnosticSeverity.Warning, true
         );
 
     public static readonly DiagnosticDescriptor UnsupportedTagsUsed =
@@ -17,7 +17,7 @@ public static class DocumentationRules
             "Documentation is using unsupported tags",
             "Task documentation should not use tags like cref and similar",
             "Documentation",
-            DiagnosticSeverity.Error, true
+            DiagnosticSeverity.Warning, true
         );
 
     public static readonly DiagnosticDescriptor RequiredTagsMissing =
@@ -25,7 +25,7 @@ public static class DocumentationRules
             "Documentation required tags are missing",
             "Missing a required documentation tag '{0}'",
             "Documentation",
-            DiagnosticSeverity.Error, true
+            DiagnosticSeverity.Warning, true
         );
 
     public static readonly DiagnosticDescriptor DocumentationInvalid =
@@ -33,6 +33,6 @@ public static class DocumentationRules
             "Documentation Xml is invalid",
             "Documentation Xml is not parsable",
             "Documentation",
-            DiagnosticSeverity.Error, true
+            DiagnosticSeverity.Warning, true
         );
 }
