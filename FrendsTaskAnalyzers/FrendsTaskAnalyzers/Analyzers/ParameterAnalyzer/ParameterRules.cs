@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 
-namespace FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ParameterAnalyzer;
 
-public static class ParametersRules
+public static class ParameterRules
 {
     public static readonly DiagnosticDescriptor RequiredParameter =
         new("FT0007",

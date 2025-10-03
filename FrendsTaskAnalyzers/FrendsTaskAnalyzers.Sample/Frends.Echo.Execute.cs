@@ -4,30 +4,48 @@
 // ReSharper disable UnusedParameter.Global
 // ReSharper disable UnusedType.Global
 
-using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Frends.Echo.Execute
-{
-    public class Echo
-    {
-        [Category("HTTP")]
-        public Task<Result> Execute(
-            [PropertyTab] Input input,
-            Options options,
-            [PropertyTab] Destination destination,
-            CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }
-    }
+namespace Frends.Echo.Execute;
 
-    public class Options { }
-    public class Result
+/// <summary>
+/// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.Echo.Execute)
+/// </summary>
+/// <example>bar</example>
+public static class Echo
+{
+    /// <summary>foo</summary>
+    /// <example>bar</example>
+    [Category("HTTP")]
+    public static Task<Result> Execute(
+        [PropertyTab] Input input,
+        [PropertyTab] Options options,
+        CancellationToken cancellationToken)
     {
+        return Task.FromResult(new Result());
     }
-    public class Destination { }
-    public class Input { }
 }
+
+/// <summary>foo</summary>
+/// <example>bar</example>
+public class Options;
+
+/// <summary>foo</summary>
+/// <example>bar</example>
+public class Result
+{
+    protected bool Success { get; set; }
+    protected object? Error { get; set; } = null;
+    protected object? Body { get; set; } = null;
+    protected int StatusCode { get; set; }
+}
+
+/// <summary>foo</summary>
+/// <example>bar</example>
+public class Destination;
+
+/// <summary>foo</summary>
+/// <example>bar</example>
+public class Input;

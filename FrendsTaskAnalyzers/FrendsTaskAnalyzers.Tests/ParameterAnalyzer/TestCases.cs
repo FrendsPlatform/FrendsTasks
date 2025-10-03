@@ -1,4 +1,4 @@
-using FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
+using FrendsTaskAnalyzers.Analyzers.ParameterAnalyzer;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 
@@ -59,8 +59,8 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.RequiredParameter).WithLocation(0).WithArguments("Options"),
-                    new DiagnosticResult(ParametersRules.RequiredParameter).WithLocation(0)
+                    new DiagnosticResult(ParameterRules.RequiredParameter).WithLocation(0).WithArguments("Options"),
+                    new DiagnosticResult(ParameterRules.RequiredParameter).WithLocation(0)
                         .WithArguments("CancellationToken")
                 ]
             },
@@ -90,10 +90,10 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.ParameterName).WithLocation(1).WithArguments("input"),
-                    new DiagnosticResult(ParametersRules.ParameterName).WithLocation(2).WithArguments("connection"),
-                    new DiagnosticResult(ParametersRules.ParameterName).WithLocation(3).WithArguments("options"),
-                    new DiagnosticResult(ParametersRules.ParameterName).WithLocation(4)
+                    new DiagnosticResult(ParameterRules.ParameterName).WithLocation(1).WithArguments("input"),
+                    new DiagnosticResult(ParameterRules.ParameterName).WithLocation(2).WithArguments("connection"),
+                    new DiagnosticResult(ParameterRules.ParameterName).WithLocation(3).WithArguments("options"),
+                    new DiagnosticResult(ParameterRules.ParameterName).WithLocation(4)
                         .WithArguments("cancellationToken")
                 ]
             },
@@ -123,9 +123,9 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(1),
-                    new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(2),
-                    new DiagnosticResult(ParametersRules.ParameterPropertyTabAttribute).WithLocation(3)
+                    new DiagnosticResult(ParameterRules.ParameterPropertyTabAttribute).WithLocation(1),
+                    new DiagnosticResult(ParameterRules.ParameterPropertyTabAttribute).WithLocation(2),
+                    new DiagnosticResult(ParameterRules.ParameterPropertyTabAttribute).WithLocation(3)
                 ]
             },
 
@@ -153,9 +153,9 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(0).WithArguments("String"),
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(1).WithArguments("String"),
-                    new DiagnosticResult(ParametersRules.ParameterUnknown).WithLocation(2).WithArguments("String")
+                    new DiagnosticResult(ParameterRules.ParameterUnknown).WithLocation(0).WithArguments("String"),
+                    new DiagnosticResult(ParameterRules.ParameterUnknown).WithLocation(1).WithArguments("String"),
+                    new DiagnosticResult(ParameterRules.ParameterUnknown).WithLocation(2).WithArguments("String")
                 ]
             },
 
@@ -183,7 +183,7 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(ParametersRules.ParametersOrder).WithLocation(0)
+                    new DiagnosticResult(ParameterRules.ParametersOrder).WithLocation(0)
                 ]
             }
         ];

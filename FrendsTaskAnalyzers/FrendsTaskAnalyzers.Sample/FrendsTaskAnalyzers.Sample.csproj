@@ -7,17 +7,9 @@
 
     <ItemGroup>
         <AdditionalFiles Include="FrendsTaskMetadata.json" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 
-<!--        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj"-->
-<!--                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
-    </ItemGroup>
-
-    <ItemGroup Condition="Exists('$(SolutionPackagesPath)')">
-        <PackageReference Include="FrendsTaskAnalyzers" Version="1.4.0"
-                          Condition="$([System.IO.Directory]::GetFiles('$(SolutionPackagesPath)', 'FrendsTaskAnalyzers.*.nupkg').Length) > 0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
+        <ProjectReference Include="..\FrendsTaskAnalyzers\FrendsTaskAnalyzers.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+     </ItemGroup>
 
 </Project>

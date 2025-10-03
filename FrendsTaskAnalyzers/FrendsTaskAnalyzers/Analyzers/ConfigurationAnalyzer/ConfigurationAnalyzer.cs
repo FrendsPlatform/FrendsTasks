@@ -9,26 +9,21 @@ namespace FrendsTaskAnalyzers.Analyzers.ConfigurationAnalyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ConfigurationAnalyzer : BaseAnalyzer
 {
-    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics =>
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         [ConfigurationRules.ConfigurationMissing];
 
 #pragma warning disable RS1013 //other analyzers register more actions within this override method
     protected override void RegisterActions(CompilationStartAnalysisContext context)
-        => context.RegisterCompilationEndAction(AnalyzeTaskMethods);
+        => context.RegisterCompilationEndAction(AnalyzeCompilationEnd);
 #pragma warning restore RS1013
 
 
-    private void AnalyzeTaskMethods(CompilationAnalysisContext context)
+    private void AnalyzeCompilationEnd(CompilationAnalysisContext context)
     {
         var tree = context.Compilation.SyntaxTrees.FirstOrDefault();
-        TaskMethods = tree is not null
-            ? context.Options.GetTaskMethods(tree, context.CancellationToken)
-            : null;
-
-        if (TaskMethods is null || !TaskMethods.Any())
-        {
-            context.ReportDiagnostic(
-                Diagnostic.Create(ConfigurationRules.ConfigurationMissing, Location.None));
-        }
+        if (tree is not null)
+            TaskMethods = context.Options.GetTaskMethods(tree, context.CancellationToken) ?? [];
+        if (TaskMethods.Count == 0)
+            context.ReportDiagnostic(Diagnostic.Create(ConfigurationRules.ConfigurationMissing, Location.None));
     }
 }

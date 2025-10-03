@@ -6,18 +6,18 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace FrendsTaskAnalyzers.Analyzers.ParametersAnalyzer;
+namespace FrendsTaskAnalyzers.Analyzers.ParameterAnalyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ParametersAnalyzer : BaseAnalyzer
+public class ParameterAnalyzer : BaseAnalyzer
 {
-    protected override ImmutableArray<DiagnosticDescriptor> AdditionalDiagnostics { get; } =
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
     [
-        ParametersRules.RequiredParameter,
-        ParametersRules.ParameterName,
-        ParametersRules.ParameterPropertyTabAttribute,
-        ParametersRules.ParameterUnknown,
-        ParametersRules.ParametersOrder,
+        ParameterRules.RequiredParameter,
+        ParameterRules.ParameterName,
+        ParameterRules.ParameterPropertyTabAttribute,
+        ParameterRules.ParameterUnknown,
+        ParameterRules.ParametersOrder,
     ];
 
     private static readonly ImmutableArray<ExpectedParameter> ExpectedParameters =
@@ -29,7 +29,10 @@ public class ParametersAnalyzer : BaseAnalyzer
     ];
 
     protected override void RegisterActions(CompilationStartAnalysisContext context)
-        => context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
+    {
+        if (!AssignTaskMethods(context)) return;
+        context.RegisterSyntaxNodeAction(AnalyzeParameters, SyntaxKind.MethodDeclaration);
+    }
 
     private void AnalyzeParameters(SyntaxNodeAnalysisContext context)
     {
@@ -37,7 +40,7 @@ public class ParametersAnalyzer : BaseAnalyzer
         var symbol = context.SemanticModel.GetDeclaredSymbol(methodSyntax);
         if (symbol is null) return;
 
-        if (TaskMethods?.Any(t => t.Path == symbol.ToReferenceString()) != true) return;
+        if (TaskMethods.All(t => t.Path != symbol.ToReferenceString())) return;
 
         var parameters = symbol.Parameters.ToArray();
 
@@ -48,7 +51,7 @@ public class ParametersAnalyzer : BaseAnalyzer
         foreach (var missingRequiredParameter in missingRequiredParameters)
         {
             context.ReportDiagnostic(
-                Diagnostic.Create(ParametersRules.RequiredParameter, symbol?.Locations.FirstOrDefault(),
+                Diagnostic.Create(ParameterRules.RequiredParameter, symbol?.Locations.FirstOrDefault(),
                     missingRequiredParameter.Type)
             );
         }
@@ -67,7 +70,7 @@ public class ParametersAnalyzer : BaseAnalyzer
             if (matchedExpectedParameter is null)
             {
                 context.ReportDiagnostic(
-                    Diagnostic.Create(ParametersRules.ParameterUnknown, parameter.Locations.FirstOrDefault(),
+                    Diagnostic.Create(ParameterRules.ParameterUnknown, parameter.Locations.FirstOrDefault(),
                         parameter.Type.Name)
                 );
                 continue;
@@ -77,7 +80,7 @@ public class ParametersAnalyzer : BaseAnalyzer
             if (parameter.Name != matchedExpectedParameter.Name)
             {
                 context.ReportDiagnostic(
-                    Diagnostic.Create(ParametersRules.ParameterName, parameter.Locations.FirstOrDefault(),
+                    Diagnostic.Create(ParameterRules.ParameterName, parameter.Locations.FirstOrDefault(),
                         matchedExpectedParameter.Name)
                 );
             }
@@ -92,13 +95,13 @@ public class ParametersAnalyzer : BaseAnalyzer
                 {
                     var attributeSymbol = a.AttributeClass;
                     return attributeSymbol is not null &&
-                           attributeSymbol.Equals(propertyTabAttributeSymbol, SymbolEqualityComparer.Default);
+                           SymbolEqualityComparer.Default.Equals(attributeSymbol, propertyTabAttributeSymbol);
                 });
 
                 if (!hasPropertyTabAttribute)
                 {
                     context.ReportDiagnostic(
-                        Diagnostic.Create(ParametersRules.ParameterPropertyTabAttribute,
+                        Diagnostic.Create(ParameterRules.ParameterPropertyTabAttribute,
                             parameter.Locations.FirstOrDefault())
                     );
                 }
@@ -112,7 +115,7 @@ public class ParametersAnalyzer : BaseAnalyzer
                 if (orderedParameter is null)
                 {
                     context.ReportDiagnostic(
-                        Diagnostic.Create(ParametersRules.ParametersOrder, symbol?.Locations.FirstOrDefault())
+                        Diagnostic.Create(ParameterRules.ParametersOrder, symbol?.Locations.FirstOrDefault())
                     );
                     orderHandled = true;
                 }

@@ -8,7 +8,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
 
-        <Version>1.4.0</Version>
+        <Version>$(FrendsTaskAnalyzersVersion)</Version>
         <Authors>Frends</Authors>
         <Copyright>Copyright (c) 2025 Frends EiPaaS</Copyright>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -43,7 +43,9 @@
     </ItemGroup>
 
     <Target Name="AddDllsToNuGet" BeforeTargets="_GetPackageFiles">
-        <JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*" Right="@(PackageReference)" RightKey="" RightMetadata="*" ItemSpecToUse="Left">
+        <JoinItems Left="@(ResolvedCompileFileDefinitions)" LeftKey="NuGetPackageId" LeftMetadata="*"
+                   Right="@(PackageReference)" RightKey="" RightMetadata="*"
+                   ItemSpecToUse="Left">
             <Output TaskParameter="JoinResult" ItemName="_PackagesToPack" />
         </JoinItems>
 
@@ -52,14 +54,22 @@
         </ItemGroup>
 
         <ItemGroup>
-            <None Include="@(_PackagesToPack)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            <None Include="@(_PackagesToPack)"
+                  Pack="true"
+                  PackagePath="analyzers/dotnet/cs"
+                  Visible="false" />
 
-            <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            <None Include="$(OutputPath)\$(AssemblyName).dll"
+                  Pack="true"
+                  PackagePath="analyzers/dotnet/cs"
+                  Visible="false" />
         </ItemGroup>
     </Target>
 
     <Target Name="CopyPackageToSolutionPackagesDirectory" AfterTargets="Pack">
-        <Copy SourceFiles="$(OutputPath)..\$(AssemblyName).$(Version).nupkg" DestinationFolder="$(SolutionPackagesPath)" OverwriteReadOnlyFiles="true" />
+        <Copy SourceFiles="$(OutputPath)..\$(AssemblyName).$(Version).nupkg"
+              DestinationFolder="$(SolutionPackagesPath)"
+              OverwriteReadOnlyFiles="true" />
     </Target>
 
 </Project>

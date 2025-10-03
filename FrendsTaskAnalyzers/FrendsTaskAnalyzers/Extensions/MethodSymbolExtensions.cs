@@ -1,4 +1,5 @@
 using System.Linq;
+using FrendsTaskAnalyzers.Models;
 using Microsoft.CodeAnalysis;
 
 namespace FrendsTaskAnalyzers.Extensions;
@@ -12,12 +13,23 @@ public static class MethodSymbolExtensions
 
     public static string ToReferenceString(this IMethodSymbol symbol) => symbol.ToDisplayString(ReferenceFormat);
 
-    public static string? GetCategory(this IMethodSymbol methodSymbol)
+    public static TaskCategory GetTaskCategory(this IMethodSymbol symbol, Compilation compilation)
     {
-        var categoryAttribute = methodSymbol
-            .GetAttributes()
-            .FirstOrDefault(attr => attr.AttributeClass?.Name == "CategoryAttribute");
+        var categoryAttributeSymbol = compilation.GetTypeByMetadataName("System.ComponentModel.CategoryAttribute");
+        if (categoryAttributeSymbol is null) return TaskCategory.Generic;
 
-        return categoryAttribute?.ConstructorArguments.FirstOrDefault().Value as string;
+        var attribute = symbol.GetAttributes().FirstOrDefault(a =>
+            SymbolEqualityComparer.Default.Equals(a.AttributeClass, categoryAttributeSymbol));
+
+        var category = (attribute?.ConstructorArguments.FirstOrDefault().Value as string)?.ToLowerInvariant();
+
+        return category switch
+        {
+            "converter" => TaskCategory.Converter,
+            "database" => TaskCategory.Database,
+            "file" => TaskCategory.File,
+            "http" => TaskCategory.Http,
+            _ => TaskCategory.Generic,
+        };
     }
 }
