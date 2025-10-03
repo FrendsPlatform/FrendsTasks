@@ -35,7 +35,7 @@ public class DocumentationAnalyzer : BaseAnalyzer
         if (context.Node is not ClassDeclarationSyntax classSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
-        var isTaskClass = TaskMethods!.Any(t => t.Path.StartsWith(symbol.ToDisplayString()));
+        var isTaskClass = TaskMethods.Any(t => t.Path.StartsWith(symbol.ToDisplayString()));
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: context.CancellationToken);
         ValidateXml(context, symbol, xml, checkForDocumentationLink: isTaskClass);
     }
