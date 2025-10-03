@@ -40,7 +40,7 @@ public class DocumentationAnalyzer : BaseAnalyzer
         ValidateXml(context, symbol, xml, checkForDocumentationLink: isTaskClass);
     }
 
-    private void AnalyzeMemberDocumentation(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeMemberDocumentation(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not MemberDeclarationSyntax memberSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(memberSyntax, context.CancellationToken);
