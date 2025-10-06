@@ -20,7 +20,8 @@ public class DocumentationAnalyzer : BaseAnalyzer
         DocumentationRules.DocumentationInvalid
     ];
 
-    private static readonly ImmutableArray<string> RequiredTags = ["summary", "example"];
+    private static readonly ImmutableArray<string> RequiredTagsForPublic = ["summary"];
+    private static readonly ImmutableArray<string> RequiredTagsForProperties = ["example"];
 
     private static readonly ImmutableDictionary<string, string> UnsupportedTagsWithAttributes =
         new Dictionary<string, string> { ["see"] = "cref", ["seealso"] = "cref", ["cref"] = "<ANY>" }
@@ -59,10 +60,24 @@ public class DocumentationAnalyzer : BaseAnalyzer
     {
         try
         {
+            // Missing XML docs → required tags missing
             if (string.IsNullOrWhiteSpace(xml))
             {
-                // Missing XML docs → required tags missing
-                foreach (var tag in RequiredTags)
+                if (symbol.Kind == SymbolKind.Property)
+                {
+                    foreach (var tag in RequiredTagsForProperties)
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DocumentationRules.RequiredTagsMissing,
+                                symbol.Locations.First(),
+                                tag
+                            )
+                        );
+                    }
+                }
+
+                foreach (var tag in RequiredTagsForPublic)
                 {
                     context.ReportDiagnostic(
                         Diagnostic.Create(
@@ -79,7 +94,24 @@ public class DocumentationAnalyzer : BaseAnalyzer
             var xDoc = XDocument.Parse(xml);
 
             // Required tags
-            foreach (var tag in RequiredTags)
+            if (symbol.Kind == SymbolKind.Property)
+            {
+                foreach (var tag in RequiredTagsForProperties)
+                {
+                    if (xDoc.Descendants(tag).FirstOrDefault() is null)
+                    {
+                        context.ReportDiagnostic(
+                            Diagnostic.Create(
+                                DocumentationRules.RequiredTagsMissing,
+                                symbol.Locations.First(),
+                                tag
+                            )
+                        );
+                    }
+                }
+            }
+
+            foreach (var tag in RequiredTagsForPublic)
             {
                 if (xDoc.Descendants(tag).FirstOrDefault() is null)
                 {

@@ -91,7 +91,8 @@ public static class TestCases
                         }
                     }
                     """,
-                ExpectedDiagnostics = [new DiagnosticResult(DocumentationRules.DocumentationLinkMissing).WithLocation(0)]
+                ExpectedDiagnostics =
+                    [new DiagnosticResult(DocumentationRules.DocumentationLinkMissing).WithLocation(0)]
             },
             // Case 3: Unsupported tags used
             new TestCase
@@ -136,10 +137,14 @@ public static class TestCases
                         }
                     }
                     """,
-                ExpectedDiagnostics = [
-                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0).WithArguments("see", "cref"),
-                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0).WithArguments("seealso", "cref"),
-                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(1).WithArguments("cref", "<ANY>")
+                ExpectedDiagnostics =
+                [
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0)
+                        .WithArguments("see", "cref"),
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(0)
+                        .WithArguments("seealso", "cref"),
+                    new DiagnosticResult(DocumentationRules.UnsupportedTagsUsed).WithLocation(1)
+                        .WithArguments("cref", "<ANY>")
                 ]
             },
             // Case 4: Required tags missing
@@ -158,16 +163,20 @@ public static class TestCases
                     /// dummy summary
                     /// [Documentation](https://tasks.frends.com)
                     /// </summary>
-                    public class {|#0:Test|}
+                    public class Test
                     {
-                        /// <example>
-                        /// dummy example
-                        /// </example>
-                        public class {|#1:Input|};
+                        public class {|#0:Input|}
+                        {
+                            public string {|#1:Foo|} {get; set; }
+                            /// <example>
+                            /// dummy example
+                            /// </example>
+                            public int {|#2:Bar|} { get; set; }
+                        }
                         /// <summary>
                         /// dummy summary
                         /// </summary>
-                        public void {|#2:Execute|} ([PropertyTab] Input input)
+                        public void Execute ([PropertyTab] Input input)
                         {
                             throw new NotImplementedException();
                         }
@@ -175,9 +184,14 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(0).WithArguments("example"),
-                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(1).WithArguments("summary"),
-                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(2).WithArguments("example")
+                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(0)
+                        .WithArguments("summary"),
+                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(1)
+                        .WithArguments("summary"),
+                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(1)
+                        .WithArguments("example"),
+                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(2)
+                        .WithArguments("summary")
                 ]
             },
             // Case 5: Invalid documentation (malformed XML)
@@ -238,18 +252,12 @@ public static class TestCases
                     /// dummy summary
                     /// [Documentation](https://tasks.frends.com)
                     /// </summary>
-                    /// <example>
-                    /// dummy example
-                    /// </example>
                     public class Test
                     {
                         public class {|#0:Input|};
                         /// <summary>
                         /// dummy summary
                         /// </summary>
-                        /// <example>
-                        /// dummy example
-                        /// </example>
                         public void Execute ([PropertyTab] Input input)
                         {
                             throw new NotImplementedException();
@@ -258,8 +266,8 @@ public static class TestCases
                     """,
                 ExpectedDiagnostics =
                 [
-                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(0).WithArguments("summary"),
-                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(0).WithArguments("example")
+                    new DiagnosticResult(DocumentationRules.RequiredTagsMissing).WithLocation(0)
+                        .WithArguments("summary"),
                 ]
             }
         ];
