@@ -24,7 +24,6 @@ public static class TestCases
                     namespace Frends.Test.Execute;
                     /// <summary>
                     /// dummy summary
-                    /// [Documentation](https://tasks.frends.com)
                     /// </summary>
                     /// <example>
                     /// dummy example
@@ -40,6 +39,7 @@ public static class TestCases
                         public class Input;
                         /// <summary>
                         /// dummy summary
+                        /// [Documentation](https://tasks.frends.com)
                         /// </summary>
                         /// <example>
                         /// dummy example
@@ -70,7 +70,7 @@ public static class TestCases
                     /// <example>
                     /// dummy example
                     /// </example>
-                    public class {|#0:Test|}
+                    public class Test
                     {
                         /// <summary>
                         /// dummy summary
@@ -85,7 +85,18 @@ public static class TestCases
                         /// <example>
                         /// dummy example
                         /// </example>
-                        public void Execute ([PropertyTab] Input input)
+                        public void {|#0:Execute|} ([PropertyTab] Input input)
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        /// <summary>
+                        /// dummy summary
+                        /// </summary>
+                        /// <example>
+                        /// dummy example
+                        /// </example>
+                        public void OtherMethod ()
                         {
                             throw new NotImplementedException();
                         }
@@ -108,7 +119,6 @@ public static class TestCases
                     namespace Frends.Test.Execute;
                     /// <summary>
                     /// dummy summary
-                    /// [Documentation](https://tasks.frends.com)
                     /// </summary>
                     /// <example>
                     /// dummy example
@@ -126,6 +136,7 @@ public static class TestCases
                         public class {|#0:Input|};
                         /// <summary>
                         /// dummy summary
+                        /// [Documentation](https://tasks.frends.com)
                         /// </summary>
                         /// <example>
                         /// dummy example
@@ -161,7 +172,6 @@ public static class TestCases
                     namespace Frends.Test.Execute;
                     /// <summary>
                     /// dummy summary
-                    /// [Documentation](https://tasks.frends.com)
                     /// </summary>
                     public class Test
                     {
@@ -175,6 +185,7 @@ public static class TestCases
                         }
                         /// <summary>
                         /// dummy summary
+                        /// [Documentation](https://tasks.frends.com)
                         /// </summary>
                         public void Execute ([PropertyTab] Input input)
                         {
@@ -208,7 +219,6 @@ public static class TestCases
                     namespace Frends.Test.Execute;
                     /// <summary>
                     /// dummy summary
-                    /// [Documentation](https://tasks.frends.com)
                     /// </summary>
                     /// <example>
                     /// dummy example
@@ -224,6 +234,7 @@ public static class TestCases
                         public class Input;
                         /// <summary>
                         /// dummy summary
+                        /// [Documentation](https://tasks.frends.com)
                         /// </summary>
                         /// <example>
                         /// dummy example
@@ -250,13 +261,13 @@ public static class TestCases
                     namespace Frends.Test.Execute;
                     /// <summary>
                     /// dummy summary
-                    /// [Documentation](https://tasks.frends.com)
                     /// </summary>
                     public class Test
                     {
                         public class {|#0:Input|};
                         /// <summary>
                         /// dummy summary
+                        /// [Documentation](https://tasks.frends.com)
                         /// </summary>
                         public void Execute ([PropertyTab] Input input)
                         {

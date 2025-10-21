@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <FrendsTaskAnalyzersVersion>1.8.0</FrendsTaskAnalyzersVersion>
+    <FrendsTaskAnalyzersVersion>1.9.0</FrendsTaskAnalyzersVersion>
 
     <SolutionPackagesPath>$(MSBuildThisFileDirectory)packages</SolutionPackagesPath>
   </PropertyGroup>
