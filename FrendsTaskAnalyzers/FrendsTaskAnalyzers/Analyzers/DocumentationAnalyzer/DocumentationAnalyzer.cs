@@ -35,24 +35,23 @@ public class DocumentationAnalyzer : BaseAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeMemberDocumentation, SyntaxKind.PropertyDeclaration);
     }
 
-    private void AnalyzeClassDocumentation(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeClassDocumentation(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not ClassDeclarationSyntax classSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
-        var isTaskClass =
-            TaskMethods.Any(t => t.Path.StartsWith(symbol.ToDisplayString() + "."));
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: context.CancellationToken);
-        ValidateXml(context, symbol, xml, checkForDocumentationLink: isTaskClass);
+        ValidateXml(context, symbol, xml, checkForDocumentationLink: false);
     }
 
-    private static void AnalyzeMemberDocumentation(SyntaxNodeAnalysisContext context)
+    private void AnalyzeMemberDocumentation(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not MemberDeclarationSyntax memberSyntax) return;
         var symbol = context.SemanticModel.GetDeclaredSymbol(memberSyntax, context.CancellationToken);
         if (symbol is null || symbol.DeclaredAccessibility != Accessibility.Public) return;
+        var isTaskMethod = TaskMethods.Any(t => symbol.ToDisplayString().StartsWith(t.Path));
         var xml = symbol.GetDocumentationCommentXml(cancellationToken: context.CancellationToken);
-        ValidateXml(context, symbol, xml, checkForDocumentationLink: false);
+        ValidateXml(context, symbol, xml, checkForDocumentationLink: isTaskMethod);
     }
 
     private static void ValidateXml(SyntaxNodeAnalysisContext context, ISymbol symbol, string? xml,
