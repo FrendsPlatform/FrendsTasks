@@ -233,9 +233,15 @@ jobs:
 
       - name: Lint
         run: |
-          roslynator analyze `
-            --analyzer-assemblies '.analyzers' `
-            --verbosity detailed
+          $projects = Get-ChildItem -Recurse -Filter *.csproj |
+            Where-Object { $_.Name -notlike '*.Tests.csproj' }
+
+          foreach ($proj in $projects) {
+            roslynator analyze `
+              --analyzer-assemblies '.analyzers' `
+              --verbosity detailed `
+              $proj.FullName
+          }
         continue-on-error: ${{ !inputs.strict_analyzers }}
 
       - name: Cleanup after analyzers
