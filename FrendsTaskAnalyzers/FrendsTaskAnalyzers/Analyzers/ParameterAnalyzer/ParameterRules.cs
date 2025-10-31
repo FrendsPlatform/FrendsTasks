@@ -16,7 +16,7 @@ public static class ParameterRules
             "Recommended parameter name",
             "For consistency, the recommended name for this parameter is '{0}'",
             "Parameters",
-            DiagnosticSeverity.Info, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ParameterPropertyTabAttribute =
         new("FT0009",
@@ -30,12 +30,12 @@ public static class ParameterRules
             "Parameter is not recognized",
             "Parameter of type '{0}' is not recognized. Expected parameters are: 'Input', 'Connection', 'Options', 'CancellationToken'.",
             "Parameters",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ParametersOrder =
         new("FT0019",
             "Parameters are not in the correct order",
             "Parameters standard order is: 'Input', 'Connection', 'Options', 'CancellationToken'",
             "Parameters",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 }
