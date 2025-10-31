@@ -17,7 +17,7 @@ namespace Frends.Echo.Execute;
 /// <example>bar</example>
 public static class Echo
 {
-    /// <summary>foo</summary>
+    /// <summary>/// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends.Echo.Execute)</summary>
     /// <example>bar</example>
     [Category("HTTP")]
     public static Task<Result> Execute(
@@ -35,8 +35,10 @@ public class Options
 {
     /// <summary>foo</summary>
     /// <example>bar</example>
-    public bool ThrowErrorOnFailure { get; set; }
-    protected string ErrorMessageOnFailure { get; set; } = "";
+    protected bool ThrowErrorOnFailure { get; set; }
+    /// <summary>foo</summary>
+    /// <example>bar</example>
+    protected string? ErrorMessageOnFailure { get; set; }
 }
 
 /// <summary>foo</summary>
@@ -49,7 +51,7 @@ public class Result
     protected int StatusCode { get; set; }
     /// <summary>foo</summary>
     /// <example>bar</example>
-    public DateTime? Date { get; set; }
+    protected DateTime? Date { get; set; }
 }
 
 /// <summary>foo</summary>
