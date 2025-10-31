@@ -225,6 +225,9 @@ public class TypeAnalyzer : BaseAnalyzer
 
             case INamedTypeSymbol namedType:
                 {
+                    if (namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                        return IsPropertyTypeAllowed(namedType.TypeArguments[0], taskNamespace);
+
                     var ns = namedType.ContainingNamespace?.ToDisplayString() ?? string.Empty;
                     var isCollection = namedType.IsGenericType &&
                                        (ns.StartsWith("System.Collections", StringComparison.Ordinal) ||

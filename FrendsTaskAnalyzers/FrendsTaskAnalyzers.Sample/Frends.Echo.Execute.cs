@@ -4,6 +4,7 @@
 // ReSharper disable UnusedParameter.Global
 // ReSharper disable UnusedType.Global
 
+using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,9 @@ public static class Echo
 /// <example>bar</example>
 public class Options
 {
-    protected bool ThrowErrorOnFailure { get; set; } = true;
+    /// <summary>foo</summary>
+    /// <example>bar</example>
+    public bool ThrowErrorOnFailure { get; set; }
     protected string ErrorMessageOnFailure { get; set; } = "";
 }
 
@@ -44,6 +47,9 @@ public class Result
     protected object? Error { get; set; } = null;
     protected object? Body { get; set; } = null;
     protected int StatusCode { get; set; }
+    /// <summary>foo</summary>
+    /// <example>bar</example>
+    public DateTime? Date { get; set; }
 }
 
 /// <summary>foo</summary>

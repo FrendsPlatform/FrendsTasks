@@ -9,33 +9,33 @@ public static class StructureRules
             "Task class should be static",
             "Task class '{0}' should be static",
             "Structure",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor MethodShouldBeStatic =
         new("FT0005",
             "Task method must be static",
             "Task method '{0}' must be static",
             "Structure",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor MethodOverloadNotAllowed =
         new("FT0006",
             "Task method overloading is not allowed",
             "Task method '{0}' cannot be overloaded",
             "Structure",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ReturnTypeIncorrect =
         new("FT0010",
             "Task method return type incorrect",
             "Task return type should be '{0}'",
             "Structure",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor ReturnTypeMissingProperties =
         new("FT0011",
             "Task return type missing required properties",
             "Class should include a '{0}' property",
             "Structure",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 }
