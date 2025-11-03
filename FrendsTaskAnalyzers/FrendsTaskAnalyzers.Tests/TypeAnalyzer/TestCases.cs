@@ -425,7 +425,44 @@ public static class TestCases
                         .WithSpan(24, 68, 24, 77)
                 ]
             },
+
+            new TestCase
+            {
+                Aid = 12,
+                MetadataJson = Helpers.CreateMetadataJson("Frends.Echo.Execute.Echo.Execute"),
+                Code =
+                """
+                using System;
+                using System.Threading.Tasks;
+
+                namespace Frends.Echo.Execute.Definitions
+                {
+                    public class Options
+                    {
+                        public bool ThrowErrorOnFailure { get; set; } = true;
+                        public string ErrorMessageOnFailure { get; set; } = "";
+                        public DateTime Timestamp { get; set; }
+                        public DateTime? OptionalTimestamp { get; set; } // should NOT trigger diagnostic anymore
+                    }
+
+                    public class Result
+                    {
+                        public string Message { get; set; }
+                    }
+                }
+
+                namespace Frends.Echo.Execute
+                {
+                    using Frends.Echo.Execute.Definitions;
+
+                    public class Echo
+                    {
+                        public static Task<Result> Execute(Options options) => throw new NotImplementedException();
+                    }
+                }
+                """,
+                ExpectedDiagnostics = []
+            },
         ];
     }
 }
-

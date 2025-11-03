@@ -9,6 +9,6 @@ public static class ConfigurationRules
             "Missing analyzer configuration",
             "Project is missing analyzer configuration",
             "Configuration",
-            DiagnosticSeverity.Warning, true,
+            DiagnosticSeverity.Error, true,
             customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 }

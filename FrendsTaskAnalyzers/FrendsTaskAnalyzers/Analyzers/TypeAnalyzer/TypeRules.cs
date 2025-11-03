@@ -9,7 +9,7 @@ public static class TypeRules
             "Task parameter missing required property",
             "Parameter '{0}' is missing required property '{1}'",
             "Types",
-            DiagnosticSeverity.Warning, true,
+            DiagnosticSeverity.Error, true,
             customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 
     public static readonly DiagnosticDescriptor IncorrectPropertyDefaultValue =
@@ -17,7 +17,7 @@ public static class TypeRules
             "Task parameter property has incorrect default value",
             "Default value for property '{0}' should be '{1}'",
             "Types",
-            DiagnosticSeverity.Warning, true,
+            DiagnosticSeverity.Error, true,
             customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 
     public static readonly DiagnosticDescriptor ExposedThirdPartyType =
@@ -25,6 +25,6 @@ public static class TypeRules
             "Task exposes third-party types",
             "Property '{0}' exposes a third-party type",
             "Types",
-            DiagnosticSeverity.Warning,
+            DiagnosticSeverity.Error,
             true);
 }

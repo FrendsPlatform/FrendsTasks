@@ -9,19 +9,19 @@ public static class NameRules
             "Namespace does not follow the standard format",
             "Standard namespace format is 'Vendor.System.Action'",
             "Naming",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor TypeName =
         new("FT0002",
             "Type should match the task system",
             "Type name should be '{0}'",
             "Naming",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 
     public static readonly DiagnosticDescriptor MethodName =
         new("FT0003",
             "Method should match the task action",
             "Method name should be '{0}'",
             "Naming",
-            DiagnosticSeverity.Warning, true);
+            DiagnosticSeverity.Error, true);
 }
