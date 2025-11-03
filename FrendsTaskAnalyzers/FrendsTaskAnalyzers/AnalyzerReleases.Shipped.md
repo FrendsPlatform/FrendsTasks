@@ -54,28 +54,28 @@
  FT0014  | Documentation | Warning  | DocumentationAnalyzer 
  FT0021  | Documentation | Warning  | DocumentationAnalyzer 
 
- ## Release 1.10.0
+## Release 1.10.0
 
- ### Changed Rules
+### Changed Rules
 
- Rule ID | Category      | Severity | Notes
----------|---------------|----------|-----------------------
- FT0001  | Naming        | Error    | NameAnalyzer 
- FT0002  | Naming        | Error    | NameAnalyzer 
- FT0003  | Naming        | Error    | NameAnalyzer 
- FT0004  | Structure     | Error    | StructureAnalyzer 
- FT0005  | Structure     | Error    | StructureAnalyzer 
- FT0006  | Structure     | Error    | StructureAnalyzer
- FT0008  | Parameters    | Error    | Parameter name is not recommended
- FT0010  | Structure     | Error    | StructureAnalyzer 
- FT0011  | Structure     | Error    | StructureAnalyzer 
- FT0012  | Documentation | Error    | DocumentationAnalyzer 
- FT0013  | Documentation | Error    | DocumentationAnalyzer 
- FT0014  | Documentation | Error    | DocumentationAnalyzer 
- FT0015  | Types         | Error    | TypeAnalyzer 
- FT0016  | Types         | Error    | TypeAnalyzer 
- FT0017  | Types         | Error    | TypeAnalyzer 
- FT0018  | Parameters    | Error    | Parameter is not recognized 
- FT0019  | Parameters    | Error    | Parameters are not in the correct order 
- FT0020  | Configuration | Error    | Metadata is missing 
- FT0021  | Documentation | Error    | DocumentationAnalyzer
+Rule ID | Category      | Severity | Notes
+------- |---------------|----------|-----------------------
+FT0001  | Naming        | Error    | NameAnalyzer 
+FT0002  | Naming        | Error    | NameAnalyzer 
+FT0003  | Naming        | Error    | NameAnalyzer 
+FT0004  | Structure     | Error    | StructureAnalyzer 
+FT0005  | Structure     | Error    | StructureAnalyzer 
+FT0006  | Structure     | Error    | StructureAnalyzer
+FT0008  | Parameters    | Error    | Parameter name is not recommended
+FT0010  | Structure     | Error    | StructureAnalyzer 
+FT0011  | Structure     | Error    | StructureAnalyzer 
+FT0012  | Documentation | Error    | DocumentationAnalyzer 
+FT0013  | Documentation | Error    | DocumentationAnalyzer 
+FT0014  | Documentation | Error    | DocumentationAnalyzer 
+FT0015  | Types         | Error    | TypeAnalyzer 
+FT0016  | Types         | Error    | TypeAnalyzer 
+FT0017  | Types         | Error    | TypeAnalyzer 
+FT0018  | Parameters    | Error    | Parameter is not recognized 
+FT0019  | Parameters    | Error    | Parameters are not in the correct order 
+FT0020  | Configuration | Error    | Metadata is missing 
+FT0021  | Documentation | Error    | DocumentationAnalyzer
