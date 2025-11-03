@@ -35,19 +35,19 @@ public static class Echo
 /// <example>bar</example>
 public class Options
 {
-    protected bool ThrowErrorOnFailure { get; set; }
-    protected string? ErrorMessageOnFailure { get; set; }
+    internal bool ThrowErrorOnFailure { get; set; }
+    internal string? ErrorMessageOnFailure { get; set; }
 }
 
 /// <summary>foo</summary>
 /// <example>bar</example>
 public class Result
 {
-    protected bool Success { get; set; }
-    protected object? Error { get; set; } = null;
-    protected object? Body { get; set; } = null;
-    protected int StatusCode { get; set; }
-    protected DateTime? Date { get; set; }
+    internal bool Success { get; set; }
+    internal object? Error { get; set; } = null;
+    internal object? Body { get; set; } = null;
+    internal int StatusCode { get; set; }
+    internal DateTime? Date { get; set; }
 }
 
 /// <summary>foo</summary>
