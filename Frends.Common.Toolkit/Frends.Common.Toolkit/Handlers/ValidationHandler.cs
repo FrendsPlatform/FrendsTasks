@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Frends.Common.Toolkit.Handlers;
 
@@ -8,7 +10,7 @@ public static class ValidationHandler
     {
         var validationMessage = objects.Aggregate(string.Empty, (current, obj) => current + obj.Validate());
 
-        if (validationMessage != string.Empty) throw new Exception($"Validation failed:\n{validationMessage}");
+        if (validationMessage != string.Empty) throw new ValidationException($"Validation failed:\n{validationMessage}");
     }
 
     private static string Validate<T>(this T objectToValidate)

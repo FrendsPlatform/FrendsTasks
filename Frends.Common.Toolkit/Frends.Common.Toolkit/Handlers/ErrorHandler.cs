@@ -1,3 +1,4 @@
+using System;
 using Frends.Common.Toolkit.Definitions;
 
 namespace Frends.Common.Toolkit.Handlers;

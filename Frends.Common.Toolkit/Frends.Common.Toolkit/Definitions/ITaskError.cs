@@ -1,3 +1,5 @@
+using System;
+
 namespace Frends.Common.Toolkit.Definitions;
 
 public interface ITaskError
