@@ -1,4 +1,4 @@
-name: Toolkit Build
+name: Toolkit Test
 
 on:
   workflow_call:
