@@ -15,7 +15,7 @@ public static class ValidationHandler
 
     private static string Validate<T>(this T objectToValidate)
     {
-        if (objectToValidate == null) return "Validated object can't be null\n";
+        if (objectToValidate == null) return "Validated object can't be null!\n";
         var ctx = new ValidationContext(objectToValidate);
         List<ValidationResult> validateResults = [];
         Validator.TryValidateObject(objectToValidate, ctx, validateResults, true);
