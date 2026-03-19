@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit/toolkit_release.yml@main
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_release.yml@main
     with:
       working_directory: 'Frends.Common.Toolkit'
       project_directory: 'Frends.Common.Toolkit'
