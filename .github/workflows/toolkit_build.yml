@@ -21,12 +21,13 @@ on:
 permissions:
   contents: read
 
+env:
+  WORKDIR: ${{ inputs.working-directory }}
 defaults:
   run:
-    working-directory: ${{ inputs.working-directory }}
+    working-directory: ${{ env.WORKDIR }}
 
 jobs:
-
   Lint:
     runs-on: ubuntu-latest
     steps:
