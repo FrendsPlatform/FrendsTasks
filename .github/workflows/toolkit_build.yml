@@ -21,15 +21,12 @@ on:
 permissions:
   contents: read
 
-env:
-  WORKDIR: ${{ inputs.working-directory }}
-defaults:
-  run:
-    working-directory: ${{ env.WORKDIR }}
-
 jobs:
   Lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory:  ${{ inputs.working-directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
@@ -43,6 +40,9 @@ jobs:
   Build:
     needs: Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@mfspw-732-CommonLib-PoC
@@ -66,6 +66,9 @@ jobs:
   Test:
     needs: Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
