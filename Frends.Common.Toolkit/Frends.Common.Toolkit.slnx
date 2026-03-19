@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.github/workflows/toolkit/common_toolkit_build.yml" />
+    <File Path="../.github/workflows/toolkit/common_toolkit_release.yml" />
+  </Folder>
+  <Project Path="Frends.Common.Toolkit/Frends.Common.Toolkit.csproj" />
+</Solution>
