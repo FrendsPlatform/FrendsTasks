@@ -3,16 +3,16 @@ name: Toolkit Build
 on:
   workflow_call:
     inputs:
-      working_directory:
+      working-directory:
         required: false
         type: string
         default: '.'
         description: 'Working directory for the build, relative to repository root, e.g. Frends.Common.Toolkit'
-      project_directory:
+      project-directory:
         required: true
         type: string
         description: 'Directory of the project to build, relative to working directory, e.g. Frends.Common.Toolkit (so from root it would be Frends.Common.Toolkit/Frends.Common.Toolkit)'
-      dotnet_version:
+      dotnet-version:
         required: false
         type: string
         default: '8.0.x'
@@ -23,7 +23,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: ${{ inputs.working_directory }}
+    working-directory: ${{ inputs.working-directory }}
 
 jobs:
 
@@ -33,8 +33,8 @@ jobs:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
         with:
-          dotnet-version: ${{ inputs.dotnet_version }}
-          working-directory: ${{ inputs.working_directory }}
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Lint
         run: dotnet format --no-restore --verify-no-changes
@@ -46,8 +46,8 @@ jobs:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@mfspw-732-CommonLib-PoC
         with:
-          dotnet-version: ${{ inputs.dotnet_version }}
-          working-directory: ${{ inputs.working_directory }}
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -69,8 +69,8 @@ jobs:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
         with:
-          dotnet-version: ${{ inputs.dotnet_version }}
-          working-directory: ${{ inputs.working_directory }}
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -99,7 +99,7 @@ jobs:
             echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
             echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
           fi
-          badgeKey="$REPOSITORY/${{ inputs.project_directory }}|$BRANCH"
+          badgeKey="$REPOSITORY/${{ inputs.project-directory }}|$BRANCH"
           json=$(jq -nc \
             --arg key "$badgeKey" \
             --arg displayName "Coverage" \
