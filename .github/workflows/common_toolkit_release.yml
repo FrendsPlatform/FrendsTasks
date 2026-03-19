@@ -12,5 +12,5 @@ jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_release.yml@fspw-732-CommonLib-PoC
     with:
-      working_directory: 'Frends.Common.Toolkit'
-      project_directory: 'Frends.Common.Toolkit'
+      working-directory: 'Frends.Common.Toolkit'
+      project-directory: 'Frends.Common.Toolkit'

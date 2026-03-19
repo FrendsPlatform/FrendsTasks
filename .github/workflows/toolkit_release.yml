@@ -3,16 +3,16 @@ name: Common Toolkit Release
 on:
   workflow_call:
     inputs:
-      working_directory:
+      working-directory:
         required: false
         type: string
         default: '.'
         description: 'Working directory for the build, relative to repository root, e.g. Frends.Common.Toolkit'
-      project_directory:
+      project-directory:
         required: true
         type: string
         description: 'Directory of the project to build, relative to working directory, e.g. Frends.Common.Toolkit (so from root it would be Frends.Common.Toolkit/Frends.Common.Toolkit)'
-      dotnet_version:
+      dotnet-version:
         required: false
         type: string
         default: '8.0.x'
@@ -22,24 +22,24 @@ permissions:
   contents: read
 
 jobs:
-  release:
-    name: Release
+  Release:
     permissions:
       contents: write
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
         with:
-          dotnet-version: ${{ inputs.dotnet_version }}
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.working-directory }}
 
       - id: project_version
         name: Extract project version
         run: |
-          version=$(dotnet msbuild ${{inputs.project_directory}}/*.csproj --getProperty:Version -nologo)
+          version=$(dotnet msbuild ./${{inputs.project-directory}}/*.csproj --getProperty:Version -nologo)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Build
@@ -50,7 +50,7 @@ jobs:
 
       - name: Push NuGet package
         run: |
-          dotnet nuget push ${{inputs.project_directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
+          dotnet nuget push ./${{inputs.project-directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key ${{ secrets.NUGETORG_API_KEY }}
 
@@ -60,7 +60,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ${{ inputs.project_directory }}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
-          name: '${{inputs.project_directory}} v${{ steps.project_version.outputs.version }}'
-          tag_name: ${{inputs.project_directory}}-v${{ steps.project_version.outputs.version }}
+            ./${{ inputs.project-directory }}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
+          name: '${{inputs.project-directory}} v${{ steps.project_version.outputs.version }}'
+          tag_name: ${{inputs.project-directory}}-v${{ steps.project_version.outputs.version }}
           fail_on_unmatched_files: true
