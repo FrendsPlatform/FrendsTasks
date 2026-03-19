@@ -21,17 +21,16 @@ on:
 permissions:
   contents: read
 
-defaults:
-  run:
-    working-directory: ${{ inputs.working_directory }}
-
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
-        uses: .github/actions/dotnet-setup
+        uses: ./.github/actions/dotnet-setup
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
@@ -42,9 +41,12 @@ jobs:
     name: Build
     needs: lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
-        uses: .github/actions/dotnet-setup
+        uses: ./.github/actions/dotnet-setup
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
@@ -65,9 +67,12 @@ jobs:
     name: Test
     needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
-        uses: .github/actions/dotnet-setup
+        uses: ./.github/actions/dotnet-setup
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
@@ -98,7 +103,7 @@ jobs:
             echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
             echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
           fi
-          badgeKey="$REPOSITORY/FrendsTaskAnalyzers|$BRANCH"
+          badgeKey="$REPOSITORY/${{ inputs.project_directory }}|$BRANCH"
           json=$(jq -nc \
             --arg key "$badgeKey" \
             --arg displayName "Coverage" \
