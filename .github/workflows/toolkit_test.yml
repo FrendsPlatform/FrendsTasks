@@ -89,12 +89,20 @@ jobs:
           BADGE_SERVICE_API_KEY: ${{ secrets.BADGE_SERVICE_API_KEY }}
         run: |
           file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null | head -n 1)
-          lineRatePct=$(python3 -c "
-            import xml.etree.ElementTree as ET
-            root = ET.parse('$file').getroot()
-            print(round(float(root.attrib['line-rate']) * 100))
-          ")
-          if [ $lineRatePct -lt 80 ]; then
+          if [ -z "$file" ]; then
+            echo "Coverage file not found"
+            exit 1
+          fi
+          lineRatePct=$(python3 <<EOF
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('$file')
+          root = tree.getroot()
+          # Cobertura uses 'line-rate' attribute (e.g., 0.85)
+          rate = float(root.attrib['line-rate'])
+          print(round(rate * 100))
+          EOF
+          )
+          if [ $lineRatePct -lt 0 ]; then
             echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
             echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
             exit 1
