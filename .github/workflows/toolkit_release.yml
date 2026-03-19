@@ -49,10 +49,12 @@ jobs:
         run: dotnet pack --no-restore --no-build --configuration Release
 
       - name: Push NuGet package
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.NUGETORG_API_KEY }}
         run: |
           dotnet nuget push ./${{inputs.project-directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
             --source https://api.nuget.org/v3/index.json \
-            --api-key ${{ secrets.NUGETORG_API_KEY }}
+            --api-key $NUGET_AUTH_TOKEN
 
       - name: Create release
         uses: softprops/action-gh-release@v2.6.1
