@@ -21,34 +21,33 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: ${{ inputs.working_directory }}
+
 jobs:
-  lint:
-    name: Lint
+
+  Lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
+          working-directory: ${{ inputs.working_directory }}
 
       - name: Lint
         run: dotnet format --no-restore --verify-no-changes
 
-  build:
-    name: Build
-    needs: lint
+  Build:
+    needs: Lint
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@mfspw-732-CommonLib-PoC
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
+          working-directory: ${{ inputs.working_directory }}
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
@@ -63,18 +62,15 @@ jobs:
           path: '${{ inputs.project_directory }}/bin/Release/*.nupkg'
           retention-days: 7
 
-  test:
-    name: Test
-    needs: build
+  Test:
+    needs: Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ inputs.working_directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@fspw-732-CommonLib-PoC
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
+          working-directory: ${{ inputs.working_directory }}
 
       - name: Build
         run: dotnet build --no-restore --configuration Release
