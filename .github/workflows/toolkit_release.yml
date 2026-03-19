@@ -1,4 +1,4 @@
-name: Common Toolkit Release
+name: Toolkit Release
 
 on:
   workflow_call:
