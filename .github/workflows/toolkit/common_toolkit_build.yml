@@ -1,0 +1,99 @@
+name: Common Toolkit Build
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'Frends.Common.Toolkit/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_DIRECTORY: 'Frends.Common.Toolkit/Frends.Common.Toolkit'
+
+defaults:
+  run:
+    working-directory: 'Frends.Common.Toolkit'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: .github/actions/dotnet-setup
+
+      - name: Lint
+        run: dotnet format --no-restore --verify-no-changes
+
+  build:
+    name: Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: .github/actions/dotnet-setup
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Pack
+        run: dotnet pack --no-restore --no-build --configuration Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: nuget-packages
+          path: '${{ env.PROJECT_DIRECTORY }}/bin/Release/*.nupkg'
+          retention-days: 7
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: .github/actions/dotnet-setup
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+
+      - name: Test coverage
+        env:
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          BADGE_SERVICE_API_KEY: ${{ secrets.BADGE_SERVICE_API_KEY }}
+        run: |
+          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null | head -n 1)
+          lineRatePct=$(python3 -c "
+            import xml.etree.ElementTree as ET
+            root = ET.parse('$file').getroot()
+            print(round(float(root.attrib['line-rate']) * 100))
+          ")
+          if [ $lineRatePct -lt 80 ]; then
+            echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "## Test coverage passed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
+            echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
+          fi
+          badgeKey="$REPOSITORY/FrendsTaskAnalyzers|$BRANCH"
+          json=$(jq -nc \
+            --arg key "$badgeKey" \
+            --arg displayName "Coverage" \
+            --arg value "$lineRatePct%" \
+            '{key: $key, displayName: $displayName, value: $value}')
+          curl \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $BADGE_SERVICE_API_KEY" \
+            -d "$json" \
+            https://app-github-custom-badges.azurewebsites.net/Badge

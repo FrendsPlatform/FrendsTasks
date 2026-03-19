@@ -2,11 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Frends.Common.Toolkit.Attributes;
 
-
 [AttributeUsage(AttributeTargets.Property)]
 public class RequiredIfAttribute(string dependentProperty, params object[] targetValues) : ValidationAttribute
 {
-
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
         var field = validationContext.ObjectType.GetProperty(dependentProperty);
@@ -15,12 +13,10 @@ public class RequiredIfAttribute(string dependentProperty, params object[] targe
 
         var dependentValue = field.GetValue(validationContext.ObjectInstance);
 
-        if (targetValues.Contains(dependentValue))
+        if (!targetValues.Contains(dependentValue)) return ValidationResult.Success;
+        if (value == null || (value is string s && string.IsNullOrWhiteSpace(s)))
         {
-            if (value == null || (value is string s && string.IsNullOrWhiteSpace(s)))
-            {
-                return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} is required.");
-            }
+            return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} is required.");
         }
 
         return ValidationResult.Success;
