@@ -1,0 +1,16 @@
+name: Common Toolkit Build
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'Frends.Common.Toolkit/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit/toolkit_build.yml@main
+    with:
+      working_directory: 'Frends.Common.Toolkit'
+      project_directory: 'Frends.Common.Toolkit'
