@@ -2,10 +2,18 @@ using System.ComponentModel;
 
 namespace Frends.Common.Toolkit.Definitions;
 
+/// <summary>
+/// Default options for a task.
+/// </summary>
 public interface ITaskOptions
 {
-    [DefaultValue(true)]
+    /// <summary>
+    /// Throw an error if the task fails. Otherwise return a Result object with Success = false;
+    /// </summary>
     bool ThrowErrorOnFailure { get; set; }
-    [DefaultValue("")]
+
+    /// <summary>
+    /// Custom error message that can be put into Error.Message.
+    /// </summary>
     string ErrorMessageOnFailure { get; set; }
 }

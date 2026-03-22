@@ -17,6 +17,11 @@ on:
         type: string
         default: '8.0.x'
         description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      min-coverage:
+        required: false
+        type: number
+        default: 80
+        description: 'Minimum required line coverage percentage'
 
 permissions:
   contents: read
@@ -60,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.0
         with:
           name: nuget-packages
-          path: '${{ inputs.project_directory }}/bin/Release/*.nupkg'
+          path: '${{ inputs.project-directory }}/bin/Release/*.nupkg'
           retention-days: 7
 
   Test:
@@ -83,43 +88,13 @@ jobs:
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Test coverage
-        env:
-          REPOSITORY: ${{ github.repository }}
-          BRANCH: ${{ github.ref_name }}
-          BADGE_SERVICE_API_KEY: ${{ secrets.BADGE_SERVICE_API_KEY }}
-        run: |
-          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null | head -n 1)
-          if [ -z "$file" ]; then
-            echo "Coverage file not found"
-            exit 1
-          fi
-          lineRatePct=$(python3 <<EOF
-          import xml.etree.ElementTree as ET
-          tree = ET.parse('$file')
-          root = tree.getroot()
-          # Cobertura uses 'line-rate' attribute (e.g., 0.85)
-          rate = float(root.attrib['line-rate'])
-          print(round(rate * 100))
-          EOF
-          )
-          if [ $lineRatePct -lt 0 ]; then
-            echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
-            echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          else
-            echo "## Test coverage passed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-            echo "**Line coverage:** $lineRatePct%" >> $GITHUB_STEP_SUMMARY
-            echo "coverage=$lineRatePct" >> $GITHUB_OUTPUT
-          fi
-          badgeKey="$REPOSITORY/${{ inputs.project-directory }}|$BRANCH"
-          json=$(jq -nc \
-            --arg key "$badgeKey" \
-            --arg displayName "Coverage" \
-            --arg value "$lineRatePct%" \
-            '{key: $key, displayName: $displayName, value: $value}')
-          curl \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $BADGE_SERVICE_API_KEY" \
-            -d "$json" \
-            https://app-github-custom-badges.azurewebsites.net/Badge
+        id: code_coverage
+        uses: FrendsPlatform/FrendsTasks/.github/actions/check-coverage@fspw-732-CommonLib-PoC
+        with:
+          min-line-coverage: ${{ inputs.min-coverage }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.ref_name }}
+          badge-key-scope: ${{ inputs.project-directory }}
+          badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+
+

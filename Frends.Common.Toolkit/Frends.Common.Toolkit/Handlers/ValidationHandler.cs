@@ -4,13 +4,24 @@ using System.Linq;
 
 namespace Frends.Common.Toolkit.Handlers;
 
+/// <summary>
+/// Validates objects by their ValidationAttributes.
+/// </summary>
 public static class ValidationHandler
 {
+    /// <summary>
+    /// Use this method to validate objects like Input, Connection, etc.
+    /// </summary>
+    /// <param name="objects">list of objects to validate</param>
     public static void Run(params object[] objects)
     {
-        var validationMessage = objects.Aggregate(string.Empty, (current, obj) => current + obj.Validate());
+        if (objects == null || objects.Length == 0)
+            throw new ValidationException("Validation failed:\nYou must provide objects to validate");
+        var validationMessage = objects.Select(obj => obj.Validate())
+            .Aggregate(string.Empty, (current, message) => current + message);
 
-        if (validationMessage != string.Empty) throw new ValidationException($"Validation failed:\n{validationMessage}");
+        if (validationMessage != string.Empty)
+            throw new ValidationException($"Validation failed:\n{validationMessage}");
     }
 
     private static string Validate<T>(this T objectToValidate)
@@ -22,5 +33,4 @@ public static class ValidationHandler
 
         return validateResults.Aggregate(string.Empty, (current, error) => current + $"{error.ErrorMessage}\n");
     }
-
 }
