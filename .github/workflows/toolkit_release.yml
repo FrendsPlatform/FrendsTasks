@@ -1,4 +1,6 @@
 name: Toolkit Release
+permissions:
+  contents: read
 
 on:
   workflow_call:
@@ -21,9 +23,6 @@ on:
         type: string
         default: '8.0.x'
         description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
-
-permissions:
-  contents: read
 
 jobs:
   Release:

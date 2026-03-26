@@ -1,5 +1,6 @@
 using System.Linq;
 using Frends.Common.Toolkit.Attributes;
+using NUnit.Framework;
 
 namespace Frends.Common.Toolkit.Tests.AttributesTests;
 
@@ -32,14 +33,13 @@ public class RequiredIfAttributeTests : AttributeTestBase
     }
 
     [TestCase("")]
-    [TestCase("foobar")]
     [TestCase(null)]
     public void ShouldValidateWithFailureWhenConditionMet(string name)
     {
         var test = new TestClass
         {
             Flag = true,
-            Name = string.Empty,
+            Name = name,
         };
         var res = Validate(test);
         Assert.That(res.First().ErrorMessage, Contains.Substring("Name is required"));

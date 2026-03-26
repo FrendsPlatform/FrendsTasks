@@ -9,7 +9,6 @@ inputs:
 
   working-directory:
     required: false
-    type: string
     default: '.'
     description: 'Working directory for the build, relative to repository root, e.g. Frends.Common.Toolkit'
 

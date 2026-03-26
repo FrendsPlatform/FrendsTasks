@@ -1,4 +1,6 @@
 name: Toolkit Test
+permissions:
+  contents: read
 
 on:
   workflow_call:
@@ -23,15 +25,12 @@ on:
         default: 80
         description: 'Minimum required line coverage percentage'
 
-permissions:
-  contents: read
-
 jobs:
   Lint:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory:  ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Setup
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main

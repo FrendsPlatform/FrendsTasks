@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace Frends.Common.Toolkit.Definitions;
 
 /// <summary>

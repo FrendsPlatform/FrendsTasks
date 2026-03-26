@@ -1,5 +1,6 @@
 using System.Linq;
 using Frends.Common.Toolkit.Attributes;
+using NUnit.Framework;
 
 namespace Frends.Common.Toolkit.Tests.AttributesTests;
 

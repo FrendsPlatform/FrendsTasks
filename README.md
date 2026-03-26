@@ -1,6 +1,6 @@
 # Frends Tasks
 
-This repository serves as central place for sharing Frends Tasks related things. Currently, it means:
+This repository serves as a central place for sharing Frends Tasks related things. Currently, it means:
 
 - [Workflows](/.github/workflows) – GitHub Actions workflows files used by all Frends Tasks.
 - [Analyzers](/FrendsTaskAnalyzers) - Coding standards analyzers for Frends Tasks.

@@ -3,7 +3,6 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>disable</Nullable>
-
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
@@ -17,11 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="NUnit.Framework"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Frends.Common.Toolkit\Frends.Common.Toolkit.csproj" />
+        <ProjectReference Include="..\Frends.Common.Toolkit\Frends.Common.Toolkit.csproj"/>
     </ItemGroup>
 
 </Project>

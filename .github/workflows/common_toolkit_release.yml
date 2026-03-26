@@ -1,4 +1,6 @@
 name: Common Toolkit Release
+permissions:
+  contents: read
 
 on:
   push:
@@ -14,5 +16,4 @@ jobs:
     with:
       working-directory: 'Frends.Common.Toolkit'
       project-directory: 'Frends.Common.Toolkit'
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    secrets: inherit
