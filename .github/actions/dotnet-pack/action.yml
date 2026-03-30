@@ -1,5 +1,5 @@
-name: .NET Setup & Restore
-description: Checkout, setup .NET SDK, and restore dependencies
+name: Pack .NET project
+description: Checkout, setup .NET SDK, restore dependencies, build and pack a .NET project with one step
 
 inputs:
   dotnet-version:
@@ -28,3 +28,11 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: dotnet restore
+
+    - name: Build
+      shell: bash
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Pack
+      shell: bash
+      run: dotnet pack --no-restore --no-build --configuration Release

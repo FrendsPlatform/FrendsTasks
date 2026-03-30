@@ -9,15 +9,10 @@ on:
         required: true
         description: 'API key for NuGet.org to publish the package'
     inputs:
-      working-directory:
-        required: false
-        type: string
-        default: '.'
-        description: 'Working directory for the build, relative to repository root, e.g. Frends.Common.Toolkit'
       project-directory:
         required: true
         type: string
-        description: 'Directory of the project to build, relative to working directory, e.g. Frends.Common.Toolkit (so from root it would be Frends.Common.Toolkit/Frends.Common.Toolkit)'
+        description: 'Directory of the project to build. relative to repository root. E.g. Frends.Salesforce.Toolkit/Frends.Salesforce.Toolkit'
       dotnet-version:
         required: false
         type: string
@@ -26,18 +21,18 @@ on:
 
 jobs:
   Release:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.project-directory }}
     steps:
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-pack@main
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
-          working-directory: ${{ inputs.working-directory }}
+          working-directory: ${{ inputs.project-directory }}
 
       - id: project_version
         name: Extract project version
@@ -45,15 +40,9 @@ jobs:
           version=$(dotnet msbuild ./${{inputs.project-directory}}/*.csproj --getProperty:Version -nologo)
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Pack
-        run: dotnet pack --no-restore --no-build --configuration Release
-
       - name: Push NuGet package
         run: |
-          dotnet nuget push ./${{inputs.project-directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
+          dotnet nuget push ${{inputs.project-directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key ${{ secrets.NUGETORG_API_KEY }}
 
