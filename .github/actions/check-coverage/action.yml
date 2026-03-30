@@ -40,9 +40,7 @@ runs:
 
         file="$(find . -name "${{ inputs.coverage-file-pattern }}" 2>/dev/null | head -n 1)"
         if [ -z "$file" ]; then
-          echo "Coverage file not found (${{
-            inputs.coverage-file-pattern
-          }})"
+          echo "Coverage file not found: (${{ inputs.coverage-file-pattern }})"
           exit 1
         fi
 

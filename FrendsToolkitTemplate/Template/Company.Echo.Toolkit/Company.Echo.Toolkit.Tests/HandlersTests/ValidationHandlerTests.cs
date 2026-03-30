@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Company.Echo.Toolkit.Handlers;
 using NUnit.Framework;
 
-namespace Company.Echo.Toolkit.Tests;
+namespace Company.Echo.Toolkit.Tests.HandlersTests;
 
 public class ValidationHandlerTests
 {
