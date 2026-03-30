@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.Common.Toolkit.Tests.AttributesTests;
+namespace Company.Echo.Toolkit.Tests.AttributesTests;
 
 public abstract class AttributeTestBase
 {

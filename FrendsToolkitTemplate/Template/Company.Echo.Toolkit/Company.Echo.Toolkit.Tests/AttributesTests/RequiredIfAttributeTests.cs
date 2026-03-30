@@ -1,8 +1,8 @@
 using System.Linq;
-using Frends.Common.Toolkit.Attributes;
+using Company.Echo.Toolkit.Attributes;
 using NUnit.Framework;
 
-namespace Frends.Common.Toolkit.Tests.AttributesTests;
+namespace Company.Echo.Toolkit.Tests.AttributesTests;
 
 public class RequiredIfAttributeTests : AttributeTestBase
 {

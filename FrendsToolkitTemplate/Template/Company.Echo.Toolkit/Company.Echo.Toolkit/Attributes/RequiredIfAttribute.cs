@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Frends.Common.Toolkit.Attributes;
+namespace Company.Echo.Toolkit.Attributes;
 
 /// <summary>
 /// Validates that a property is required if another property has a specific value.

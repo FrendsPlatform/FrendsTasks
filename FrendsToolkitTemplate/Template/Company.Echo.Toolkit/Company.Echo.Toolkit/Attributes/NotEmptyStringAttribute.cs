@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.Common.Toolkit.Attributes;
+namespace Company.Echo.Toolkit.Attributes;
 
 /// <summary>
 /// Validates that a string property is not null or empty.

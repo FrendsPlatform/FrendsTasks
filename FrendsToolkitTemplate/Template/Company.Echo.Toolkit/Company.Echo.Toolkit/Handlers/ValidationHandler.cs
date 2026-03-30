@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Frends.Common.Toolkit.Handlers;
+namespace Company.Echo.Toolkit.Handlers;
 
 /// <summary>
 /// Validates objects by their ValidationAttributes.

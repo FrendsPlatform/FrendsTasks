@@ -1,6 +1,6 @@
 using System;
 
-namespace Frends.Common.Toolkit.Definitions;
+namespace Company.Echo.Toolkit.Definitions;
 
 /// <summary>
 /// Object representing an error that should be returned when task execution failed.

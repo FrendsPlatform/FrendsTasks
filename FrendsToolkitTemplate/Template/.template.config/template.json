@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Frends",
+  "classifications": [
+    "Solution"
+  ],
+  "name": "Frends Toolkit",
+  "identity": "frends-toolkit",
+  "shortName": "frends-toolkit",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "sourceName": "Company.Echo.Toolkit",
+  "symbols": {
+    "FullToolkitName": {
+      "isRequired": true,
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Full name in format: Company.System.Toolkit e.g. Frends.Salesforce.Toolkit"
+    },
+    "name": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "ref",
+            "value": "FullToolkitName"
+          }
+        ]
+      }
+    },
+    "CompanyName": {
+      "type": "derived",
+      "valueSource": "FullToolkitName",
+      "valueTransform": "GetCompanyName",
+      "replaces": "Company",
+      "FileRename": "Company"
+    },
+    "ClassName": {
+      "type": "derived",
+      "valueSource": "FullToolkitName",
+      "valueTransform": "GetSystemName",
+      "replaces": "Echo",
+      "FileRename": "Echo"
+    },
+    "CurrentDate": {
+      "type": "generated",
+      "generator": "now",
+      "parameters": {
+        "format": "yyyy-MM-dd"
+      },
+      "replaces": "GeneratedDate"
+    }
+  },
+  "forms": {
+    "GetCompanyName": {
+      "identifier": "replace",
+      "pattern": "^([^.]+)\\.[^.]+\\.[^.]+$",
+      "replacement": "$1"
+    },
+    "GetSystemName": {
+      "identifier": "replace",
+      "pattern": "^.*\\.([^.]+)\\.[^.]+$",
+      "replacement": "$1"
+    }
+  }
+}

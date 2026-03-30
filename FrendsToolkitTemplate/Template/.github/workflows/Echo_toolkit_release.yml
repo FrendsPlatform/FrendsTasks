@@ -1,4 +1,4 @@
-name: Common Toolkit Release
+name: Echo Toolkit Release
 permissions:
   contents: read
 
@@ -7,13 +7,13 @@ on:
     branches:
       - main
     paths:
-      - 'Frends.Common.Toolkit/**'
+      - 'Company.Echo.Toolkit/**'
   workflow_dispatch:
 
 jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_release.yml@main
     with:
-      working-directory: 'Frends.Common.Toolkit'
-      project-directory: 'Frends.Common.Toolkit'
+      working-directory: 'Company.Echo.Toolkit'
+      project-directory: 'Company.Echo.Toolkit'
     secrets: inherit

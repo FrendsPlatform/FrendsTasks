@@ -1,4 +1,4 @@
-namespace Frends.Common.Toolkit.Definitions;
+namespace Company.Echo.Toolkit.Definitions;
 
 /// <summary>
 /// Result object returned by a task.

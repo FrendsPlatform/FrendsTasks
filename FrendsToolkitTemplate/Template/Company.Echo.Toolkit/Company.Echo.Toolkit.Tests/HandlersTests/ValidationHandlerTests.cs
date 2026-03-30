@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Frends.Common.Toolkit.Handlers;
+using Company.Echo.Toolkit.Handlers;
 using NUnit.Framework;
 
-namespace Frends.Common.Toolkit.Tests;
+namespace Company.Echo.Toolkit.Tests;
 
 public class ValidationHandlerTests
 {
