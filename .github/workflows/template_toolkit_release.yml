@@ -51,7 +51,9 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ env.nuget_api_key }}
 
       - name: Push NuGet package
-        shell: bash
         run: |
-          dotnet nuget push "${{ env.working_directory }}/bin/Release/frends-toolkit.*.nupkg" \
-            ${{ env.skip_duplicate == 'true' && '--skip-duplicate' || '' }}
+          ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
+          if [ "${{ env.skip_duplicate }}" = "true" ]; then
+            ARGS="$ARGS --skip-duplicate"
+          fi
+          dotnet nuget push bin/Release/frends-toolkit.*.nupkg $ARGS

@@ -33,11 +33,10 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ env.nuget_api_key }}
 
-      - name: Push NuGet package(s)
+      - name: Push NuGet package
         run: |
           ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
           if [ "${{ env.skip_duplicate }}" = "true" ]; then
             ARGS="$ARGS --skip-duplicate"
           fi
           dotnet nuget push bin/Release/frendstasktemplate.*.nupkg $ARGS
-
