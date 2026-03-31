@@ -16,9 +16,6 @@ runs:
   using: composite
 
   steps:
-    - name: Checkout
-      uses: actions/checkout@v6.0.2
-
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v5.2.0
       with:

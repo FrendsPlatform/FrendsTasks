@@ -68,8 +68,10 @@ jobs:
       run:
         working-directory: ${{ inputs.project-directory }}/..
     steps:
+      - uses: actions/checkout@v6.0.2
+
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-pack@main
+        uses: ./.github/actions/dotnet-pack
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
           working-directory: ${{ inputs.project-directory }}/..

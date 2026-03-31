@@ -11,13 +11,15 @@ on:
 env:
   azure_artifacts_feed_url: ${{ github.ref_name == 'main' && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json' || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json' }}
   nuget_api_key: ${{ github.ref_name == 'main' && secrets.TASKS_FEED_API_KEY || secrets.TASKS_TEST_FEED_API_KEY }}
-  skip_duplicate: ${{ github.ref_name == 'main' }}
+  skip_duplicate: ${{ github.ref_name != 'main' }}
 
 jobs:
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6.0.2
+
       - name: Setup
         uses: ./.github/actions/dotnet-pack
         with:
