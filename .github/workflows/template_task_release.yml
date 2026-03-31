@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'FrendsTaskTemplate/**'
+      - '.github/workflows/template_task_release.yml'
 
 env:
   azure_artifacts_feed_url: ${{ github.ref_name == 'main' && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json' || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json' }}
@@ -16,6 +17,9 @@ jobs:
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FrendsTaskTemplate
     steps:
       - uses: actions/checkout@v6.0.1
 
