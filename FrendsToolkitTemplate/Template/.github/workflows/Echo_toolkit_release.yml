@@ -14,6 +14,5 @@ jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_release.yml@main
     with:
-      working-directory: 'Company.Echo.Toolkit'
-      project-directory: 'Company.Echo.Toolkit'
+      project-directory: 'Company.Echo.Toolkit/Company.Echo.Toolkit'
     secrets: inherit

@@ -37,12 +37,12 @@ jobs:
       - id: project_version
         name: Extract project version
         run: |
-          version=$(dotnet msbuild ./${{inputs.project-directory}}/*.csproj --getProperty:Version -nologo)
+          version=$(dotnet msbuild ./*.csproj --getProperty:Version -nologo)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Push NuGet package
         run: |
-          dotnet nuget push ${{inputs.project-directory}}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
+          dotnet nuget push ./bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
             --source https://api.nuget.org/v3/index.json \
             --api-key ${{ secrets.NUGETORG_API_KEY }}
 
@@ -52,7 +52,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./${{ inputs.project-directory }}/bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
+            ./bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
           name: '${{inputs.project-directory}} v${{ steps.project_version.outputs.version }}'
           tag_name: ${{inputs.project-directory}}-v${{ steps.project_version.outputs.version }}
           fail_on_unmatched_files: true
