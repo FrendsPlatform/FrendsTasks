@@ -19,6 +19,9 @@ jobs:
   build:
     name: Build on ubuntu-latest
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.working_directory }}
     steps:
       - uses: actions/checkout@v6.0.2
 
@@ -26,7 +29,6 @@ jobs:
         uses: ./.github/actions/dotnet-pack
         with:
           dotnet-version: ${{ env.dotnet-version }}
-          working-directory: ${{ env.working_directory }}
 
       - name: Test
         run: dotnet test --configuration Release --collect:"XPlat Code Coverage"
