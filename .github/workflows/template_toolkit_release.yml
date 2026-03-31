@@ -42,6 +42,8 @@ jobs:
           badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
 
       - name: Push NuGet package(s)
+        env:
+          NUGET_AUTH_TOKEN: ${{ env.nuget_api_key }}
         run: |
           ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
           if [ "${{ env.skip_duplicate }}" = "true" ]; then
