@@ -15,7 +15,6 @@ env:
   working_directory: FrendsToolkitTemplate
   dotnet-version: '8.0.x'
 
-
 jobs:
   build:
     name: Build on ubuntu-latest
