@@ -28,8 +28,10 @@ runs:
 
     - name: Build
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: dotnet build --no-restore --configuration Release
 
     - name: Pack
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: dotnet pack --no-restore --no-build --configuration Release
