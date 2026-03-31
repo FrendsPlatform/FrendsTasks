@@ -81,7 +81,7 @@ Template options:
 
 To develop this template, you can pull the repository.
 
-`git pull https://github.com/FrendsPlatform/FrendsTasks.git`
+`git clone https://github.com/FrendsPlatform/FrendsTasks.git`
 
 To test the changes, you can pack a new nuget from the root folder:
 
