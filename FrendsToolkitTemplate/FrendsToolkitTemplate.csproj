@@ -4,9 +4,9 @@
         <PackageType>Template</PackageType>
         <PackageVersion>1.0.0</PackageVersion>
         <PackageId>frends-toolkit</PackageId>
-        <Title>Frends Task Tookit template</Title>
+        <Title>Frends Task Toolkit template</Title>
         <Authors>Frends</Authors>
-        <Description>Template for creating tookit for Frends Tasks per System.</Description>
+        <Description>Template for creating toolkit for Frends Tasks per System.</Description>
         <PackageProjectUrl>https://github.com/FrendsPlatform/FrendsTasks</PackageProjectUrl>
         <PackageTags>dotnet-new;templates;frends</PackageTags>
         <TargetFramework>net8.0</TargetFramework>

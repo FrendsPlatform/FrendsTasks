@@ -6,7 +6,7 @@ namespace Company.Echo.Toolkit.Definitions;
 public interface ITaskOptions
 {
     /// <summary>
-    /// Throw an error if the task fails. Otherwise return a Result object with Success = false;
+    /// Throw an error if the task fails. Otherwise, return a Result object with Success = false;
     /// </summary>
     bool ThrowErrorOnFailure { get; set; }
 

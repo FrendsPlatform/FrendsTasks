@@ -4,7 +4,7 @@ namespace Company.Echo.Toolkit.Definitions;
 
 /// <summary>
 /// Object representing an error that should be returned when task execution failed.
-/// Contains a message describing the error and an optional Exception object with additional information about the error.
+/// Contains a message describing the error and an Exception object with additional information about the error.
 /// </summary>
 public interface ITaskError
 {

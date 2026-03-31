@@ -1,1 +1,84 @@
-Here will be desc what is this template and how to install it.
+# Frends Task template
+
+[![BuildMaster](https://github.com/FrendsPlatform/FrendsTasks/actions/workflows/template_toolkit_release.yml/badge.svg)](https://github.com/FrendsPlatform/FrendsTaskTemplate/actions/workflows/template_task_release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+This template can be used to create Toolkit for system-wide Frends Tasks for [Frends](https://frends.com) integration
+platform. This enables you to share common code between tasks related to one system.
+
+## Prerequisite
+
+You will need the [.NET SDK](https://dotnet.microsoft.com/en-us/download/dotnet), at
+minimum [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) is required.
+
+Some IDEs allow you to install the template to the project wizard but can always
+use [dotnet new](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-new) command when that is not possible.
+
+## Install the template
+
+You can install the template using the following command.
+
+`dotnet new install frends-toolkit --nuget-source https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json`
+
+## Clone repository
+
+You need to clone the repository for the new Task. After cloning, move to that folder.
+
+## Create a new Task
+
+You can create a new Task by running the following command in the Task's repository folder.
+
+`dotnet new frends-toolkit -F Frends.ClassName.MethodName`
+
+## Get help using the template
+
+`dotnet new frends-toolkit -h`
+
+### Example output:
+
+```
+Frends Toolkit (C#)
+Author: Frends
+
+Usage:
+  dotnet new frends-toolkit [options] [template options]
+
+Options:
+  -n, --name <name>       The name for the output being created. If no name is specified, the name of the output directory is used.
+  -o, --output <output>   Location to place the generated output.
+  --dry-run               Displays a summary of what would happen if the given command line were run if it would result in a template creation.
+  --force                 Forces content to be generated even if it would change existing files.
+  --no-update-check       Disables checking for the template package updates when instantiating a template.
+  --project <project>     The project that should be used for context evaluation.
+  -lang, --language <C#>  Specifies the template language to instantiate.
+  --type <solution>       Specifies the template type to instantiate.
+
+Template options:
+  -F, --FullToolkitName <FullToolkitName>  Full name in format: Company.System.Toolkit e.g. Frends.Salesforce.Toolkit
+                                           Required: *true*
+                                           Type: string
+```
+
+## Update the template
+
+`dotnet new update`
+
+## Uninstall the template
+
+`dotnet new uninstall frends-toolkit`
+
+## Developing the template
+
+To develop this template, you can pull the repository.
+
+`git pull https://github.com/FrendsPlatform/FrendsTasks.git`
+
+To test the changes, you can pack a new nuget from the root folder:
+
+`dotnet pack`
+
+This command will build the project and create a NuGet package in .\bin\Debug
+
+To install this template from a locally created NuGet package use
+
+`dotnet new install <ABSOLUTE_PATH_TO_NUPKG_FILE>`

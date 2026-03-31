@@ -18,7 +18,7 @@ public static class ValidationHandler
         if (objects == null || objects.Length == 0)
             throw new ValidationException("Validation failed:\nYou must provide objects to validate");
         var validationMessage = objects.Select(obj => obj.Validate())
-            .Aggregate(string.Empty, (current, message) => current + message);
+            .Aggregate(string.Empty, (current, message) => string.Join(current, message));
 
         if (validationMessage != string.Empty)
             throw new ValidationException($"Validation failed:\n{validationMessage}");
@@ -31,6 +31,8 @@ public static class ValidationHandler
         List<ValidationResult> validateResults = [];
         Validator.TryValidateObject(objectToValidate, ctx, validateResults, true);
 
-        return validateResults.Aggregate(string.Empty, (current, error) => current + $"{error.ErrorMessage}\n");
+        return validateResults.Aggregate(
+            string.Empty,
+            (current, error) => string.Join(current, $"{error.ErrorMessage}\n"));
     }
 }

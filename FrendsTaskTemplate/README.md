@@ -1,6 +1,6 @@
 # Frends Task template
 
-[![BuildMaster](https://github.com/FrendsPlatform/FrendsTaskTemplate/actions/workflows/BuildMaster.yml/badge.svg)](https://github.com/FrendsPlatform/FrendsTaskTemplate/actions/workflows/BuildMaster.yml)
+[![BuildMaster](https://github.com/FrendsPlatform/FrendsTasks/actions/workflows/template_task_release.yml/badge.svg)](https://github.com/FrendsPlatform/FrendsTasks/actions/workflows/template_task_release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 This template can be used to create new .NET (previously .NET Core) Tasks for [Frends](https://frends.com) integration
@@ -81,7 +81,7 @@ Template options:
 
 To develop this template, you can pull the repository.
 
-`git pull https://github.com/FrendsPlatform/FrendsTaskTemplate.git`
+`git pull https://github.com/FrendsPlatform/FrendsTasks.git`
 
 To test the changes, you can pack a new nuget from the root folder:
 
