@@ -30,7 +30,7 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
-        working-directory: ${{ env.working_directory }}/Template/Company.Echo.Toolkit
+        working-directory: '${{ env.working_directory }}/Template/Company.Echo.Toolkit'
 
       - name: Test coverage
         id: code_coverage
