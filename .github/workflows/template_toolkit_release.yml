@@ -42,10 +42,9 @@ jobs:
           badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
 
       - name: Push NuGet package(s)
-        working-directory: ${{ env.working_directory }}
         run: |
           ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
           if [ "${{ env.skip_duplicate }}" = "true" ]; then
             ARGS="$ARGS --skip-duplicate"
           fi
-          dotnet nuget push bin/Release/frendstasktemplate.*.nupkg $ARGS
+          dotnet nuget push ${{ env.working_directory }}/bin/Release/frends-toolkit.*.nupkg $ARGS
