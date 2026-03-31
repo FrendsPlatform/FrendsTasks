@@ -1,5 +1,5 @@
 name: Pack .NET project
-description: Checkout, setup .NET SDK, restore dependencies, build and pack a .NET project with one step
+description: Setup .NET SDK, restore dependencies, build and pack a .NET project with one step
 
 inputs:
   dotnet-version:

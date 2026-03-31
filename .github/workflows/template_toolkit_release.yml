@@ -12,6 +12,9 @@ env:
   azure_artifacts_feed_url: ${{ github.ref_name == 'main' && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json' || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json' }}
   nuget_api_key: ${{ github.ref_name == 'main' && secrets.TASKS_FEED_API_KEY || secrets.TASKS_TEST_FEED_API_KEY }}
   skip_duplicate: ${{ github.ref_name != 'main' }}
+  working_directory: FrendsToolkitTemplate
+  dotnet-version: '8.0.x'
+
 
 jobs:
   build:
@@ -23,21 +26,20 @@ jobs:
       - name: Setup
         uses: ./.github/actions/dotnet-pack
         with:
-          dotnet-version: ${{ inputs.dotnet-version }}
-          working-directory: ${{ inputs.project-directory }}
+          dotnet-version: ${{ env.dotnet-version }}
+          working-directory: ${{ env.working_directory }}
 
       - name: Test
         run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
-        working-directory: ${{ inputs.project-directory }}/..
+        working-directory: ${{ env.working_directory }}/Template/Company.Echo.Toolkit
 
       - name: Test coverage
         id: code_coverage
         uses: ./.github/actions/check-coverage
         with:
-          min-line-coverage: ${{ inputs.min-coverage }}
           repository: ${{ github.repository }}
           branch: ${{ github.ref_name }}
-          badge-key-scope: ${{ inputs.project-directory }}
+          badge-key-scope: ${{ env.working_directory }}
           badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
 
       - name: Push NuGet package(s)
