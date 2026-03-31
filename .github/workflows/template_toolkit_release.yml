@@ -56,4 +56,4 @@ jobs:
           if [ "${{ env.skip_duplicate }}" = "true" ]; then
             ARGS="$ARGS --skip-duplicate"
           fi
-          dotnet nuget push bin/Release/frends-toolkit.*.nupkg $ARGS
+          dotnet nuget push ${{ env.working_directory }}/bin/Release/frends-toolkit.*.nupkg $ARGS
