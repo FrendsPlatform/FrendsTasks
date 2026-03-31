@@ -41,12 +41,17 @@ jobs:
           badge-key-scope: ${{ env.working_directory }}
           badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
 
-      - name: Push NuGet package(s)
+      #Additional setup needed to provide token to nuget push
+      - name: Setup dotnet for pushing
+        uses: actions/setup-dotnet@v5.0.1
+        with:
+          dotnet-version: '8.0.x'
+          source-url: ${{ env.azure_artifacts_feed_url }}
         env:
           NUGET_AUTH_TOKEN: ${{ env.nuget_api_key }}
+
+      - name: Push NuGet package
+        shell: bash
         run: |
-          ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
-          if [ "${{ env.skip_duplicate }}" = "true" ]; then
-            ARGS="$ARGS --skip-duplicate"
-          fi
-          dotnet nuget push ${{ env.working_directory }}/bin/Release/frends-toolkit.*.nupkg $ARGS
+          dotnet nuget push "${{ env.working_directory }}/bin/Release/frends-toolkit.*.nupkg" \
+            ${{ env.skip_duplicate == 'true' && '--skip-duplicate' || '' }}
