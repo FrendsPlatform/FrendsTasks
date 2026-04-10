@@ -255,7 +255,16 @@ jobs:
           rm -rf .analyzers
 
       - name: Test
-        run: dotnet test --collect:"XPlat Code Coverage"
+        shell: pwsh
+        run: |
+          $settingsFile = ".runtestsettings"
+          if (Test-Path $settingsFile) {
+            Write-Host "Using $settingsFile found in workspace."
+            dotnet test --settings $settingsFile --collect:"XPlat Code Coverage"
+          } else {
+            Write-Host "No $settingsFile file found. Running with default settings."
+            dotnet test --collect:"XPlat Code Coverage"
+          }
 
       - id: code_coverage
         name: Check code coverage
