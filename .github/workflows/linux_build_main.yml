@@ -262,7 +262,7 @@ jobs:
             Write-Host "Using $settingsFile found in workspace."
             dotnet test --settings $settingsFile --collect:"XPlat Code Coverage"
           } else {
-            Write-Host "No .runsettings file found. Running with default settings."
+            Write-Host "No $settingsFile file found. Running with default settings."
             dotnet test --collect:"XPlat Code Coverage"
           }
 
