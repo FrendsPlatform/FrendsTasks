@@ -1,0 +1,42 @@
+name: Release Task Template
+permissions:
+  contents: read
+
+on:
+  push:
+    paths:
+      - 'FrendsTaskTemplate/**'
+      - '.github/workflows/template_task_release.yml'
+
+env:
+  azure_artifacts_feed_url: ${{ github.ref_name == 'main' && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json' || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json' }}
+  nuget_api_key: ${{ github.ref_name == 'main' && secrets.TASKS_FEED_API_KEY || secrets.TASKS_TEST_FEED_API_KEY }}
+  skip_duplicate: ${{ github.ref_name != 'main' }}
+
+jobs:
+  build:
+    name: Build on ubuntu-latest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FrendsTaskTemplate
+    steps:
+      - uses: actions/checkout@v6.0.1
+
+      - name: Pack release version
+        run: dotnet pack --configuration Release
+
+      - uses: actions/setup-dotnet@v5.0.1
+        with:
+          dotnet-version: '8.0.x'
+          source-url: ${{ env.azure_artifacts_feed_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ env.nuget_api_key }}
+
+      - name: Push NuGet package
+        run: |
+          ARGS="--api-key ${{ env.nuget_api_key }} --source ${{ env.azure_artifacts_feed_url }}"
+          if [ "${{ env.skip_duplicate }}" = "true" ]; then
+            ARGS="$ARGS --skip-duplicate"
+          fi
+          dotnet nuget push bin/Release/frendstasktemplate.*.nupkg $ARGS
