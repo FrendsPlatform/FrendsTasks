@@ -1,0 +1,60 @@
+name: Toolkit Release
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    secrets:
+      NUGETORG_API_KEY:
+        required: true
+        description: 'API key for NuGet.org to publish the package'
+    inputs:
+      project-directory:
+        required: true
+        type: string
+        description: 'Directory of the project to build. relative to repository root. E.g. Frends.Salesforce.Toolkit/Frends.Salesforce.Toolkit'
+      dotnet-version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+
+jobs:
+  Release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ${{ inputs.project-directory }}
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/dotnet-pack
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.project-directory }}
+
+      - id: project_version
+        name: Extract project version
+        run: |
+          version=$(dotnet msbuild ./*.csproj --getProperty:Version -nologo)
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Push NuGet package
+        run: |
+          dotnet nuget push ./bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key ${{ secrets.NUGETORG_API_KEY }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2.6.1
+        with:
+          draft: false
+          prerelease: false
+          files: |
+            ./bin/Release/*.${{ steps.project_version.outputs.version }}.nupkg
+          name: '${{inputs.project-directory}} v${{ steps.project_version.outputs.version }}'
+          tag_name: ${{inputs.project-directory}}-v${{ steps.project_version.outputs.version }}
+          fail_on_unmatched_files: true

@@ -1,0 +1,84 @@
+name: Toolkit Test
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      project-directory:
+        required: true
+        type: string
+        description: 'Directory of the project to build, relative to working directory, e.g. Frends.Common.Toolkit (so from root it would be Frends.Common.Toolkit/Frends.Common.Toolkit)'
+      dotnet-version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      min-coverage:
+        required: false
+        type: number
+        default: 80
+        description: 'Minimum required line coverage percentage'
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.project-directory }}/..
+    steps:
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-pack@main
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.project-directory }}/..
+
+      - name: Lint
+        run: dotnet format --no-restore --verify-no-changes
+
+  Test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.project-directory }}/..
+    steps:
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-pack@main
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.project-directory }}/..
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+
+      - name: Test coverage
+        id: code_coverage
+        uses: FrendsPlatform/FrendsTasks/.github/actions/check-coverage@main
+        with:
+          min-line-coverage: ${{ inputs.min-coverage }}
+          repository: ${{ github.repository }}
+          branch: ${{ github.ref_name }}
+          badge-key-scope: ${{ inputs.project-directory }}
+          badge-service-api-key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+
+  Build:
+    needs: [Lint, Test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.project-directory }}/..
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Setup
+        uses: ./.github/actions/dotnet-pack
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          working-directory: ${{ inputs.project-directory }}/..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: nuget-packages
+          path: '${{ inputs.project-directory }}/bin/Release/*.nupkg'
+          retention-days: 7

@@ -1,0 +1,18 @@
+name: Echo Toolkit Test
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'Company.Echo.Toolkit/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/toolkit_test.yml@main
+    with:
+      project-directory: 'Company.Echo.Toolkit/Company.Echo.Toolkit'
+    secrets: inherit
