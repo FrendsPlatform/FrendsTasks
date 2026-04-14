@@ -1,7 +1,7 @@
 using System;
 using dotenv.net;
 
-namespace Frends.Echo.Execute.Tests;
+namespace Party.Echo.Execute.Tests;
 
 public abstract class TestBase
 {

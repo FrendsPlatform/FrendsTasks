@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Task": "Frends.Echo.Execute",
+    "Task": "Party.Echo.Execute",
     "Migrations": [
       {
         "Version": "1.0.0",

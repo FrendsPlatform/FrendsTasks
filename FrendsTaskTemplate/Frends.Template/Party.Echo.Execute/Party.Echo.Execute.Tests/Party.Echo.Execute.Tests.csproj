@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Frends.Echo.Execute\Frends.Echo.Execute.csproj"/>
+        <ProjectReference Include="..\Party.Echo.Execute\Party.Echo.Execute.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

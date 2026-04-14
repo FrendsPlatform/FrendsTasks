@@ -1,9 +1,9 @@
-# Frends.Echo.Execute
+# Party.Echo.Execute
 
 TaskDescription
 
-[![Execute_build](https://github.com/FrendsPlatform/Frends.Echo/actions/workflows/Execute_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.Echo/actions/workflows/Execute_test_on_main.yml)
-![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.Echo/Frends.Echo.Execute|main)
+[![Execute_build](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_test_on_main.yml)
+![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Party.Echo/Party.Echo.Execute|main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## Installing
@@ -14,7 +14,7 @@ You can install the Task via Frends UI Task View.
 
 ### Clone a copy of the repository
 
-`git clone https://github.com/FrendsPlatform/Frends.Echo.git`
+`git clone https://github.com/FrendsPlatform/Party.Echo.git`
 
 ### Build the project
 

@@ -1,7 +1,7 @@
 using System;
-using Frends.Echo.Execute.Definitions;
+using Party.Echo.Execute.Definitions;
 
-namespace Frends.Echo.Execute.Helpers;
+namespace Party.Echo.Execute.Helpers;
 
 internal static class ErrorHandler
 {

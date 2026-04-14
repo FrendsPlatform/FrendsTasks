@@ -1,8 +1,8 @@
 using System.Threading;
-using Frends.Echo.Execute.Definitions;
+using Party.Echo.Execute.Definitions;
 using NUnit.Framework;
 
-namespace Frends.Echo.Execute.Tests;
+namespace Party.Echo.Execute.Tests;
 
 [TestFixture]
 public class FunctionalTests : TestBase

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using Frends.Echo.Execute.Definitions;
+using Party.Echo.Execute.Definitions;
 using NUnit.Framework;
 
-namespace Frends.Echo.Execute.Tests;
+namespace Party.Echo.Execute.Tests;
 
 // TODO: Adjust the test to use a real invalid Input scenario (e.g., missing or malformed data)
 [TestFixture]

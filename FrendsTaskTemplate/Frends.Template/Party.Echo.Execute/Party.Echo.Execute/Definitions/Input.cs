@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.Echo.Execute.Definitions;
+namespace Party.Echo.Execute.Definitions;
 
 /// <summary>
 /// Essential parameters.

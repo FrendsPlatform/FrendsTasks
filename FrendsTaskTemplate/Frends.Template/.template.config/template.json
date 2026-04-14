@@ -11,7 +11,7 @@
     "language": "C#",
     "type": "solution"
   },
-  "sourceName": "Frends.Echo.Execute",
+  "sourceName": "Party.Echo.Execute",
   "symbols": {
     "Description": {
       "type": "parameter",
@@ -25,7 +25,7 @@
       "type": "parameter",
       "datatype": "string",
       "defaultValue": "Frends.Echo.Execute",
-      "description": "Full name in format: Company.System.Action e.g. Frends.Xml.Write"
+      "description": "Full name in format: Party.System.Action e.g. Frends.Xml.Write"
     },
     "name": {
       "type": "generated",
@@ -39,12 +39,12 @@
         ]
       }
     },
-    "CompanyName": {
+    "PartyName": {
       "type": "derived",
       "valueSource": "FullTaskName",
-      "valueTransform": "GetCompanyName",
-      "replaces": "Frends",
-      "FileRename": "Frends"
+      "valueTransform": "GetPartyName",
+      "replaces": "Party",
+      "FileRename": "Party"
     },
     "ClassName": {
       "type": "derived",
@@ -78,7 +78,7 @@
     }
   },
   "forms": {
-    "GetCompanyName": {
+    "GetPartyName": {
       "identifier": "replace",
       "pattern": "^([^.]+)\\.[^.]+\\.[^.]+$",
       "replacement": "$1"

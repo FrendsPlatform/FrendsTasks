@@ -2,10 +2,10 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using Frends.Echo.Execute.Definitions;
-using Frends.Echo.Execute.Helpers;
+using Party.Echo.Execute.Definitions;
+using Party.Echo.Execute.Helpers;
 
-namespace Frends.Echo.Execute;
+namespace Party.Echo.Execute;
 
 /// <summary>
 /// Task Class for Echo operations.
@@ -14,7 +14,7 @@ public static class Echo
 {
     /// <summary>
     /// TaskDescription
-    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-Echo-Execute)
+    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Party-Echo-Execute)
     /// </summary>
     /// <param name="input">Essential parameters.</param>
     /// <param name="connection">Connection parameters.</param>

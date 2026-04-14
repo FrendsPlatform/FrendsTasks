@@ -7,14 +7,14 @@ on:
     branches-ignore:
       - main
     paths:
-      - 'Frends.Echo.Execute/**'
+      - 'Party.Echo.Execute/**'
   workflow_dispatch:
 
 jobs:
   build:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_test.yml@main
     with:
-      workdir: Frends.Echo.Execute
+      workdir: Party.Echo.Execute
       dotnet_version: 8.0.x
       strict_analyzers: true
     secrets:

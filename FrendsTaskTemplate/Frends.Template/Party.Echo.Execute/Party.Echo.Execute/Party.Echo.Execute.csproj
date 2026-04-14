@@ -3,16 +3,16 @@
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Version>1.0.0</Version>
-        <Authors>Frends</Authors>
+        <Authors>Party</Authors>
         <Copyright>Copyright (c) GeneratedYear Frends EiPaaS</Copyright>
-        <Company>Frends</Company>
+        <Company>Party</Company>
         <Product>Frends</Product>
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Description>TaskDescription</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/FrendsPlatform/Frends.Echo/tree/main/Frends.Echo.Execute</RepositoryUrl>
+        <RepositoryUrl>https://github.com/FrendsPlatform/Party.Echo/tree/main/Party.Echo.Execute</RepositoryUrl>
         <Nullable>disable</Nullable>
         <NoWarn>
             CS1591, <!-- StyleCop SA1602 already enforces documentation for enum members -->
