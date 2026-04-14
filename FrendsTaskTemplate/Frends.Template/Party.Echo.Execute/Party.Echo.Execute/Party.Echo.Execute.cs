@@ -51,7 +51,7 @@ public static class Echo
         }
         catch (Exception ex)
         {
-            return ErrorHandler.Handle(ex, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+            return ex.Handle(options);
         }
     }
 }
