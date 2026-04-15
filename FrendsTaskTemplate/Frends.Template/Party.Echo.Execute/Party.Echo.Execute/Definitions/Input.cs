@@ -14,7 +14,8 @@ public class Input
     /// <example>foobar</example>
     [DisplayFormat(DataFormatString = "Text")]
     [DefaultValue("Lorem ipsum dolor sit amet.")]
-    public string Content { get; set; }
+    [Required]
+    public string Content { get; set; } = string.Empty;
 
     /// <summary>
     /// Number of times to repeat the input string.

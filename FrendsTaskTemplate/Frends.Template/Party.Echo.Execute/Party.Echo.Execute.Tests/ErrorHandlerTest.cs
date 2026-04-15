@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading;
-using Party.Echo.Execute.Definitions;
 using NUnit.Framework;
 
 namespace Party.Echo.Execute.Tests;
 
 // TODO: Adjust the test to use a real invalid Input scenario (e.g., missing or malformed data)
 [TestFixture]
-public class ErrorHandlerTest
+internal class ErrorHandlerTest : TestBase
 {
     private const string CustomErrorMessage = "CustomErrorMessage";
 
@@ -38,17 +37,4 @@ public class ErrorHandlerTest
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
     }
-
-    private static Input DefaultInput() => new()
-    {
-        Repeat = -1, // Invalid value to cause an exception
-    };
-
-    private static Connection DefaultConnection() => new();
-
-    private static Options DefaultOptions() => new()
-    {
-        ThrowErrorOnFailure = true,
-        ErrorMessageOnFailure = string.Empty,
-    };
 }

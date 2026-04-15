@@ -3,11 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Party.Echo.Execute.Definitions;
 
-// TODO: Remove this class if the task does not make connections
-
 /// <summary>
 /// Connection parameters.
 /// </summary>
+// TODO: Remove this class if the task does not make connections
 public class Connection
 {
     /// <summary>

@@ -30,8 +30,7 @@ public static class Echo
     {
         try
         {
-            // TODO: Do something with connection parameters, e.g., connect to a service.
-            _ = connection.ConnectionString;
+            ValidationHandler.Run(input, connection, options);
 
             // Cancellation token should be provided to methods that support it
             // and checked during long-running operations, e.g., loops

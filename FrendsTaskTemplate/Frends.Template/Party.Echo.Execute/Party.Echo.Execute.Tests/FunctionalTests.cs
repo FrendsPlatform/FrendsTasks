@@ -1,11 +1,11 @@
 using System.Threading;
-using Party.Echo.Execute.Definitions;
 using NUnit.Framework;
+using Party.Echo.Execute.Definitions;
 
 namespace Party.Echo.Execute.Tests;
 
 [TestFixture]
-public class FunctionalTests : TestBase
+internal class FunctionalTests : TestBase
 {
     [Test]
     public void ShouldRepeatContentWithDelimiter()
