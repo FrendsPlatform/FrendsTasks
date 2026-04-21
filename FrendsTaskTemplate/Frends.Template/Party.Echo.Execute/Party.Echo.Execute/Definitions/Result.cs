@@ -1,4 +1,4 @@
-﻿namespace Frends.Echo.Execute.Definitions;
+﻿namespace Party.Echo.Execute.Definitions;
 
 /// <summary>
 /// Result of the task.

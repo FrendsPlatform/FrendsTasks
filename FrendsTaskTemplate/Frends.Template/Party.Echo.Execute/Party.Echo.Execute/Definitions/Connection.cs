@@ -1,13 +1,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.Echo.Execute.Definitions;
-
-// TODO: Remove this class if the task does not make connections
+namespace Party.Echo.Execute.Definitions;
 
 /// <summary>
 /// Connection parameters.
 /// </summary>
+// TODO: Remove this class if the task does not make connections
 public class Connection
 {
     /// <summary>

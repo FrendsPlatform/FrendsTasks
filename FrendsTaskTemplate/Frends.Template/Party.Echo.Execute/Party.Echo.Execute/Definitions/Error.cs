@@ -1,6 +1,6 @@
 using System;
 
-namespace Frends.Echo.Execute.Definitions;
+namespace Party.Echo.Execute.Definitions;
 
 /// <summary>
 /// Error that occurred during the task.
