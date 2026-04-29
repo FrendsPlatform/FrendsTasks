@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Scans a NuGet feed for all Frends.* packages and downloads each with its full
     transitive dependency graph.
@@ -193,7 +193,7 @@ foreach ($pkg in $allPackages) {
         Write-Host ""
     }
     catch {
-        $msg = "FAILED: $($pkg.Id) $($pkg.Version) — $_"
+        $msg = "FAILED: $($pkg.Id) $($pkg.Version) - $_"
         Write-Warning $msg
         $failed.Add("$($pkg.Id) $($pkg.Version)")
         Write-Host ""
