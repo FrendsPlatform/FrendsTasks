@@ -1,8 +1,17 @@
 # Frends Task Dependency Downloader
 
-A PowerShell script that downloads a NuGet package and its **full transitive dependency graph** as `.nupkg` files — useful for offline installs, air-gapped environments, or pre-staging Frends task packages.
+Two PowerShell scripts for downloading Frends task NuGet packages and their full transitive dependency graphs as `.nupkg` files — useful for offline installs, air-gapped environments, or pre-staging Frends task packages.
 
-## How it works
+| Script | Purpose |
+|---|---|
+| `Get-NuGetPackageDependencies.ps1` | Download one specific package + its dependencies |
+| `Download-AllFrendsTasks.ps1` | Scan the feed and download **all** `Frends.*` packages |
+
+---
+
+## `Get-NuGetPackageDependencies.ps1`
+
+### How it works
 
 The script spins up a throwaway SDK-style `.csproj` in a temp directory, points it at the supplied NuGet feed, adds the requested package, runs `dotnet restore`, then copies every resolved `.nupkg` into your output folder. The temp directory is cleaned up automatically on exit.
 
@@ -64,6 +73,62 @@ Download from the public nuget.org feed:
 |---|---|
 | Main | `https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2` |
 | Legacy | `https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/legacy/nuget/v2` |
+
+---
+
+## `Download-AllFrendsTasks.ps1`
+
+Scans a NuGet v2 feed for every `Frends.*` package (latest stable version), then downloads each one with its full dependency graph into a per-task subfolder.
+
+### Output structure
+
+```
+packages\
+    Frends.AmazonKinesis.PutRecords\
+        Frends.AmazonKinesis.PutRecords.1.0.0.nupkg
+        AWSSDK.Kinesis.3.7.x.nupkg
+        ...
+    Frends.Salesforce.Query\
+        Frends.Salesforce.Query.2.1.0.nupkg
+        ...
+```
+
+### Usage
+
+```powershell
+.\Download-AllFrendsTasks.ps1 -FeedUrl <feed-url> [-OutputFolder <path>] [-TargetFramework <tfm>] [-IdPrefix <prefix>] [-ContinueOnError]
+```
+
+### Parameters
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `FeedUrl` | Yes | — | NuGet v2 feed URL |
+| `OutputFolder` | No | `.\packages` | Root output folder |
+| `TargetFramework` | No | `net8.0` | TFM for dependency resolution |
+| `IdPrefix` | No | `Frends.` | Package ID prefix to search for |
+| `ContinueOnError` | No | `false` | Skip failures and continue instead of aborting |
+
+### Examples
+
+Download all Frends tasks from the main feed:
+
+```powershell
+.\Download-AllFrendsTasks.ps1 `
+  -FeedUrl 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2'
+```
+
+Download to a custom folder, skip failures, target `net8.0`:
+
+```powershell
+.\Download-AllFrendsTasks.ps1 `
+  -FeedUrl 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2' `
+  -OutputFolder 'C:\frends-offline' `
+  -TargetFramework 'net8.0' `
+  -ContinueOnError
+```
+
+---
 
 ## Authenticated feeds
 
