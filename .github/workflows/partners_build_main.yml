@@ -50,11 +50,6 @@ jobs:
       run: |
         echo "workdir=${{ inputs.workdir }}" >> $GITHUB_ENV
         
-    - name: Install tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install xmlstarlet -y
-
     - name: Run prebuild command
       if: ${{ inputs.prebuild_command != '' }}
       run: ${{ inputs.prebuild_command }}
@@ -71,11 +66,18 @@ jobs:
     - name: Check Code Coverage
       id: get_line_rate
       run: |
-        report=$(find . -name "coverage.cobertura.xml")
-        cp $report .
-        coverage=$(xmlstarlet sel -t -v '//coverage/@line-rate' coverage.cobertura.xml)
-        covPercent=$(echo "$coverage * 100" | bc -l)
-        coverageInt=$(printf "%.0f" $covPercent)
+        report=$(find . -name "coverage.cobertura.xml" 2>/dev/null | head -n 1)
+        if [ -z "$report" ]; then
+          echo "coverage.cobertura.xml not found"
+          exit 1
+        fi
+        coverage=$(grep -oE 'line-rate="[^"]+"' "$report" | head -n 1 | cut -d'"' -f2)
+        if [ -z "$coverage" ]; then
+          echo "Could not read line-rate from $report"
+          exit 1
+        fi
+        covPercent=$(awk "BEGIN {printf \"%.2f\", $coverage * 100}")
+        coverageInt=$(awk "BEGIN {printf \"%.0f\", $coverage * 100}")
         if test $coverageInt -lt 80 
         then
           echo "Test coverage $covPercent% was not in the tolerance 80%"

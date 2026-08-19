@@ -174,13 +174,6 @@ jobs:
       ###############################
       # Install required tools      #
       ###############################
-      - name: Install xmlstarlet
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y xmlstarlet
-
       - name: Enable global .NET tools
         run: |
           echo ~/.dotnet/tools >> $GITHUB_PATH
@@ -269,9 +262,17 @@ jobs:
       - id: code_coverage
         name: Check code coverage
         run: |
-          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null)
-          lineRate=$(xmlstarlet sel -t -v '//coverage/@line-rate' $file)
-          lineRatePct=$(printf "%.0f" $(echo "$lineRate * 100" | bc -l))
+          file=$(find . -name 'coverage.cobertura.xml' 2>/dev/null | head -n 1)
+          if [ -z "$file" ]; then
+            echo "coverage.cobertura.xml not found"
+            exit 1
+          fi
+          lineRate=$(grep -oE 'line-rate="[^"]+"' "$file" | head -n 1 | cut -d'"' -f2)
+          if [ -z "$lineRate" ]; then
+            echo "Could not read line-rate from $file"
+            exit 1
+          fi
+          lineRatePct=$(awk "BEGIN {printf \"%.0f\", $lineRate * 100}")
           if [ $lineRatePct -lt 80 ]; then
             echo "## Test coverage failed :x:" >> $GITHUB_STEP_SUMMARY
             echo "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $GITHUB_STEP_SUMMARY
