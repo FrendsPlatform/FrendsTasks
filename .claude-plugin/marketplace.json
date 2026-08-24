@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "frends-tasks",
+  "description": "Frends Tasks development plugins — shared tooling for building Frends Tasks.",
+  "owner": {
+    "name": "Frends"
+  },
+  "metadata": {
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "frends-task-creator",
+      "source": "./FrendsTaskSkills/frends-task-creator",
+      "description": "Scaffold, implement and review custom Frends Tasks published under your own vendor prefix, starting from the official dotnet new frends-task template.",
+      "version": "1.0.0",
+      "category": "development",
+      "keywords": [
+        "frends",
+        "ipaas",
+        "integration",
+        "dotnet",
+        "csharp",
+        "custom-task"
+      ]
+    }
+  ]
+}

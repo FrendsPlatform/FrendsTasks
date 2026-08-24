@@ -1,0 +1,19 @@
+{
+  "name": "frends-task-creator",
+  "version": "1.0.0",
+  "description": "Build custom Frends Tasks under your own vendor prefix. Generates from the official dotnet new frends-task template, de-brands the output, and enforces the Task Development Guidelines alongside FrendsTaskAnalyzers. For Frends' own catalog tasks, see the guidelines directly.",
+  "author": {
+    "name": "Frends"
+  },
+  "homepage": "https://frends.com",
+  "repository": "https://github.com/FrendsPlatform/FrendsTasks",
+  "license": "MIT",
+  "keywords": [
+    "frends",
+    "ipaas",
+    "integration",
+    "dotnet",
+    "csharp",
+    "custom-task"
+  ]
+}
