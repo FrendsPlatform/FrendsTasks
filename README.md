@@ -6,5 +6,6 @@ This repository serves as a central place for sharing Frends Tasks related thing
 - [GitHub Actions](/.github/actions) – GitHub Actions reused within GitHub workflows.
 - [Analyzers](/FrendsTaskAnalyzers) - Native .NET Nuget with coding standards analyzers for Frends Tasks.
 - [Task Template](/FrendsTaskTemplate) – Native .NET template to create a new Frends Task solution.
+- [Task Skills](/FrendsTaskSkills) - Frends Task related skills for AI.
 
 See [Frends iPaaS](https://frends.com) for more information on the product.
