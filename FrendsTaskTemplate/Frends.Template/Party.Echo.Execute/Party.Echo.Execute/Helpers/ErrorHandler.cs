@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ExceptionServices;
 using Party.Echo.Execute.Definitions;
 
 namespace Party.Echo.Execute.Helpers;
@@ -31,7 +32,7 @@ internal static class ErrorHandler
     private static void ThrowBaseException(Exception exception, string customMessage = null)
     {
         if (string.IsNullOrEmpty(customMessage))
-            throw new Exception(exception.Message, exception);
+            ExceptionDispatchInfo.Capture(exception).Throw();
 
         throw new Exception(customMessage, exception);
     }

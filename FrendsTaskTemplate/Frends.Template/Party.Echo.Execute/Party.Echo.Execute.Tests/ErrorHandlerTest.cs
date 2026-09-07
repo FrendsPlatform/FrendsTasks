@@ -13,7 +13,7 @@ internal class ErrorHandlerTest : TestBase
     [Test]
     public void Should_Throw_Error_When_ThrowErrorOnFailure_Is_True()
     {
-        var ex = Assert.Throws<Exception>((Action)(() =>
+        var ex = Assert.Catch<Exception>((Action)(() =>
            Echo.Execute(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None)));
         Assert.That(ex, Is.Not.Null);
     }
