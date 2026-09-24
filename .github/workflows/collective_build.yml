@@ -52,12 +52,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
       - name: Super-Linter
-        uses: super-linter/super-linter@v7.4.0
+        uses: super-linter/super-linter@v8.7.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
           VALIDATE_CSHARP: true
