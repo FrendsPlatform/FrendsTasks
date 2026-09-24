@@ -13,15 +13,6 @@ on:
         type: string
         default: 'all'
         description: 'Which OS(es) to build/test on: "win" (windows-latest), "lin" (ubuntu-latest) or "all" (both)'
-      env_vars:
-        required: false
-        type: string
-        description: >
-          JSON object mapping the environment variable name to set to its value, e.g.
-          '{"MY_API_KEY":"${{ secrets.MY_API_KEY }}"}'. Resolve secret values yourself in this
-          "with:" block using normal ${{ secrets.X }} (or toJSON(secrets.X) for values that may
-          contain special characters) - only the specific secrets you reference here are ever
-          seen by this reusable workflow. Any number of entries is supported.
       workdir:
         required: false
         type: string
@@ -47,6 +38,16 @@ on:
         required: false
       build_time_nuget_feed_api_key:
         required: false
+      env_vars:
+        required: false
+        description: >
+          JSON object mapping the environment variable name to set to its value, e.g.
+          '{"MY_API_KEY": ${{ toJSON(secrets.MY_API_KEY) }}}'. Must be passed via this "secrets:"
+          block (not "with:") because only "secrets:" can reference the caller's secrets context.
+          Resolve each value yourself with ${{ secrets.X }} or toJSON(secrets.X) - the latter is
+          safer since it keeps special characters valid JSON. Only the specific secrets you
+          reference here are ever seen by this reusable workflow. Any number of entries is
+          supported.
 
 jobs:
   code_quality:
@@ -72,14 +73,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Build, test and publish
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@worflows-update
         with:
           publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
           strict_analyzers: ${{ inputs.strict_analyzers }}
-          env_vars: ${{ inputs.env_vars }}
+          env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
           test_feed_api_key: ${{ secrets.test_feed_api_key }}
           build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
@@ -99,14 +100,14 @@ jobs:
           sudo chmod +x /usr/bin/docker-compose
 
       - name: Build, test and publish
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@worflows-update
         with:
           publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
           strict_analyzers: ${{ inputs.strict_analyzers }}
-          env_vars: ${{ inputs.env_vars }}
+          env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
           test_feed_api_key: ${{ secrets.test_feed_api_key }}
           build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
