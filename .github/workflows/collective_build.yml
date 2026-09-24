@@ -3,11 +3,11 @@ name: collective_build.yml
 on:
   workflow_call:
     inputs:
-      publish_to_test_feed:
+      workflow_mode:
         required: false
-        type: boolean
-        default: true
-        description: 'true: lint + build + test + publish to test feed. false: lint + build + test only, no publish'
+        type: string
+        default: 'work'
+        description: 'Workflow mode: "work" builds and publishes to the test feed, "main" only builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
       os:
         required: false
         type: string
@@ -113,7 +113,7 @@ jobs:
     if: >-
       ${{
         always() &&
-        inputs.publish_to_test_feed &&
+        (inputs.workflow_mode == 'work' || inputs.workflow_mode == 'release') &&
         needs.code_quality.result == 'success' &&
         (
           (inputs.os == 'win' && needs.build_windows.result == 'success') ||
@@ -122,24 +122,27 @@ jobs:
         )
       }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       TARGET_FEED_URL_TEST: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
       TARGET_FEED_URL_MAIN: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
     steps:
       - name: Validate target NuGet feed configuration
         shell: pwsh
-        env:
-          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL_TEST }}
         run: |
           if ([string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
-            throw "target_feed_api_key is required when publish_to_test_feed is true."
+            throw "target_feed_api_key is required when workflow_mode is '$env:WORKFLOW_MODE'."
           }
+        env:
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
 
       - name: Setup .NET SDK with target NuGet feed
         uses: actions/setup-dotnet@v6.0.0
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
-          source-url: ${{ env.TARGET_FEED_URL_TEST }}
+          source-url: ${{ inputs.workflow_mode == 'release' && env.TARGET_FEED_URL_MAIN || env.TARGET_FEED_URL_TEST }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
 
@@ -153,10 +156,14 @@ jobs:
       - name: Push NuGet package(s)
         shell: pwsh
         env:
-          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL_TEST }}
+          TARGET_FEED_URL: ${{ inputs.workflow_mode == 'release' && env.TARGET_FEED_URL_MAIN || env.TARGET_FEED_URL_TEST }}
           TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
         run: |
           $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse
+          if ($env:WORKFLOW_MODE -eq 'release') {
+            $packages = $packages | Where-Object { $_.Name -notlike '*.symbols.nupkg' }
+          }
           if ($packages.Count -eq 0) {
             throw "No NuGet packages were downloaded for publishing."
           }
@@ -170,3 +177,32 @@ jobs:
               throw "Failed to publish $($package.FullName)."
             }
           }
+
+      - name: Get package name
+        if: ${{ inputs.workflow_mode == 'release' }}
+        id: package_name
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse |
+            Where-Object { $_.Name -notlike '*.symbols.nupkg' }
+          if ($packages.Count -eq 0) {
+            throw "No NuGet packages were downloaded for the release."
+          }
+          "package_name=$($packages[0].Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Get current date
+        if: ${{ inputs.workflow_mode == 'release' }}
+        id: date
+        shell: bash
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        if: ${{ inputs.workflow_mode == 'release' }}
+        uses: softprops/action-gh-release@v3.0.3
+        with:
+          draft: false
+          prerelease: false
+          tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
+          body: |
+            You can install the task via frends UI Task View or you can find the NuGet package from https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
