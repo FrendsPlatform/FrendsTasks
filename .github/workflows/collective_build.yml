@@ -73,7 +73,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Build, test and publish
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@worflows-update
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
         with:
           publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
@@ -100,7 +100,7 @@ jobs:
           sudo chmod +x /usr/bin/docker-compose
 
       - name: Build, test and publish
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@worflows-update
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
         with:
           publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
