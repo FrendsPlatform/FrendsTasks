@@ -1,0 +1,113 @@
+name: collective_build.yml
+
+on:
+  workflow_call:
+    inputs:
+      publish_to_test_feed:
+        required: false
+        type: boolean
+        default: true
+        description: 'true: lint + build + test + publish to test feed. false: lint + build + test only, no publish'
+      os:
+        required: false
+        type: string
+        default: 'all'
+        description: 'Which OS(es) to build/test on: "win" (windows-latest), "lin" (ubuntu-latest) or "all" (both)'
+      env_vars:
+        required: false
+        type: string
+        description: >
+          JSON object mapping the environment variable name to set to its value, e.g.
+          '{"MY_API_KEY":"${{ secrets.MY_API_KEY }}"}'. Resolve secret values yourself in this
+          "with:" block using normal ${{ secrets.X }} (or toJSON(secrets.X) for values that may
+          contain special characters) - only the specific secrets you reference here are ever
+          seen by this reusable workflow. Any number of entries is supported.
+      workdir:
+        required: false
+        type: string
+        default: '.'
+      prebuild_command:
+        required: false
+        type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      strict_analyzers:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      badge_service_api_key:
+        required: true
+      test_feed_api_key:
+        required: false
+      build_time_nuget_feed_url:
+        required: false
+      build_time_nuget_feed_api_key:
+        required: false
+
+jobs:
+  code_quality:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Super-Linter
+        uses: super-linter/super-linter@v7.4.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          VALIDATE_CSHARP: true
+          IGNORE_GITIGNORED_FILES: true
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
+
+  build_windows:
+    name: Build on windows-latest
+    if: ${{ inputs.os == 'win' || inputs.os == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - name: Build, test and publish
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
+        with:
+          publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
+          workdir: ${{ inputs.workdir }}
+          prebuild_command: ${{ inputs.prebuild_command }}
+          dotnet_version: ${{ inputs.dotnet_version }}
+          strict_analyzers: ${{ inputs.strict_analyzers }}
+          env_vars: ${{ inputs.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+          test_feed_api_key: ${{ secrets.test_feed_api_key }}
+          build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
+          build_time_nuget_feed_api_key: ${{ secrets.build_time_nuget_feed_api_key }}
+
+  build_linux:
+    name: Build on ubuntu-latest
+    if: ${{ inputs.os == 'lin' || inputs.os == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      # An alias is needed so that docker-compose works with the dash in between.
+      - name: Create alias for docker-compose
+        shell: bash
+        run: |
+          sudo touch /usr/bin/docker-compose
+          sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
+          sudo chmod +x /usr/bin/docker-compose
+
+      - name: Build, test and publish
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+        with:
+          publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
+          workdir: ${{ inputs.workdir }}
+          prebuild_command: ${{ inputs.prebuild_command }}
+          dotnet_version: ${{ inputs.dotnet_version }}
+          strict_analyzers: ${{ inputs.strict_analyzers }}
+          env_vars: ${{ inputs.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+          test_feed_api_key: ${{ secrets.test_feed_api_key }}
+          build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
+          build_time_nuget_feed_api_key: ${{ secrets.build_time_nuget_feed_api_key }}

@@ -12,10 +12,18 @@ on:
 
 jobs:
   build:
-    uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_main.yml@main
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/collective_build.yml@main
     with:
+      publish_to_test_feed: false
+      os: lin
       workdir: Party.Echo.Execute
       dotnet_version: 8.0.x
       strict_analyzers: true
+      # Example: exposes an env var named "username" set to the value of the "USERNAME" secret.
+      # Secret values are resolved right here, so only the secrets you reference are ever passed
+      # to the reusable workflow - no blanket secret access is required. Add more entries to the
+      # JSON object for additional variables; use toJSON(secrets.X) instead of ${{ secrets.X }} if
+      # a value might contain quotes or other characters that would break the JSON.
+      env_vars: '{"username":"${{ secrets.USERNAME }}"}'
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}

@@ -12,11 +12,14 @@ on:
 
 jobs:
   build:
-    uses: FrendsPlatform/FrendsTasks/.github/workflows/linux_build_test.yml@main
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/collective_build.yml@main
     with:
+      publish_to_test_feed: true
+      os: lin
       workdir: Party.Echo.Execute
       dotnet_version: 8.0.x
       strict_analyzers: true
+      env_vars: '{"username":"${{ secrets.USERNAME }}"}'
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
