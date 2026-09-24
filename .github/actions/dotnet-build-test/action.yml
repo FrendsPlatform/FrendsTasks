@@ -16,14 +16,18 @@ inputs:
   workdir:
     required: false
     default: '.'
+    description: 'Working directory containing the .NET task solution.'
   prebuild_command:
     required: false
+    description: 'Optional PowerShell command to run before building the project.'
   dotnet_version:
     required: false
     default: '8.0.x'
+    description: 'The .NET SDK version to install and use.'
   strict_analyzers:
     required: false
     default: 'true'
+    description: 'Whether formatting and analyzer violations should fail the workflow.'
   env_vars:
     required: false
     description: >
@@ -32,19 +36,26 @@ inputs:
       each with the toJSON() function so special characters stay valid JSON).
   badge_service_api_key:
     required: true
-  test_feed_api_key:
-    required: false
-    description: 'Required when publish_to_test_feed is true.'
+    description: 'API key used to publish the code coverage badge.'
+
   build_time_nuget_feed_url:
     required: false
+    description: 'Optional NuGet feed URL used while restoring and building the project.'
   build_time_nuget_feed_api_key:
     required: false
+    description: 'Optional API key used to authenticate to the build-time NuGet feed.'
+
   nuget_source_url:
     required: false
     default: 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
+    description: 'NuGet feed URL used when publishing packages to the test feed.'
+  test_feed_api_key:
+    required: false
+    description: 'API key used to authenticate publishing to the test feed; required when publish_to_test_feed is true.'
   roslynator_version:
     required: false
     default: '0.10.1'
+    description: 'Roslynator .NET tool version used for static analysis.'
 
 runs:
   using: composite
@@ -66,10 +77,6 @@ runs:
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
     ###############################
-    # env_vars is a JSON object mapping env var name -> already-resolved value, e.g.
-    # {"MY_KEY":"<actual secret value>"}. Values must be resolved by the caller workflow (which has
-    # normal, narrowly-scoped access to only the secrets it explicitly references) - this action is
-    # never given, and never needs, the caller's full secrets context.
     - if: ${{ inputs.env_vars != '' }}
       name: Set dynamic environment variables
       shell: pwsh
@@ -254,17 +261,17 @@ runs:
             https://app-github-custom-badges.azurewebsites.net/Badge
 
     ### WHEN publish_to_test_feed == false WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
-    ### USE release.yml TO CREATE THE RELEASE AND PUSH                                        ###
+    ### USE release.yml TO CREATE THE RELEASE AND PUSH                                       ###
 
     # Setup dotnet again with test feed
-    - if: ${{ inputs.publish_to_test_feed == 'true' }}
-      name: Setup .NET SDK (with test feed)
-      uses: actions/setup-dotnet@v6.0.0
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ inputs.nuget_source_url }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ inputs.test_feed_api_key }}
+#    - if: ${{ inputs.publish_to_test_feed == 'true' }}
+#      name: Setup .NET SDK (with test feed)
+#      uses: actions/setup-dotnet@v6.0.0
+#      with:
+#        dotnet-version: ${{ inputs.dotnet_version }}
+#        source-url: ${{ inputs.nuget_source_url }}
+#      env:
+#        NUGET_AUTH_TOKEN: ${{ inputs.test_feed_api_key }}
 
     # Push the package to the test feed
     - if: ${{ inputs.publish_to_test_feed == 'true' }}
