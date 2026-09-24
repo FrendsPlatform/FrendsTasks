@@ -249,7 +249,7 @@ runs:
       run: dotnet pack --configuration Release --include-source
 
     - name: Upload NuGet package(s)
-      uses: actions/upload-artifact@v4.6.2
+      uses: actions/upload-artifact@v7.0.1
       with:
         name: nuget-packages-${{ runner.os }}
         path: ${{ inputs.workdir }}/**/*.nupkg

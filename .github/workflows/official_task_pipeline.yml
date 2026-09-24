@@ -147,7 +147,7 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
 
       - name: Download NuGet package(s)
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           pattern: nuget-packages-*
           path: packages
