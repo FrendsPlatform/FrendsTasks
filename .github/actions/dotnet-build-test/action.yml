@@ -256,6 +256,16 @@ runs:
     ### WHEN publish_to_test_feed == false WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
     ### USE release.yml TO CREATE THE RELEASE AND PUSH                                        ###
 
+    # Setup dotnet again with test feed
+    - if: ${{ inputs.publish_to_test_feed == 'true' }}
+      name: Setup .NET SDK (with test feed)
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.nuget_source_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.test_feed_api_key }}
+
     # Push the package to the test feed
     - if: ${{ inputs.publish_to_test_feed == 'true' }}
       name: Push NuGet package(s)
