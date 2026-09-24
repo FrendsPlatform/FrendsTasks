@@ -33,18 +33,12 @@ on:
         required: true
       source_nuget_feed_url:
         required: false
-        description: 'Optional NuGet feed URL used while restoring and building the project.'
       source_nuget_feed_api_key:
         required: false
       target_feed_api_key:
         required: false
       env_vars:
         required: false
-        description: >
-          JSON object mapping the environment variable name to set to its value, e.g.
-          '{"MY_API_KEY": "<resolved-value>"}'. In the
-          caller, resolve each value from its own secrets context, wrapping it with the toJSON()
-          function so special characters stay valid JSON.
 
 jobs:
   code_quality:
@@ -108,7 +102,7 @@ jobs:
 
   publish:
     name: Publish NuGet package(s)
-    needs: [code_quality, build_windows, build_linux]
+    needs: [ code_quality, build_windows, build_linux ]
     if: >-
       ${{
         always() &&
@@ -124,24 +118,28 @@ jobs:
     permissions:
       contents: write
     env:
-      TARGET_FEED_URL_TEST: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
-      TARGET_FEED_URL_MAIN: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
+      TARGET_FEED_URL: >-
+        ${{
+          inputs.workflow_mode == 'release'
+            && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json'
+            || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
+        }}
     steps:
       - name: Validate target NuGet feed configuration
         shell: pwsh
+        env:
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
         run: |
           if ([string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
             throw "target_feed_api_key is required when workflow_mode is '$env:WORKFLOW_MODE'."
           }
-        env:
-          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
-          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
 
       - name: Setup .NET SDK with target NuGet feed
         uses: actions/setup-dotnet@v6.0.0
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
-          source-url: ${{ inputs.workflow_mode == 'release' && env.TARGET_FEED_URL_MAIN || env.TARGET_FEED_URL_TEST }}
+          source-url: ${{ env.TARGET_FEED_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
 
@@ -197,7 +195,7 @@ jobs:
       - name: Push NuGet package
         shell: pwsh
         env:
-          TARGET_FEED_URL: ${{ inputs.workflow_mode == 'release' && env.TARGET_FEED_URL_MAIN || env.TARGET_FEED_URL_TEST }}
+          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL }}
           TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
           PACKAGE_PATH: ${{ steps.select_package.outputs.package_path }}
         run: |
@@ -224,4 +222,5 @@ jobs:
           tag_name: release-${{ steps.select_package.outputs.package_name }}-${{ steps.date.outputs.date }}
           name: Release ${{ steps.select_package.outputs.package_name }} (${{ steps.date.outputs.date }})
           body: |
-            You can install the task via frends UI Task View or you can find the NuGet package from https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
+            The task was released at https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
+            You can install the task via Frends UI Task View, or browse released packages at https://dev.azure.com/frends-platform/frends-tasks/_artifacts/feed/main

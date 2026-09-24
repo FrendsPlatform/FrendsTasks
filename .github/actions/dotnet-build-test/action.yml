@@ -1,9 +1,5 @@
 name: 'Frends dotnet build and test'
-description: >
-  Shared build/format/lint/test/pack pipeline for Frends Task projects. All steps use
-  cross-platform PowerShell (pwsh, preinstalled on both windows-latest and ubuntu-latest GitHub
-  runners), so this single action runs unmodified on either OS. It is used by both
-  collective_build_test.yml and collective_build.yml for their Windows and Linux jobs.
+description: 'Shared build/format/lint/test/pack pipeline for Official Frends Tasks.'
 
 inputs:
   workdir:
@@ -35,7 +31,7 @@ inputs:
     description: 'Optional NuGet feed URL used while restoring and building the project.'
   source_nuget_feed_api_key:
     required: false
-    description: 'Optional API key used to authenticate to the build-time NuGet feed.'
+    description: 'API key used to authenticate to source_nuget_feed_url.'
   roslynator_version:
     required: false
     default: '0.10.1'
