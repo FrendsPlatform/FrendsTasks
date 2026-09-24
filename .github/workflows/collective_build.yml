@@ -73,10 +73,9 @@ jobs:
     if: ${{ inputs.os == 'win' || inputs.os == 'all' }}
     runs-on: windows-latest
     steps:
-      - name: Build, test and publish
+      - name: Build and test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
         with:
-          publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
@@ -85,8 +84,6 @@ jobs:
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
           source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
           source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
-          target_feed_url: ${{ secrets.target_feed_url }}
-          target_feed_api_key: ${{ secrets.target_feed_api_key }}
 
   build_linux:
     name: Build on ubuntu-latest
@@ -101,10 +98,9 @@ jobs:
           sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
           sudo chmod +x /usr/bin/docker-compose
 
-      - name: Build, test and publish
+      - name: Build and test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
         with:
-          publish_to_test_feed: ${{ inputs.publish_to_test_feed }}
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
@@ -113,5 +109,65 @@ jobs:
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
           source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
           source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
-          target_feed_url: ${{ secrets.target_feed_url }}
-          target_feed_api_key: ${{ secrets.target_feed_api_key }}
+
+  publish:
+    name: Publish NuGet package(s)
+    needs: [code_quality, build_windows, build_linux]
+    if: >-
+      ${{
+        always() &&
+        inputs.publish_to_test_feed &&
+        needs.code_quality.result == 'success' &&
+        (
+          (inputs.os == 'win' && needs.build_windows.result == 'success') ||
+          (inputs.os == 'lin' && needs.build_linux.result == 'success') ||
+          (inputs.os == 'all' && needs.build_windows.result == 'success' && needs.build_linux.result == 'success')
+        )
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate target NuGet feed configuration
+        shell: pwsh
+        env:
+          TARGET_FEED_URL: ${{ secrets.target_feed_url }}
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+        run: |
+          if ([string]::IsNullOrEmpty($env:TARGET_FEED_URL) -or [string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
+            throw "target_feed_url and target_feed_api_key are required when publish_to_test_feed is true."
+          }
+
+      - name: Setup .NET SDK with target NuGet feed
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ secrets.target_feed_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
+
+      - name: Download NuGet package(s)
+        uses: actions/download-artifact@v5.0.0
+        with:
+          pattern: nuget-packages-*
+          path: packages
+          merge-multiple: true
+
+      - name: Push NuGet package(s)
+        shell: pwsh
+        env:
+          TARGET_FEED_URL: ${{ secrets.target_feed_url }}
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+        run: |
+          $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse
+          if ($packages.Count -eq 0) {
+            throw "No NuGet packages were downloaded for publishing."
+          }
+
+          foreach ($package in $packages) {
+            dotnet nuget push $package.FullName `
+              --api-key $env:TARGET_FEED_API_KEY `
+              --source $env:TARGET_FEED_URL `
+              --skip-duplicate
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to publish $($package.FullName)."
+            }
+          }

@@ -1,18 +1,11 @@
-name: 'Frends dotnet build, test and publish'
+name: 'Frends dotnet build and test'
 description: >
-  Shared build/format/lint/test/pack/(publish) pipeline for Frends Task projects. All steps use
+  Shared build/format/lint/test/pack pipeline for Frends Task projects. All steps use
   cross-platform PowerShell (pwsh, preinstalled on both windows-latest and ubuntu-latest GitHub
   runners), so this single action runs unmodified on either OS. It is used by both
-  collective_build_test.yml and collective_build.yml for their Windows and Linux jobs to avoid
-  duplicating the pipeline.
+  collective_build_test.yml and collective_build.yml for their Windows and Linux jobs.
 
 inputs:
-  publish_to_test_feed:
-    required: false
-    default: 'true'
-    description: >
-      Whether to lint + build + test + pack + publish to test feed (true), or build + test + pack
-      only, no publish (false). Only affects the final "push to test feed" steps.
   workdir:
     required: false
     default: '.'
@@ -44,14 +37,6 @@ inputs:
   source_nuget_feed_api_key:
     required: false
     description: 'Optional API key used to authenticate to the build-time NuGet feed.'
-
-  target_feed_url:
-    required: false
-    default: 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
-    description: 'NuGet feed URL used when publishing packages'
-  target_feed_api_key:
-    required: false
-    description: 'API key used to authenticate publishing to the feed'
   roslynator_version:
     required: false
     default: '0.10.1'
@@ -66,7 +51,30 @@ runs:
     ###############################
     # SETUP DOTNET  FOR BUILDING  #
     ###############################
-    - name: Setup .NET SDK
+    - id: check_source_feed
+      name: Check build-time NuGet feed configuration
+      shell: pwsh
+      run: |
+        $feedUrl = "${{ inputs.source_nuget_feed_url }}"
+        $apiKey = "${{ inputs.source_nuget_feed_api_key }}"
+        if ([string]::IsNullOrEmpty($feedUrl) -and [string]::IsNullOrEmpty($apiKey)) {
+          "configured=false" >> $env:GITHUB_OUTPUT
+        }
+        elseif ([string]::IsNullOrEmpty($feedUrl) -or [string]::IsNullOrEmpty($apiKey)) {
+          throw "source_nuget_feed_url and source_nuget_feed_api_key must be provided together."
+        }
+        else {
+          "configured=true" >> $env:GITHUB_OUTPUT
+        }
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'false' }}
+      name: Setup .NET SDK
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'true' }}
+      name: Setup .NET SDK with build-time NuGet feed
       uses: actions/setup-dotnet@v6.0.0
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
@@ -240,6 +248,13 @@ runs:
       working-directory: ${{ inputs.workdir }}
       run: dotnet pack --configuration Release --include-source
 
+    - name: Upload NuGet package(s)
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: nuget-packages-${{ runner.os }}
+        path: ${{ inputs.workdir }}/**/*.nupkg
+        if-no-files-found: error
+
     - name: Save coverage report
       shell: pwsh
       run: |
@@ -259,26 +274,3 @@ runs:
             -Headers @{ "x-api-key" = "${{ inputs.badge_service_api_key }}" } `
             -Body $json `
             https://app-github-custom-badges.azurewebsites.net/Badge
-
-    ###############################
-    # SETUP DOTNET  FOR PUSHING   #
-    ###############################
-    - if: ${{ inputs.publish_to_test_feed == 'true' }}
-      name: Setup .NET SDK
-      uses: actions/setup-dotnet@v6.0.0
-      with:
-        dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ inputs.target_nuget_feed_url }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ inputs.target_nuget_feed_api_key }}
-
-    # Push the package to the test feed
-    - if: ${{ inputs.publish_to_test_feed == 'true' }}
-      name: Push NuGet package(s)
-      shell: pwsh
-      working-directory: ${{ inputs.workdir }}
-      run: |
-        dotnet nuget push **/*.nupkg `
-            --api-key ${{ inputs.target_feed_api_key }} `
-            --source ${{ inputs.target_feed_url }} `
-            --skip-duplicate
