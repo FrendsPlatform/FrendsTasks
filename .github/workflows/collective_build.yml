@@ -151,44 +151,64 @@ jobs:
         with:
           pattern: nuget-packages-*
           path: packages
-          merge-multiple: true
 
-      - name: Push NuGet package(s)
+      - name: Select NuGet package to publish
+        id: select_package
+        shell: pwsh
+        run: |
+          # Every "nuget-packages-*" artifact directory corresponds to one OS build (win/lin).
+          # Symbols packages are never published, and since win/lin builds should produce the
+          # same package, only a single (identical) non-symbols package per OS is expected.
+          $artifactDirs = Get-ChildItem -Path packages -Directory
+          if ($artifactDirs.Count -eq 0) {
+            throw "No NuGet package artifacts were downloaded for publishing."
+          }
+
+          $perArtifact = foreach ($dir in $artifactDirs) {
+            $nupkgs = Get-ChildItem -Path $dir.FullName -Filter *.nupkg -Recurse |
+              Where-Object { $_.Name -notlike '*.symbols.nupkg' }
+            [pscustomobject]@{ Artifact = $dir.Name; Packages = @($nupkgs) }
+          }
+
+          foreach ($entry in $perArtifact) {
+            if ($entry.Packages.Count -eq 0) {
+              throw "Artifact '$($entry.Artifact)' did not contain any publishable (non-symbols) NuGet package."
+            }
+            if ($entry.Packages.Count -gt 1) {
+              $names = ($entry.Packages | ForEach-Object { $_.Name }) -join ', '
+              throw "Artifact '$($entry.Artifact)' contained more than one publishable NuGet package: $names."
+            }
+          }
+
+          if ($perArtifact.Count -gt 2) {
+            $artifactNames = ($perArtifact | ForEach-Object { $_.Artifact }) -join ', '
+            throw "Expected packages from at most 2 OS artifacts (win/lin), but found $($perArtifact.Count): $artifactNames."
+          }
+
+          $distinctNames = $perArtifact | ForEach-Object { $_.Packages[0].Name } | Select-Object -Unique
+          if ($distinctNames.Count -gt 1) {
+            $details = ($perArtifact | ForEach-Object { "$($_.Artifact): $($_.Packages[0].Name)" }) -join '; '
+            throw "Windows and Linux builds produced different NuGet packages, expected the same package from both: $details."
+          }
+
+          $package = $perArtifact[0].Packages[0]
+          "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
+          "package_name=$($package.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Push NuGet package
         shell: pwsh
         env:
           TARGET_FEED_URL: ${{ inputs.workflow_mode == 'release' && env.TARGET_FEED_URL_MAIN || env.TARGET_FEED_URL_TEST }}
           TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
-          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
+          PACKAGE_PATH: ${{ steps.select_package.outputs.package_path }}
         run: |
-          $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse
-          if ($env:WORKFLOW_MODE -eq 'release') {
-            $packages = $packages | Where-Object { $_.Name -notlike '*.symbols.nupkg' }
+          dotnet nuget push $env:PACKAGE_PATH `
+            --api-key $env:TARGET_FEED_API_KEY `
+            --source $env:TARGET_FEED_URL `
+            --skip-duplicate
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to publish $env:PACKAGE_PATH."
           }
-          if ($packages.Count -eq 0) {
-            throw "No NuGet packages were downloaded for publishing."
-          }
-
-          foreach ($package in $packages) {
-            dotnet nuget push $package.FullName `
-              --api-key $env:TARGET_FEED_API_KEY `
-              --source $env:TARGET_FEED_URL `
-              --skip-duplicate
-            if ($LASTEXITCODE -ne 0) {
-              throw "Failed to publish $($package.FullName)."
-            }
-          }
-
-      - name: Get package name
-        if: ${{ inputs.workflow_mode == 'release' }}
-        id: package_name
-        shell: pwsh
-        run: |
-          $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse |
-            Where-Object { $_.Name -notlike '*.symbols.nupkg' }
-          if ($packages.Count -eq 0) {
-            throw "No NuGet packages were downloaded for the release."
-          }
-          "package_name=$($packages[0].Name)" >> $env:GITHUB_OUTPUT
 
       - name: Get current date
         if: ${{ inputs.workflow_mode == 'release' }}
@@ -202,7 +222,7 @@ jobs:
         with:
           draft: false
           prerelease: false
-          tag_name: release-${{ steps.package_name.outputs.package_name }}-${{ steps.date.outputs.date }}
-          name: Release ${{ steps.package_name.outputs.package_name }} (${{ steps.date.outputs.date }})
+          tag_name: release-${{ steps.select_package.outputs.package_name }}-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.select_package.outputs.package_name }} (${{ steps.date.outputs.date }})
           body: |
             You can install the task via frends UI Task View or you can find the NuGet package from https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
