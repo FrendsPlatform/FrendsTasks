@@ -46,9 +46,6 @@ on:
           '{"MY_API_KEY": "<resolved-value>"}'. In the
           caller, resolve each value from its own secrets context, wrapping it with the toJSON()
           function so special characters stay valid JSON.
-    env:
-      TARGET_FEED_URL_TEST: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
-      TARGET_FEED_URL_MAIN: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
 
 jobs:
   code_quality:
@@ -125,6 +122,9 @@ jobs:
         )
       }}
     runs-on: ubuntu-latest
+    env:
+      TARGET_FEED_URL_TEST: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+      TARGET_FEED_URL_MAIN: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
     steps:
       - name: Validate target NuGet feed configuration
         shell: pwsh
