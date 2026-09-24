@@ -40,6 +40,7 @@ on:
         required: false
       env_vars:
         required: false
+        # Short desc of env_vars
         description: >
           JSON object mapping the environment variable name to set to its value, e.g.
           '{"MY_API_KEY": "<resolved-value>"}'. In the
