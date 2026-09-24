@@ -1,3 +1,5 @@
+#DEPRECATED WORKFLOW
+#This workflow is deprecated and will be removed in the future. Please use the new release workflow instead: .github/workflows/official_task_pipeline.yml
 name: linux_build_test.yml
 
 on:

@@ -1,12 +1,11 @@
-name: collective_build.yml
+name: Official Frends Task Pipeline
 
 on:
   workflow_call:
     inputs:
       workflow_mode:
-        required: false
+        required: true
         type: string
-        default: 'work'
         description: 'Workflow mode: "work" builds and publishes to the test feed, "main" only builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
       os:
         required: false

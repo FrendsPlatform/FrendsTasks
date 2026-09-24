@@ -30,7 +30,6 @@ inputs:
   badge_service_api_key:
     required: true
     description: 'API key used to publish the code coverage badge.'
-
   source_nuget_feed_url:
     required: false
     description: 'Optional NuGet feed URL used while restoring and building the project.'
