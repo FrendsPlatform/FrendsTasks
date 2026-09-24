@@ -37,9 +37,6 @@ on:
         description: 'Optional NuGet feed URL used while restoring and building the project.'
       source_nuget_feed_api_key:
         required: false
-      target_feed_url:
-        required: false
-        description: 'NuGet feed URL where package will be published. Required only when publish_to_test_feed is true.'
       target_feed_api_key:
         required: false
       env_vars:
@@ -49,6 +46,9 @@ on:
           '{"MY_API_KEY": "<resolved-value>"}'. In the
           caller, resolve each value from its own secrets context, wrapping it with the toJSON()
           function so special characters stay valid JSON.
+    env:
+      TARGET_FEED_URL_TEST: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json
+      TARGET_FEED_URL_MAIN: https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json
 
 jobs:
   code_quality:
@@ -129,18 +129,17 @@ jobs:
       - name: Validate target NuGet feed configuration
         shell: pwsh
         env:
-          TARGET_FEED_URL: ${{ secrets.target_feed_url }}
-          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL_TEST }}
         run: |
-          if ([string]::IsNullOrEmpty($env:TARGET_FEED_URL) -or [string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
-            throw "target_feed_url and target_feed_api_key are required when publish_to_test_feed is true."
+          if ([string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
+            throw "target_feed_api_key is required when publish_to_test_feed is true."
           }
 
       - name: Setup .NET SDK with target NuGet feed
         uses: actions/setup-dotnet@v6.0.0
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
-          source-url: ${{ secrets.target_feed_url }}
+          source-url: ${{ env.TARGET_FEED_URL_TEST }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
 
@@ -154,7 +153,7 @@ jobs:
       - name: Push NuGet package(s)
         shell: pwsh
         env:
-          TARGET_FEED_URL: ${{ secrets.target_feed_url }}
+          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL_TEST }}
           TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
         run: |
           $packages = Get-ChildItem -Path packages -Filter *.nupkg -Recurse
