@@ -28,9 +28,8 @@ inputs:
     required: false
     description: >
       JSON object mapping the environment variable name to set to its value, e.g.
-      '{"MY_KEY":"${{ secrets.MY_SECRET }}"}'. Resolve secret values in the caller workflow (e.g.
-      via toJSON(secrets.MY_SECRET) so special characters stay valid JSON) - this action never
-      sees the caller's full secrets context, only the specific values it is given here.
+      '{"MY_KEY":"<resolved-value>"}'. Resolve secret values in the caller workflow (wrapping
+      each with the toJSON() function so special characters stay valid JSON).
   badge_service_api_key:
     required: true
   test_feed_api_key:

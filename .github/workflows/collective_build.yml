@@ -42,12 +42,9 @@ on:
         required: false
         description: >
           JSON object mapping the environment variable name to set to its value, e.g.
-          '{"MY_API_KEY": ${{ toJSON(secrets.MY_API_KEY) }}}'. Must be passed via this "secrets:"
-          block (not "with:") because only "secrets:" can reference the caller's secrets context.
-          Resolve each value yourself with ${{ secrets.X }} or toJSON(secrets.X) - the latter is
-          safer since it keeps special characters valid JSON. Only the specific secrets you
-          reference here are ever seen by this reusable workflow. Any number of entries is
-          supported.
+          '{"MY_API_KEY": "<resolved-value>"}'. In the
+          caller, resolve each value from its own secrets context, wrapping it with the toJSON()
+          function so special characters stay valid JSON.
 
 jobs:
   code_quality:
