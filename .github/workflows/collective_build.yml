@@ -32,11 +32,15 @@ on:
     secrets:
       badge_service_api_key:
         required: true
-      test_feed_api_key:
+      source_nuget_feed_url:
         required: false
-      build_time_nuget_feed_url:
+        description: 'Optional NuGet feed URL used while restoring and building the project.'
+      source_nuget_feed_api_key:
         required: false
-      build_time_nuget_feed_api_key:
+      target_feed_url:
+        required: false
+        description: 'NuGet feed URL where package will be published. Required only when publish_to_test_feed is true.'
+      target_feed_api_key:
         required: false
       env_vars:
         required: false
@@ -79,9 +83,10 @@ jobs:
           strict_analyzers: ${{ inputs.strict_analyzers }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
-          test_feed_api_key: ${{ secrets.test_feed_api_key }}
-          build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
-          build_time_nuget_feed_api_key: ${{ secrets.build_time_nuget_feed_api_key }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          target_feed_url: ${{ secrets.target_feed_url }}
+          target_feed_api_key: ${{ secrets.target_feed_api_key }}
 
   build_linux:
     name: Build on ubuntu-latest
@@ -106,6 +111,7 @@ jobs:
           strict_analyzers: ${{ inputs.strict_analyzers }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
-          test_feed_api_key: ${{ secrets.test_feed_api_key }}
-          build_time_nuget_feed_url: ${{ secrets.build_time_nuget_feed_url }}
-          build_time_nuget_feed_api_key: ${{ secrets.build_time_nuget_feed_api_key }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          target_feed_url: ${{ secrets.target_feed_url }}
+          target_feed_api_key: ${{ secrets.target_feed_api_key }}

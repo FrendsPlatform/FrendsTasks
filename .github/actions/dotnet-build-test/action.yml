@@ -38,20 +38,20 @@ inputs:
     required: true
     description: 'API key used to publish the code coverage badge.'
 
-  build_time_nuget_feed_url:
+  source_nuget_feed_url:
     required: false
     description: 'Optional NuGet feed URL used while restoring and building the project.'
-  build_time_nuget_feed_api_key:
+  source_nuget_feed_api_key:
     required: false
     description: 'Optional API key used to authenticate to the build-time NuGet feed.'
 
-  nuget_source_url:
+  target_feed_url:
     required: false
     default: 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
-    description: 'NuGet feed URL used when publishing packages to the test feed.'
-  test_feed_api_key:
+    description: 'NuGet feed URL used when publishing packages'
+  target_feed_api_key:
     required: false
-    description: 'API key used to authenticate publishing to the test feed; required when publish_to_test_feed is true.'
+    description: 'API key used to authenticate publishing to the feed'
   roslynator_version:
     required: false
     default: '0.10.1'
@@ -70,9 +70,9 @@ runs:
       uses: actions/setup-dotnet@v6.0.0
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
-        source-url: ${{ inputs.build_time_nuget_feed_url }}
+        source-url: ${{ inputs.source_nuget_feed_url }}
       env:
-        NUGET_AUTH_TOKEN: ${{ inputs.build_time_nuget_feed_api_key }}
+        NUGET_AUTH_TOKEN: ${{ inputs.source_nuget_feed_api_key }}
 
     ###############################
     # SETUP ENVIRONMENT IF NEEDED #
@@ -260,19 +260,6 @@ runs:
             -Body $json `
             https://app-github-custom-badges.azurewebsites.net/Badge
 
-    ### WHEN publish_to_test_feed == false WE ARE NOT PUSHING / CREATING RELEASE IMMEDIATELY ###
-    ### USE release.yml TO CREATE THE RELEASE AND PUSH                                       ###
-
-    # Setup dotnet again with test feed
-#    - if: ${{ inputs.publish_to_test_feed == 'true' }}
-#      name: Setup .NET SDK (with test feed)
-#      uses: actions/setup-dotnet@v6.0.0
-#      with:
-#        dotnet-version: ${{ inputs.dotnet_version }}
-#        source-url: ${{ inputs.nuget_source_url }}
-#      env:
-#        NUGET_AUTH_TOKEN: ${{ inputs.test_feed_api_key }}
-
     # Push the package to the test feed
     - if: ${{ inputs.publish_to_test_feed == 'true' }}
       name: Push NuGet package(s)
@@ -280,6 +267,6 @@ runs:
       working-directory: ${{ inputs.workdir }}
       run: |
         dotnet nuget push **/*.nupkg `
-            --api-key ${{ inputs.test_feed_api_key }} `
-            --source ${{ inputs.nuget_source_url }} `
+            --api-key ${{ inputs.target_feed_api_key }} `
+            --source ${{ inputs.target_feed_url }} `
             --skip-duplicate
