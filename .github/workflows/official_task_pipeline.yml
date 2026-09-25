@@ -64,7 +64,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Build and test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
         with:
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
@@ -89,7 +89,7 @@ jobs:
           sudo chmod +x /usr/bin/docker-compose
 
       - name: Build and test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@workflows-update
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
         with:
           workdir: ${{ inputs.workdir }}
           prebuild_command: ${{ inputs.prebuild_command }}
