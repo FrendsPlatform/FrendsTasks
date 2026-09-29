@@ -1,0 +1,271 @@
+name: 'Frends dotnet build and test'
+description: 'Shared build/format/lint/test/pack pipeline for Official Frends Tasks.'
+
+inputs:
+  workdir:
+    required: false
+    default: '.'
+    description: 'Working directory containing the .NET task solution.'
+  prebuild_command:
+    required: false
+    description: 'Optional PowerShell command to run before building the project.'
+  dotnet_version:
+    required: false
+    default: '8.0.x'
+    description: 'The .NET SDK version to install and use.'
+  strict_analyzers:
+    required: false
+    default: 'true'
+    description: 'Whether formatting and analyzer violations should fail the workflow.'
+  env_vars:
+    required: false
+    description: >
+      JSON object mapping the environment variable name to set to its value, e.g.
+      '{"MY_KEY":"<resolved-value>"}'. Resolve secret values in the caller workflow (wrapping
+      each with the toJSON() function so special characters stay valid JSON).
+  badge_service_api_key:
+    required: true
+    description: 'API key used to publish the code coverage badge.'
+  source_nuget_feed_url:
+    required: false
+    description: 'Optional NuGet feed URL used while restoring and building the project.'
+  source_nuget_feed_api_key:
+    required: false
+    description: 'API key used to authenticate to source_nuget_feed_url.'
+  roslynator_version:
+    required: false
+    default: '0.10.1'
+    description: 'Roslynator .NET tool version used for static analysis.'
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v7.0.1
+
+    ###############################
+    # SETUP DOTNET  FOR BUILDING  #
+    ###############################
+    - id: check_source_feed
+      name: Check build-time NuGet feed configuration
+      shell: pwsh
+      run: |
+        $feedUrl = "${{ inputs.source_nuget_feed_url }}"
+        $apiKey = "${{ inputs.source_nuget_feed_api_key }}"
+        if ([string]::IsNullOrEmpty($feedUrl) -and [string]::IsNullOrEmpty($apiKey)) {
+          "configured=false" >> $env:GITHUB_OUTPUT
+        }
+        elseif ([string]::IsNullOrEmpty($feedUrl) -or [string]::IsNullOrEmpty($apiKey)) {
+          throw "source_nuget_feed_url and source_nuget_feed_api_key must be provided together."
+        }
+        else {
+          "configured=true" >> $env:GITHUB_OUTPUT
+        }
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'false' }}
+      name: Setup .NET SDK
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'true' }}
+      name: Setup .NET SDK with build-time NuGet feed
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.source_nuget_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.source_nuget_feed_api_key }}
+
+    ###############################
+    # SETUP ENVIRONMENT IF NEEDED #
+    ###############################
+    - if: ${{ inputs.env_vars != '' }}
+      name: Set dynamic environment variables
+      shell: pwsh
+      env:
+        ENV_VARS_MAPPING: ${{ inputs.env_vars }}
+      run: |
+        $mapping = $env:ENV_VARS_MAPPING | ConvertFrom-Json
+        foreach ($prop in $mapping.PSObject.Properties) {
+          $envName = $prop.Name
+          $value = $prop.Value
+          if ([string]::IsNullOrEmpty($value)) {
+            Write-Error "env_vars entry '$envName' has an empty value."
+            exit 1
+          }
+          Write-Output "::add-mask::$value"
+          Add-Content -Path $env:GITHUB_ENV -Value "$envName=$value"
+        }
+
+    ###############################
+    # Install required tools      #
+    ###############################
+    - name: Enable global .NET tools
+      shell: pwsh
+      run: |
+        (Join-Path $HOME '.dotnet' 'tools') >> $env:GITHUB_PATH
+
+    - name: Install Roslynator
+      shell: pwsh
+      run: |
+        dotnet tool install --global Roslynator.DotNet.Cli --version ${{ inputs.roslynator_version }}
+
+    - name: Download FrendsTaskAnalyzers
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        New-Item -Path '.analyzers/tmp' -ItemType Directory -Force | Out-Null
+        $latest = gh release list `
+            --repo 'FrendsPlatform/FrendsTasks' `
+            --json tagName `
+            --exclude-drafts `
+            --exclude-pre-releases `
+            --jq '[.[] | select(.tagName | startswith("analyzers-")) | .tagName] | first'
+        gh release download "$latest" `
+            --repo 'FrendsPlatform/FrendsTasks' `
+            --dir '.analyzers' `
+            --pattern '*.nupkg'
+        Expand-Archive -Path '.analyzers/*.nupkg' -DestinationPath '.analyzers/tmp'
+        Get-ChildItem -Path '.analyzers/tmp' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers' -Force
+        Remove-Item -Path '.analyzers/tmp' -Recurse -Force
+
+    ###############################
+    # Run prebuild command        #
+    ###############################
+    - if: ${{ inputs.prebuild_command != '' }}
+      name: Run prebuild command
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: ${{ inputs.prebuild_command }}
+
+    ###############################
+    # Build, test, report results #
+    ###############################
+    - name: Build
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: dotnet build
+
+    - name: Write .editorconfig
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: |
+        $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse | select -First 1
+        $contents = Get-Content $file -Raw -Encoding UTF8
+        $contents = $contents.Trim()
+        $json = $contents | ConvertFrom-Json
+        $methods = $json.Tasks | Join-String -Property TaskMethod -Separator ';'
+        $lines = @"
+        [*.cs]
+        frends_task_analyzers.task_methods = $methods
+        "@
+        Add-Content -Path .editorconfig -Value $lines
+
+    - name: Format
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      continue-on-error: ${{ inputs.strict_analyzers != 'true' }}
+      run: |
+        dotnet format `
+          --verify-no-changes `
+          --verbosity detailed
+
+    - name: Lint
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      continue-on-error: ${{ inputs.strict_analyzers != 'true' }}
+      run: |
+        $projects = Get-ChildItem -Recurse -Filter *.csproj |
+          Where-Object { $_.Name -notlike '*.Tests.csproj' }
+
+        foreach ($proj in $projects) {
+          roslynator analyze `
+            --analyzer-assemblies '.analyzers' `
+            --verbosity detailed `
+            $proj.FullName
+        }
+
+    - name: Cleanup after analyzers
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: |
+        git ls-files --error-unmatch .editorconfig 2>&1 > $null || $true
+        if ($LastExitCode -eq 0)
+        {
+          git restore .editorconfig
+        }
+        else
+        {
+          Remove-Item -Path '.editorconfig' -Force -ErrorAction SilentlyContinue
+        }
+        Remove-Item -Path '.analyzers' -Recurse -Force -ErrorAction SilentlyContinue
+        exit 0
+
+    - name: Test
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: |
+        $settingsFile = ".runtestsettings"
+        if (Test-Path $settingsFile) {
+          Write-Host "Using $settingsFile found in workspace."
+          dotnet test --settings $settingsFile --collect:"XPlat Code Coverage"
+        } else {
+          Write-Host "No $settingsFile file found. Running with default settings."
+          dotnet test --collect:"XPlat Code Coverage"
+        }
+
+    - id: code_coverage
+      name: Check code coverage
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: |
+        $file = Get-ChildItem -Path . -Include 'coverage.cobertura.xml' -Recurse
+        $lineRate = [double](Select-Xml -XPath '//coverage/@line-rate' $file).Node.Value
+        $lineRatePct = [Math]::Round($lineRate * 100)
+        if ($lineRatePct -lt 80)
+        {
+          "## Test coverage failed :x:" >> $env:GITHUB_STEP_SUMMARY
+          "**Line coverage:** $lineRatePct% | **Required:** 80%" >> $env:GITHUB_STEP_SUMMARY
+          exit 1
+        }
+        else
+        {
+          "## Test coverage passed :white_check_mark:" >> $env:GITHUB_STEP_SUMMARY
+          "**Line coverage:** $lineRatePct%" >> $env:GITHUB_STEP_SUMMARY
+          "coverage=$lineRatePct" >> $env:GITHUB_OUTPUT
+        }
+
+    - name: Pack release version of task
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      run: dotnet pack --configuration Release --include-source
+
+    - name: Upload NuGet package(s)
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: nuget-packages-${{ runner.os }}
+        path: ${{ inputs.workdir }}/**/*.nupkg
+        if-no-files-found: error
+
+    - name: Save coverage report
+      shell: pwsh
+      run: |
+        $badgeKey = "${{ github.repository }}|${{ github.ref_name }}"
+        if ("${{ inputs.workdir }}" -ne ".")
+        {
+          $badgeKey = "${{ github.repository }}/${{ inputs.workdir }}|${{ github.ref_name }}"
+        }
+        $json = @{
+          key = $badgeKey
+          displayName = "Coverage"
+          value = "${{ steps.code_coverage.outputs.coverage }}%"
+        } | ConvertTo-Json -Compress
+        Invoke-WebRequest `
+            -Method POST `
+            -ContentType "application/json" `
+            -Headers @{ "x-api-key" = "${{ inputs.badge_service_api_key }}" } `
+            -Body $json `
+            https://app-github-custom-badges.azurewebsites.net/Badge

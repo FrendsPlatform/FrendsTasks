@@ -1,0 +1,226 @@
+name: Official Frends Task Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      workflow_mode:
+        required: true
+        type: string
+        description: 'Workflow mode: "work" builds and publishes to the test feed, "main" only builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
+      os:
+        required: false
+        type: string
+        default: 'all'
+        description: 'Which OS(es) to build/test on: "win" (windows-latest), "lin" (ubuntu-latest) or "all" (both)'
+      workdir:
+        required: false
+        type: string
+        default: '.'
+      prebuild_command:
+        required: false
+        type: string
+      dotnet_version:
+        required: false
+        type: string
+        default: '8.0.x'
+        description: 'Version of .NET SDK to use, e.g. 6.0.x, 8.0.x'
+      strict_analyzers:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      badge_service_api_key:
+        required: true
+      source_nuget_feed_url:
+        required: false
+      source_nuget_feed_api_key:
+        required: false
+      target_feed_api_key:
+        required: false
+      env_vars:
+        required: false
+
+jobs:
+  code_quality:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Super-Linter
+        uses: super-linter/super-linter@v8.7.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          VALIDATE_CSHARP: true
+          IGNORE_GITIGNORED_FILES: true
+          FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
+
+  build_windows:
+    name: Build on windows-latest
+    if: ${{ inputs.os == 'win' || inputs.os == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - name: Build and test
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+        with:
+          workdir: ${{ inputs.workdir }}
+          prebuild_command: ${{ inputs.prebuild_command }}
+          dotnet_version: ${{ inputs.dotnet_version }}
+          strict_analyzers: ${{ inputs.strict_analyzers }}
+          env_vars: ${{ secrets.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+
+  build_linux:
+    name: Build on ubuntu-latest
+    if: ${{ inputs.os == 'lin' || inputs.os == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      # An alias is needed so that docker-compose works with the dash in between.
+      - name: Create alias for docker-compose
+        shell: bash
+        run: |
+          sudo touch /usr/bin/docker-compose
+          sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
+          sudo chmod +x /usr/bin/docker-compose
+
+      - name: Build and test
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+        with:
+          workdir: ${{ inputs.workdir }}
+          prebuild_command: ${{ inputs.prebuild_command }}
+          dotnet_version: ${{ inputs.dotnet_version }}
+          strict_analyzers: ${{ inputs.strict_analyzers }}
+          env_vars: ${{ secrets.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+
+  publish:
+    name: Publish NuGet package(s)
+    needs: [ code_quality, build_windows, build_linux ]
+    if: >-
+      ${{
+        always() &&
+        (inputs.workflow_mode == 'work' || inputs.workflow_mode == 'release') &&
+        needs.code_quality.result == 'success' &&
+        (
+          (inputs.os == 'win' && needs.build_windows.result == 'success') ||
+          (inputs.os == 'lin' && needs.build_linux.result == 'success') ||
+          (inputs.os == 'all' && needs.build_windows.result == 'success' && needs.build_linux.result == 'success')
+        )
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TARGET_FEED_URL: >-
+        ${{
+          inputs.workflow_mode == 'release'
+            && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json'
+            || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
+        }}
+    steps:
+      - name: Validate target NuGet feed configuration
+        shell: pwsh
+        env:
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
+        run: |
+          if ([string]::IsNullOrEmpty($env:TARGET_FEED_API_KEY)) {
+            throw "target_feed_api_key is required when workflow_mode is '$env:WORKFLOW_MODE'."
+          }
+
+      - name: Setup .NET SDK with target NuGet feed
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+          source-url: ${{ env.TARGET_FEED_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
+
+      - name: Download NuGet package(s)
+        uses: actions/download-artifact@v8.0.1
+        with:
+          pattern: nuget-packages-*
+          path: packages
+
+      - name: Select NuGet package to publish
+        id: select_package
+        shell: pwsh
+        run: |
+          # Every "nuget-packages-*" artifact directory corresponds to one OS build (win/lin).
+          # Symbols packages are never published, and since win/lin builds should produce the
+          # same package, only a single (identical) non-symbols package per OS is expected.
+          $artifactDirs = Get-ChildItem -Path packages -Directory
+          if ($artifactDirs.Count -eq 0) {
+            throw "No NuGet package artifacts were downloaded for publishing."
+          }
+
+          $perArtifact = foreach ($dir in $artifactDirs) {
+            $nupkgs = Get-ChildItem -Path $dir.FullName -Filter *.nupkg -Recurse |
+              Where-Object { $_.Name -notlike '*.symbols.nupkg' }
+            [pscustomobject]@{ Artifact = $dir.Name; Packages = @($nupkgs) }
+          }
+
+          foreach ($entry in $perArtifact) {
+            if ($entry.Packages.Count -eq 0) {
+              throw "Artifact '$($entry.Artifact)' did not contain any publishable (non-symbols) NuGet package."
+            }
+            if ($entry.Packages.Count -gt 1) {
+              $names = ($entry.Packages | ForEach-Object { $_.Name }) -join ', '
+              throw "Artifact '$($entry.Artifact)' contained more than one publishable NuGet package: $names."
+            }
+          }
+
+          if ($perArtifact.Count -gt 2) {
+            $artifactNames = ($perArtifact | ForEach-Object { $_.Artifact }) -join ', '
+            throw "Expected packages from at most 2 OS artifacts (win/lin), but found $($perArtifact.Count): $artifactNames."
+          }
+
+          $distinctNames = $perArtifact | ForEach-Object { $_.Packages[0].Name } | Select-Object -Unique
+          if ($distinctNames.Count -gt 1) {
+            $details = ($perArtifact | ForEach-Object { "$($_.Artifact): $($_.Packages[0].Name)" }) -join '; '
+            throw "Windows and Linux builds produced different NuGet packages, expected the same package from both: $details."
+          }
+
+          $package = $perArtifact[0].Packages[0]
+          "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
+          "package_name=$($package.Name)" >> $env:GITHUB_OUTPUT
+
+      - name: Push NuGet package
+        shell: pwsh
+        env:
+          TARGET_FEED_URL: ${{ env.TARGET_FEED_URL }}
+          TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
+          PACKAGE_PATH: ${{ steps.select_package.outputs.package_path }}
+        run: |
+          dotnet nuget push $env:PACKAGE_PATH `
+            --api-key $env:TARGET_FEED_API_KEY `
+            --source $env:TARGET_FEED_URL `
+            --skip-duplicate
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to publish $env:PACKAGE_PATH."
+          }
+
+      - name: Get current date
+        if: ${{ inputs.workflow_mode == 'release' }}
+        id: date
+        shell: bash
+        run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        if: ${{ inputs.workflow_mode == 'release' }}
+        uses: softprops/action-gh-release@v3.0.3
+        with:
+          draft: false
+          prerelease: false
+          tag_name: release-${{ steps.select_package.outputs.package_name }}-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.select_package.outputs.package_name }} (${{ steps.date.outputs.date }})
+          body: |
+            The task was released at https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
+            You can install the task via Frends UI Task View, or browse released packages at https://dev.azure.com/frends-platform/frends-tasks/_artifacts/feed/main

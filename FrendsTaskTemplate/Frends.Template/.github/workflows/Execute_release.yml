@@ -1,16 +1,21 @@
 name: Execute_release
-permissions:
-  contents: write
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    uses: FrendsPlatform/FrendsTasks/.github/workflows/release.yml@main
+  main_release:
+    uses: FrendsPlatform/FrendsTasks/.github/workflows/official_task_pipeline.yml@main
     with:
+      workflow_mode: release
+      os: all
       workdir: Party.Echo.Execute
-      dotnet_version: 8.0.x
-      strict_analyzers: true
     secrets:
-      feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      target_feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
+      source_nuget_feed_url: ${{ secrets.TASKS_FEED_URL }}
+      env_vars: |
+          {
+            "FOO": ${{ toJSON(secrets.FOO) }},
+            "BAR": ${{ toJSON(secrets.BAR) }}
+          }
