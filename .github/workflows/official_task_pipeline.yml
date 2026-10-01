@@ -6,19 +6,20 @@ on:
       workflow_mode:
         required: true
         type: string
-        description: 'Workflow mode: "work" builds and publishes to the test feed, "main" only builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
+        description: 'Workflow mode: "work" builds, tests and publishes to the test feed, "main" builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
       os:
         required: false
         type: string
         default: 'all'
-        description: 'Which OS(es) to build/test on: "win" (windows-latest), "lin" (ubuntu-latest) or "all" (both)'
+        description: 'Which OS(es) to test on: "win" (windows-latest), "lin" (ubuntu-latest) or "all" (both). The single build runs on windows-latest for "win", ubuntu-latest otherwise.'
       workdir:
         required: false
         type: string
         default: '.'
-      prebuild_command:
+      pretest_command:
         required: false
         type: string
+        description: 'Optional PowerShell command run in the test jobs before tests are executed (e.g. starting test containers).'
       dotnet_version:
         required: false
         type: string
@@ -40,9 +41,54 @@ on:
       env_vars:
         required: false
 
+env:
+  BUILD_ARTIFACT_NAME: build-output
+  NUGET_ARTIFACT_NAME: nuget-packages
+
 jobs:
+  build:
+    name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        with:
+          dotnet_version: ${{ inputs.dotnet_version }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+
+      - name: Build
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        run: dotnet build
+
+      - name: Pack release version of task
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        run: dotnet pack --configuration Release --include-source
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ${{ env.BUILD_ARTIFACT_NAME }}
+          path: |
+            ${{ inputs.workdir }}/**/bin/
+            ${{ inputs.workdir }}/**/obj/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload NuGet package(s)
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ${{ env.NUGET_ARTIFACT_NAME }}
+          path: ${{ inputs.workdir }}/**/*.nupkg
+          if-no-files-found: error
   code_quality:
     name: Check Code Quality
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -58,61 +104,159 @@ jobs:
           IGNORE_GITIGNORED_FILES: true
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
 
-  build_windows:
-    name: Build on windows-latest
-    if: ${{ inputs.os == 'win' || inputs.os == 'all' }}
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        with:
+          dotnet_version: ${{ inputs.dotnet_version }}
+          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
+          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+
+      - name: Download build output
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ${{ env.BUILD_ARTIFACT_NAME }}
+          path: ${{ inputs.workdir }}
+
+      # The build may come from a different OS, so restore regenerates obj/ with paths valid on this runner.
+      - name: Restore
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        run: dotnet restore
+
+      - name: Enable global .NET tools
+        shell: pwsh
+        run: |
+          (Join-Path $HOME '.dotnet' 'tools') >> $env:GITHUB_PATH
+
+      - name: Install Roslynator
+        shell: pwsh
+        run: |
+          dotnet tool install --global Roslynator.DotNet.Cli --version 0.10.1
+
+      - name: Download FrendsTaskAnalyzers
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          New-Item -Path '.analyzers/tmp' -ItemType Directory -Force | Out-Null
+          $latest = gh release list `
+              --repo 'FrendsPlatform/FrendsTasks' `
+              --json tagName `
+              --exclude-drafts `
+              --exclude-pre-releases `
+              --jq '[.[] | select(.tagName | startswith("analyzers-")) | .tagName] | first'
+          gh release download "$latest" `
+              --repo 'FrendsPlatform/FrendsTasks' `
+              --dir '.analyzers' `
+              --pattern '*.nupkg'
+          Expand-Archive -Path '.analyzers/*.nupkg' -DestinationPath '.analyzers/tmp'
+          Get-ChildItem -Path '.analyzers/tmp' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers' -Force
+          Remove-Item -Path '.analyzers/tmp' -Recurse -Force
+
+      - name: Write .editorconfig
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        run: |
+          $file = Get-ChildItem -Path . -Include 'FrendsTaskMetadata.json' -Recurse | select -First 1
+          $contents = Get-Content $file -Raw -Encoding UTF8
+          $contents = $contents.Trim()
+          $json = $contents | ConvertFrom-Json
+          $methods = $json.Tasks | Join-String -Property TaskMethod -Separator ';'
+          $lines = @"
+          [*.cs]
+          frends_task_analyzers.task_methods = $methods
+          "@
+          Add-Content -Path .editorconfig -Value $lines
+
+      - name: Format
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+        run: |
+          dotnet format `
+            --no-restore `
+            --verify-no-changes `
+            --verbosity detailed
+
+      - name: Lint
+        shell: pwsh
+        working-directory: ${{ inputs.workdir }}
+        continue-on-error: ${{ !inputs.strict_analyzers }}
+        run: |
+          $projects = Get-ChildItem -Recurse -Filter *.csproj |
+            Where-Object { $_.Name -notlike '*.Tests.csproj' }
+
+          foreach ($proj in $projects) {
+            roslynator analyze `
+              --analyzer-assemblies '.analyzers' `
+              --verbosity detailed `
+              $proj.FullName
+          }
+
+  test_windows:
+    name: Test on windows-latest
+    needs: build
+    if: ${{ (inputs.os == 'win' || inputs.os == 'all') && inputs.workflow_mode != 'release' }}
     runs-on: windows-latest
     steps:
-      - name: Build and test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
-          workdir: ${{ inputs.workdir }}
-          prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
-          strict_analyzers: ${{ inputs.strict_analyzers }}
-          env_vars: ${{ secrets.env_vars }}
-          badge_service_api_key: ${{ secrets.badge_service_api_key }}
           source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
           source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
 
-  build_linux:
-    name: Build on ubuntu-latest
-    if: ${{ inputs.os == 'lin' || inputs.os == 'all' }}
+      - name: Test
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
+        with:
+          workdir: ${{ inputs.workdir }}
+          build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
+          pretest_command: ${{ inputs.pretest_command }}
+          env_vars: ${{ secrets.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+
+  test_linux:
+    name: Test on ubuntu-latest
+    needs: build
+    if: ${{ (inputs.os == 'lin' || inputs.os == 'all') && inputs.workflow_mode != 'release' }}
     runs-on: ubuntu-latest
     steps:
-      # An alias is needed so that docker-compose works with the dash in between.
-      - name: Create alias for docker-compose
-        shell: bash
-        run: |
-          sudo touch /usr/bin/docker-compose
-          sudo echo 'docker compose --compatibility "$@"' | sudo tee /usr/bin/docker-compose
-          sudo chmod +x /usr/bin/docker-compose
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
 
-      - name: Build and test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-build-test@main
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
-          workdir: ${{ inputs.workdir }}
-          prebuild_command: ${{ inputs.prebuild_command }}
           dotnet_version: ${{ inputs.dotnet_version }}
-          strict_analyzers: ${{ inputs.strict_analyzers }}
-          env_vars: ${{ secrets.env_vars }}
-          badge_service_api_key: ${{ secrets.badge_service_api_key }}
           source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
           source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
 
+      - name: Test
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
+        with:
+          workdir: ${{ inputs.workdir }}
+          build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
+          pretest_command: ${{ inputs.pretest_command }}
+          env_vars: ${{ secrets.env_vars }}
+          badge_service_api_key: ${{ secrets.badge_service_api_key }}
+
   publish:
-    name: Publish NuGet package(s)
-    needs: [ code_quality, build_windows, build_linux ]
+    name: Publish NuGet package
+    needs: [ build, code_quality, test_windows, test_linux ]
+    # Test jobs are skipped in "release" mode or for an OS not selected via inputs.os,
+    # so "skipped" is accepted for them, but any failure/cancellation blocks publishing.
     if: >-
       ${{
         always() &&
         (inputs.workflow_mode == 'work' || inputs.workflow_mode == 'release') &&
+        needs.build.result == 'success' &&
         needs.code_quality.result == 'success' &&
-        (
-          (inputs.os == 'win' && needs.build_windows.result == 'success') ||
-          (inputs.os == 'lin' && needs.build_linux.result == 'success') ||
-          (inputs.os == 'all' && needs.build_windows.result == 'success' && needs.build_linux.result == 'success')
-        )
+        (needs.test_windows.result == 'success' || needs.test_windows.result == 'skipped') &&
+        (needs.test_linux.result == 'success' || needs.test_linux.result == 'skipped')
       }}
     runs-on: ubuntu-latest
     env:
@@ -144,49 +288,25 @@ jobs:
       - name: Download NuGet package(s)
         uses: actions/download-artifact@v8.0.1
         with:
-          pattern: nuget-packages-*
+          name: ${{ env.NUGET_ARTIFACT_NAME }}
           path: packages
 
       - name: Select NuGet package to publish
         id: select_package
         shell: pwsh
         run: |
-          # Every "nuget-packages-*" artifact directory corresponds to one OS build (win/lin).
-          # Symbols packages are never published, and since win/lin builds should produce the
-          # same package, only a single (identical) non-symbols package per OS is expected.
-          $artifactDirs = Get-ChildItem -Path packages -Directory
-          if ($artifactDirs.Count -eq 0) {
-            throw "No NuGet package artifacts were downloaded for publishing."
+          # Symbols packages are never published, so exactly one non-symbols package is expected.
+          $nupkgs = @(Get-ChildItem -Path packages -Filter *.nupkg -Recurse |
+            Where-Object { $_.Name -notlike '*.symbols.nupkg' })
+          if ($nupkgs.Count -eq 0) {
+            throw "The build did not produce any publishable (non-symbols) NuGet package."
+          }
+          if ($nupkgs.Count -gt 1) {
+            $names = ($nupkgs | ForEach-Object { $_.Name }) -join ', '
+            throw "The build produced more than one publishable NuGet package: $names."
           }
 
-          $perArtifact = foreach ($dir in $artifactDirs) {
-            $nupkgs = Get-ChildItem -Path $dir.FullName -Filter *.nupkg -Recurse |
-              Where-Object { $_.Name -notlike '*.symbols.nupkg' }
-            [pscustomobject]@{ Artifact = $dir.Name; Packages = @($nupkgs) }
-          }
-
-          foreach ($entry in $perArtifact) {
-            if ($entry.Packages.Count -eq 0) {
-              throw "Artifact '$($entry.Artifact)' did not contain any publishable (non-symbols) NuGet package."
-            }
-            if ($entry.Packages.Count -gt 1) {
-              $names = ($entry.Packages | ForEach-Object { $_.Name }) -join ', '
-              throw "Artifact '$($entry.Artifact)' contained more than one publishable NuGet package: $names."
-            }
-          }
-
-          if ($perArtifact.Count -gt 2) {
-            $artifactNames = ($perArtifact | ForEach-Object { $_.Artifact }) -join ', '
-            throw "Expected packages from at most 2 OS artifacts (win/lin), but found $($perArtifact.Count): $artifactNames."
-          }
-
-          $distinctNames = $perArtifact | ForEach-Object { $_.Packages[0].Name } | Select-Object -Unique
-          if ($distinctNames.Count -gt 1) {
-            $details = ($perArtifact | ForEach-Object { "$($_.Artifact): $($_.Packages[0].Name)" }) -join '; '
-            throw "Windows and Linux builds produced different NuGet packages, expected the same package from both: $details."
-          }
-
-          $package = $perArtifact[0].Packages[0]
+          $package = $nupkgs[0]
           "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
           "package_name=$($package.Name)" >> $env:GITHUB_OUTPUT
 

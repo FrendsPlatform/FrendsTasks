@@ -1,0 +1,52 @@
+name: 'Frends dotnet setup'
+description: 'Shared .NET SDK / NuGet feed setup for Official Frends Tasks pipeline jobs.'
+
+inputs:
+  dotnet_version:
+    required: false
+    default: '8.0.x'
+    description: 'The .NET SDK version to install and use.'
+  source_nuget_feed_url:
+    required: false
+    description: 'Optional NuGet feed URL used while restoring and building the project.'
+  source_nuget_feed_api_key:
+    required: false
+    description: 'API key used to authenticate to source_nuget_feed_url.'
+
+runs:
+  using: composite
+  steps:
+    ###############################
+    # SETUP DOTNET                #
+    ###############################
+    - id: check_source_feed
+      name: Check build-time NuGet feed configuration
+      shell: pwsh
+      env:
+        FEED_URL: ${{ inputs.source_nuget_feed_url }}
+        FEED_API_KEY: ${{ inputs.source_nuget_feed_api_key }}
+      run: |
+        if ([string]::IsNullOrEmpty($env:FEED_URL) -and [string]::IsNullOrEmpty($env:FEED_API_KEY)) {
+          "configured=false" >> $env:GITHUB_OUTPUT
+        }
+        elseif ([string]::IsNullOrEmpty($env:FEED_URL) -or [string]::IsNullOrEmpty($env:FEED_API_KEY)) {
+          throw "source_nuget_feed_url and source_nuget_feed_api_key must be provided together."
+        }
+        else {
+          "configured=true" >> $env:GITHUB_OUTPUT
+        }
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'false' }}
+      name: Setup .NET SDK
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+
+    - if: ${{ steps.check_source_feed.outputs.configured == 'true' }}
+      name: Setup .NET SDK with build-time NuGet feed
+      uses: actions/setup-dotnet@v6.0.0
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.source_nuget_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.source_nuget_feed_api_key }}
