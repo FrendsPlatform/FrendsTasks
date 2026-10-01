@@ -115,8 +115,6 @@ jobs:
         )
       }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     env:
       TARGET_FEED_URL: >-
         ${{
