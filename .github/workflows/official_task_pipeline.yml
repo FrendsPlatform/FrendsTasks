@@ -57,8 +57,8 @@ jobs:
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
-          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
-          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          feed_url: ${{ secrets.source_nuget_feed_url }}
+          api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Build
         shell: pwsh
@@ -68,7 +68,7 @@ jobs:
       - name: Pack release version of task
         shell: pwsh
         working-directory: ${{ inputs.workdir }}
-        run: dotnet pack --configuration Release --include-source
+        run: dotnet pack --configuration Release
 
       - name: Upload build output
         uses: actions/upload-artifact@v7.0.1
@@ -86,6 +86,7 @@ jobs:
           name: ${{ env.NUGET_ARTIFACT_NAME }}
           path: ${{ inputs.workdir }}/**/*.nupkg
           if-no-files-found: error
+
   code_quality:
     name: Check Code Quality
     needs: build
@@ -108,8 +109,8 @@ jobs:
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
-          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
-          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          feed_url: ${{ secrets.source_nuget_feed_url }}
+          api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Download build output
         uses: actions/download-artifact@v8.0.1
@@ -194,6 +195,7 @@ jobs:
               $proj.FullName
           }
 
+
   test_windows:
     name: Test on windows-latest
     needs: build
@@ -207,8 +209,8 @@ jobs:
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
-          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
-          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          feed_url: ${{ secrets.source_nuget_feed_url }}
+          api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
@@ -232,8 +234,8 @@ jobs:
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
-          source_nuget_feed_url: ${{ secrets.source_nuget_feed_url }}
-          source_nuget_feed_api_key: ${{ secrets.source_nuget_feed_api_key }}
+          feed_url: ${{ secrets.source_nuget_feed_url }}
+          api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
@@ -278,12 +280,11 @@ jobs:
           }
 
       - name: Setup .NET SDK with target NuGet feed
-        uses: actions/setup-dotnet@v6.0.0
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
         with:
-          dotnet-version: ${{ inputs.dotnet_version }}
-          source-url: ${{ env.TARGET_FEED_URL }}
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.target_feed_api_key }}
+          dotnet_version: ${{ inputs.dotnet_version }}
+          feed_url: ${{ env.TARGET_FEED_URL }}
+          api_key: ${{ secrets.target_feed_api_key }}
 
       - name: Download NuGet package(s)
         uses: actions/download-artifact@v8.0.1
@@ -291,38 +292,25 @@ jobs:
           name: ${{ env.NUGET_ARTIFACT_NAME }}
           path: packages
 
-      - name: Select NuGet package to publish
-        id: select_package
-        shell: pwsh
-        run: |
-          # Symbols packages are never published, so exactly one non-symbols package is expected.
-          $nupkgs = @(Get-ChildItem -Path packages -Filter *.nupkg -Recurse |
-            Where-Object { $_.Name -notlike '*.symbols.nupkg' })
-          if ($nupkgs.Count -eq 0) {
-            throw "The build did not produce any publishable (non-symbols) NuGet package."
-          }
-          if ($nupkgs.Count -gt 1) {
-            $names = ($nupkgs | ForEach-Object { $_.Name }) -join ', '
-            throw "The build produced more than one publishable NuGet package: $names."
-          }
-
-          $package = $nupkgs[0]
-          "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
-          "package_name=$($package.Name)" >> $env:GITHUB_OUTPUT
-
       - name: Push NuGet package
+        id: push_package
         shell: pwsh
         env:
           TARGET_FEED_URL: ${{ env.TARGET_FEED_URL }}
           TARGET_FEED_API_KEY: ${{ secrets.target_feed_api_key }}
-          PACKAGE_PATH: ${{ steps.select_package.outputs.package_path }}
         run: |
-          dotnet nuget push $env:PACKAGE_PATH `
+          $package = Get-ChildItem -Path packages -Filter *.nupkg -Recurse | Select-Object -First 1
+          if ($null -eq $package) {
+            throw "The build did not produce a NuGet package."
+          }
+          "package_name=$($package.Name)" >> $env:GITHUB_OUTPUT
+
+          dotnet nuget push $package.FullName `
             --api-key $env:TARGET_FEED_API_KEY `
             --source $env:TARGET_FEED_URL `
             --skip-duplicate
           if ($LASTEXITCODE -ne 0) {
-            throw "Failed to publish $env:PACKAGE_PATH."
+            throw "Failed to publish $($package.FullName)."
           }
 
       - name: Get current date
@@ -337,8 +325,8 @@ jobs:
         with:
           draft: false
           prerelease: false
-          tag_name: release-${{ steps.select_package.outputs.package_name }}-${{ steps.date.outputs.date }}
-          name: Release ${{ steps.select_package.outputs.package_name }} (${{ steps.date.outputs.date }})
+          tag_name: release-${{ steps.push_package.outputs.package_name }}-${{ steps.date.outputs.date }}
+          name: Release ${{ steps.push_package.outputs.package_name }} (${{ steps.date.outputs.date }})
           body: |
             The task was released at https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v2
             You can install the task via Frends UI Task View, or browse released packages at https://dev.azure.com/frends-platform/frends-tasks/_artifacts/feed/main
