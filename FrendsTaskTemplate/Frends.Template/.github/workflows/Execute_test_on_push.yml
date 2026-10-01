@@ -1,4 +1,6 @@
 name: Execute_test_on_push
+permissions:
+  contents: read
 
 on:
   push:
