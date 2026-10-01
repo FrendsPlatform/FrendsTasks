@@ -49,7 +49,14 @@ jobs:
   build:
     name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
     runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    outputs:
+      workspace: ${{ steps.workspace.outputs.path }}
     steps:
+      - id: workspace
+        name: Record build workspace
+        shell: pwsh
+        run: '"path=$env:GITHUB_WORKSPACE" >> $env:GITHUB_OUTPUT'
+
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
@@ -217,6 +224,7 @@ jobs:
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
+          build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
@@ -242,6 +250,7 @@ jobs:
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
+          build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}

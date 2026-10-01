@@ -9,6 +9,9 @@ inputs:
   build_artifact_name:
     required: true
     description: 'Name of the artifact containing the bin/obj output of the build job.'
+  build_workspace:
+    required: true
+    description: 'github.workspace of the build job, used to relocate Coverlet source mappings to this runner.'
   pretest_command:
     required: false
     description: 'Optional PowerShell command to run before testing the project (e.g. starting test containers).'
@@ -69,6 +72,25 @@ runs:
       shell: pwsh
       working-directory: ${{ inputs.workdir }}
       run: dotnet restore
+
+    # Coverlet maps PDB source paths using CoverletSourceRootsMapping files written at build time.
+    # They contain the build runner's workspace path, so point them to this runner's checkout.
+    - name: Relocate coverage source mappings
+      shell: pwsh
+      working-directory: ${{ inputs.workdir }}
+      env:
+        BUILD_WORKSPACE: ${{ inputs.build_workspace }}
+      run: |
+        $buildRoot = $env:BUILD_WORKSPACE.Replace('\', '/').TrimEnd('/') + '/'
+        $localRoot = $env:GITHUB_WORKSPACE.Replace('\', '/').TrimEnd('/') + '/'
+        Get-ChildItem -Recurse -File -Filter 'CoverletSourceRootsMapping*' | ForEach-Object {
+          # Line format: <project>|<source roots>=<PDB path>; only the left side is relocated.
+          $lines = Get-Content $_.FullName | Where-Object { $_.Contains('=') } | ForEach-Object {
+            $left, $right = $_ -split '=', 2
+            $left.Replace('\', '/').Replace($buildRoot, $localRoot) + '=' + $right
+          }
+          Set-Content -Path $_.FullName -Value $lines -Encoding Unicode
+        }
 
     - name: Test
       shell: pwsh
