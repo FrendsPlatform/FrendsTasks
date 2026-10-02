@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_nuget_feed_url }}
@@ -113,7 +113,7 @@ jobs:
           FILTER_REGEX_INCLUDE: "${{ inputs.workdir }}/.*"
 
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_nuget_feed_url }}
@@ -213,14 +213,14 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_nuget_feed_url }}
           api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
@@ -239,14 +239,14 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_nuget_feed_url }}
           api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
@@ -289,7 +289,7 @@ jobs:
           }
 
       - name: Setup .NET SDK with target NuGet feed
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@hot-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
         with:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ env.TARGET_FEED_URL }}
