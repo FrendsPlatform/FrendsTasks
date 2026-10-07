@@ -6,7 +6,7 @@ on:
       workflow_mode:
         required: true
         type: string
-        description: 'Workflow mode: "work" builds, tests and publishes to the test feed, "main" builds and tests, "release" builds, publishes to the main feed and creates a GitHub release.'
+        description: 'Workflow mode: "work" builds, tests and publishes to the test feed, "main" builds, tests, publishes to the main feed and creates a GitHub release, "release" builds, publishes to the main feed and creates a GitHub release.'
       os:
         required: false
         type: string
@@ -46,8 +46,22 @@ env:
   NUGET_ARTIFACT_NAME: nuget-packages
 
 jobs:
+  validate_mode:
+    name: Validate workflow mode
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check workflow mode
+        shell: pwsh
+        env:
+          WORKFLOW_MODE: ${{ inputs.workflow_mode }}
+        run: |
+          if ($env:WORKFLOW_MODE -notin @('work', 'main', 'release')) {
+            throw 'workflow_mode must be one of: work, main, release.'
+          }
+
   build:
     name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    needs: validate_mode
     runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
     outputs:
       workspace: ${{ steps.workspace.outputs.path }}
@@ -263,7 +277,6 @@ jobs:
     if: >-
       ${{
         always() &&
-        (inputs.workflow_mode == 'work' || inputs.workflow_mode == 'release') &&
         needs.build.result == 'success' &&
         needs.code_quality.result == 'success' &&
         (needs.test_windows.result == 'success' || needs.test_windows.result == 'skipped') &&
@@ -273,9 +286,9 @@ jobs:
     env:
       TARGET_FEED_URL: >-
         ${{
-          inputs.workflow_mode == 'release'
-            && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json'
-            || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
+          inputs.workflow_mode == 'work'
+            && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json'
+            || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json'
         }}
     steps:
       - name: Validate target NuGet feed configuration
@@ -323,13 +336,13 @@ jobs:
           }
 
       - name: Get current date
-        if: ${{ inputs.workflow_mode == 'release' }}
+        if: ${{ inputs.workflow_mode == 'main' || inputs.workflow_mode == 'release' }}
         id: date
         shell: bash
         run: echo "date=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
 
       - name: Create release
-        if: ${{ inputs.workflow_mode == 'release' }}
+        if: ${{ inputs.workflow_mode == 'main' || inputs.workflow_mode == 'release' }}
         uses: softprops/action-gh-release@v3.0.3
         with:
           draft: false
