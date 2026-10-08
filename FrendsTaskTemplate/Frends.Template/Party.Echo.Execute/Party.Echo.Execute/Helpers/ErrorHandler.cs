@@ -18,6 +18,9 @@ internal static class ErrorHandler
     /// <returns> A failed Result object when the exception is handled instead of rethrown. </returns>
     internal static Result Handle(this Exception exception, Options options, bool throwCanceled = true)
     {
+        ArgumentNullException.ThrowIfNull(exception);
+        ArgumentNullException.ThrowIfNull(options);
+
         ThrowIfCanceled(exception, throwCanceled);
         if (options.ThrowErrorOnFailure) ThrowBaseException(exception, options.ErrorMessageOnFailure);
 
@@ -26,7 +29,7 @@ internal static class ErrorHandler
 
     private static void ThrowIfCanceled(Exception exception, bool throwCanceled = true)
     {
-        if (throwCanceled && exception is OperationCanceledException) throw exception;
+        if (throwCanceled && exception is OperationCanceledException) ThrowBaseException(exception);
     }
 
     private static void ThrowBaseException(Exception exception, string customMessage = null)

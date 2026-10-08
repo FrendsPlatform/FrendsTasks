@@ -13,6 +13,8 @@ internal static class ValidationHandler
     {
         if (objects == null || objects.Length == 0)
             throw new ValidationException("Validation failed:\nYou must provide objects to validate");
+        if (objects.Any(obj => obj == null))
+            throw new ValidationException("Validation failed:\nAny of validated objects can't be null");
         var validationMessage = objects.Select(obj => obj.Validate())
             .Aggregate(string.Empty, (current, message) => string.Join("\n", current, message));
 

@@ -1,6 +1,6 @@
 using System.Threading;
-using NUnit.Framework;
 using Party.Echo.Execute.Definitions;
+using NUnit.Framework;
 
 namespace Party.Echo.Execute.Tests;
 

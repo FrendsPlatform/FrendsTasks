@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
@@ -6,7 +7,7 @@ namespace Party.Echo.Execute.Attributes;
 
 /// <summary>
 /// Validates that a property is required if another property has a specific value.
-/// If a property is null, empty, or white space only, validation fails.
+/// If a property is null, an empty collection, or an empty or white-space-only string, validation fails.
 /// </summary>
 // TODO : Remove this class if not used
 [AttributeUsage(AttributeTargets.Property)]
@@ -23,7 +24,9 @@ internal class RequiredIfAttribute(string dependentProperty, params object[] tar
 
         if (!targetValues.Contains(dependentValue)) return ValidationResult.Success;
 
-        if (value == null || (value is string s && string.IsNullOrWhiteSpace(s)))
+        if (value == null ||
+            (value is string s && string.IsNullOrWhiteSpace(s)) ||
+            (value is IEnumerable collection && !collection.Cast<object>().Any()))
         {
             return new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} is required.");
         }
