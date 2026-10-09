@@ -1,4 +1,4 @@
-name: Execute main branch pipeline
+name: Execute main release
 permissions:
   contents: write
 

@@ -1,4 +1,5 @@
-name: Execute quick release pipeline
+#USE THIS WORKFLOW ONLY WHEN YOU WANT TO RELEASE MANUALLY WITHOUT TESTS
+name: Execute quick release
 permissions:
   contents: write
 
