@@ -1,4 +1,5 @@
-name: Execute_release
+#USE THIS WORKFLOW ONLY WHEN YOU WANT TO RELEASE MANUALLY WITHOUT TESTS
+name: Execute quick release
 permissions:
   contents: write
 
@@ -15,7 +16,6 @@ jobs:
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       target_feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
-      source_nuget_feed_url: ${{ secrets.TASKS_FEED_URL }}
       env_vars: |
           {
             "FOO": ${{ toJSON(secrets.FOO) }},

@@ -1,10 +1,10 @@
-name: Execute_test_on_push
+name: Execute main release
 permissions:
-  contents: read
+  contents: write
 
 on:
   push:
-    branches-ignore:
+    branches:
       - main
     paths:
       - 'Party.Echo.Execute/**'
@@ -12,17 +12,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  work_push:
+  main_pipeline:
     uses: FrendsPlatform/FrendsTasks/.github/workflows/official_task_pipeline.yml@main
     with:
-      workflow_mode: work
+      workflow_mode: main
       os: all
       workdir: Party.Echo.Execute
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
-      target_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
+      target_feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
       env_vars: |
         {
-          "USERNAME": ${{ toJSON(secrets.USERNAME) }},
-          "PASSWORD": ${{ toJSON(secrets.PASSWORD) }}
+          "FOO": ${{ toJSON(secrets.FOO) }},
+          "BAR": ${{ toJSON(secrets.BAR) }}
         }
