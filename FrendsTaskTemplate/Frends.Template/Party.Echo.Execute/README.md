@@ -2,9 +2,9 @@
 
 TaskDescription
 
-[![Execute_build](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_test_on_main.yml)
-![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Party.Echo/Party.Echo.Execute|main)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Build status](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_main_release.yml/badge.svg)](https://github.com/FrendsPlatform/Party.Echo/actions/workflows/Execute_main_release.yml)
+![Code Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Party.Echo/Party.Echo.Execute|main)
+[![Repository License](https://img.shields.io/github/license/FrendsPlatform/Party.Echo?label=License)](https://github.com/FrendsPlatform/Party.Echo/blob/main/LICENSE)
 
 ## Installing
 
