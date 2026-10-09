@@ -31,6 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="Party.Echo.Execute.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Content Include="migration.json" PackagePath="/" Pack="true"/>
         <Content Include="../CHANGELOG.md" PackagePath="/" Pack="true"/>
 		<Content Include="FrendsTaskMetadata.json"

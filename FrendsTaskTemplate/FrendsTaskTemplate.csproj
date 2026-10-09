@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageType>Template</PackageType>
-        <PackageVersion>1.17.0</PackageVersion>
+        <PackageVersion>1.18.0</PackageVersion>
         <PackageId>frendstasktemplate</PackageId>
         <Title>Frends Task template</Title>
         <Authors>Frends</Authors>
@@ -23,6 +23,11 @@
                       Frends.Template\**\.idea\**"/>
         <Compile Remove="**\*"/>
         <None Include="README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Frends.Template\Party.Echo.Execute\Party.Echo.Execute.Tests\AttributesTests\" />
+      <Folder Include="Frends.Template\Party.Echo.Execute\Party.Echo.Execute.Tests\HelpersTests\" />
     </ItemGroup>
 
 </Project>
