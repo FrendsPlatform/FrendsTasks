@@ -13,11 +13,10 @@ jobs:
       workflow_mode: release
       os: all
       workdir: Party.Echo.Execute
+      env_var_name_1: FOO
+      env_var_name_2: BAR
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       target_feed_api_key: ${{ secrets.TASKS_FEED_API_KEY }}
-      env_vars: |
-          {
-            "FOO": ${{ toJSON(secrets.FOO) }},
-            "BAR": ${{ toJSON(secrets.BAR) }}
-          }
+      env_var_value_1: ${{ secrets.FOO }}
+      env_var_value_2: ${{ secrets.BAR }}

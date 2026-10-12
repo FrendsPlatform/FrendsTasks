@@ -18,13 +18,12 @@ jobs:
       workflow_mode: work
       os: all
       workdir: Party.Echo.Execute
+      env_var_name_1: USERNAME
+      env_var_name_2: PASSWORD
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       target_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
       source_feed_api_key: ${{ secrets.BUILD_TIME_NUGET_FEED_API_KEY }}
       source_feed_url: ${{ secrets.BUILD_TIME_NUGET_FEED_URL }}
-      env_vars: |
-        {
-          "USERNAME": ${{ toJSON(secrets.USERNAME) }},
-          "PASSWORD": ${{ toJSON(secrets.PASSWORD) }}
-        }
+      env_var_value_1: ${{ secrets.USERNAME }}
+      env_var_value_2: ${{ secrets.PASSWORD }}
