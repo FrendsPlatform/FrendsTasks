@@ -15,12 +15,96 @@ inputs:
   pretest_command:
     required: false
     description: 'Optional PowerShell command to run before testing the project (e.g. starting test containers).'
-  env_vars:
+  env_var_name_1:
     required: false
-    description: >
-      JSON object mapping the environment variable name to set to its value, e.g.
-      '{"MY_KEY":"<resolved-value>"}'. Resolve secret values in the caller workflow (wrapping
-      each with the toJSON() function so special characters stay valid JSON).
+    description: 'Name of environment variable 1 to set for the tests.'
+  env_var_value_1:
+    required: false
+    description: 'Value of environment variable 1 (resolve secrets in the caller workflow).'
+  env_var_name_2:
+    required: false
+    description: 'Name of environment variable 2 to set for the tests.'
+  env_var_value_2:
+    required: false
+    description: 'Value of environment variable 2 (resolve secrets in the caller workflow).'
+  env_var_name_3:
+    required: false
+    description: 'Name of environment variable 3 to set for the tests.'
+  env_var_value_3:
+    required: false
+    description: 'Value of environment variable 3 (resolve secrets in the caller workflow).'
+  env_var_name_4:
+    required: false
+    description: 'Name of environment variable 4 to set for the tests.'
+  env_var_value_4:
+    required: false
+    description: 'Value of environment variable 4 (resolve secrets in the caller workflow).'
+  env_var_name_5:
+    required: false
+    description: 'Name of environment variable 5 to set for the tests.'
+  env_var_value_5:
+    required: false
+    description: 'Value of environment variable 5 (resolve secrets in the caller workflow).'
+  env_var_name_6:
+    required: false
+    description: 'Name of environment variable 6 to set for the tests.'
+  env_var_value_6:
+    required: false
+    description: 'Value of environment variable 6 (resolve secrets in the caller workflow).'
+  env_var_name_7:
+    required: false
+    description: 'Name of environment variable 7 to set for the tests.'
+  env_var_value_7:
+    required: false
+    description: 'Value of environment variable 7 (resolve secrets in the caller workflow).'
+  env_var_name_8:
+    required: false
+    description: 'Name of environment variable 8 to set for the tests.'
+  env_var_value_8:
+    required: false
+    description: 'Value of environment variable 8 (resolve secrets in the caller workflow).'
+  env_var_name_9:
+    required: false
+    description: 'Name of environment variable 9 to set for the tests.'
+  env_var_value_9:
+    required: false
+    description: 'Value of environment variable 9 (resolve secrets in the caller workflow).'
+  env_var_name_10:
+    required: false
+    description: 'Name of environment variable 10 to set for the tests.'
+  env_var_value_10:
+    required: false
+    description: 'Value of environment variable 10 (resolve secrets in the caller workflow).'
+  env_var_name_11:
+    required: false
+    description: 'Name of environment variable 11 to set for the tests.'
+  env_var_value_11:
+    required: false
+    description: 'Value of environment variable 11 (resolve secrets in the caller workflow).'
+  env_var_name_12:
+    required: false
+    description: 'Name of environment variable 12 to set for the tests.'
+  env_var_value_12:
+    required: false
+    description: 'Value of environment variable 12 (resolve secrets in the caller workflow).'
+  env_var_name_13:
+    required: false
+    description: 'Name of environment variable 13 to set for the tests.'
+  env_var_value_13:
+    required: false
+    description: 'Value of environment variable 13 (resolve secrets in the caller workflow).'
+  env_var_name_14:
+    required: false
+    description: 'Name of environment variable 14 to set for the tests.'
+  env_var_value_14:
+    required: false
+    description: 'Value of environment variable 14 (resolve secrets in the caller workflow).'
+  env_var_name_15:
+    required: false
+    description: 'Name of environment variable 15 to set for the tests.'
+  env_var_value_15:
+    required: false
+    description: 'Value of environment variable 15 (resolve secrets in the caller workflow).'
   badge_service_api_key:
     required: true
     description: 'API key used to publish the code coverage badge.'
@@ -34,22 +118,51 @@ runs:
         name: ${{ inputs.build_artifact_name }}
         path: ${{ inputs.workdir }}
 
-    - if: ${{ inputs.env_vars != '' }}
-      name: Set dynamic environment variables
+    - name: Set dynamic environment variables
       shell: pwsh
       env:
-        ENV_VARS_MAPPING: ${{ inputs.env_vars }}
+        ENV_NAME_1: ${{ inputs.env_var_name_1 }}
+        ENV_VALUE_1: ${{ inputs.env_var_value_1 }}
+        ENV_NAME_2: ${{ inputs.env_var_name_2 }}
+        ENV_VALUE_2: ${{ inputs.env_var_value_2 }}
+        ENV_NAME_3: ${{ inputs.env_var_name_3 }}
+        ENV_VALUE_3: ${{ inputs.env_var_value_3 }}
+        ENV_NAME_4: ${{ inputs.env_var_name_4 }}
+        ENV_VALUE_4: ${{ inputs.env_var_value_4 }}
+        ENV_NAME_5: ${{ inputs.env_var_name_5 }}
+        ENV_VALUE_5: ${{ inputs.env_var_value_5 }}
+        ENV_NAME_6: ${{ inputs.env_var_name_6 }}
+        ENV_VALUE_6: ${{ inputs.env_var_value_6 }}
+        ENV_NAME_7: ${{ inputs.env_var_name_7 }}
+        ENV_VALUE_7: ${{ inputs.env_var_value_7 }}
+        ENV_NAME_8: ${{ inputs.env_var_name_8 }}
+        ENV_VALUE_8: ${{ inputs.env_var_value_8 }}
+        ENV_NAME_9: ${{ inputs.env_var_name_9 }}
+        ENV_VALUE_9: ${{ inputs.env_var_value_9 }}
+        ENV_NAME_10: ${{ inputs.env_var_name_10 }}
+        ENV_VALUE_10: ${{ inputs.env_var_value_10 }}
+        ENV_NAME_11: ${{ inputs.env_var_name_11 }}
+        ENV_VALUE_11: ${{ inputs.env_var_value_11 }}
+        ENV_NAME_12: ${{ inputs.env_var_name_12 }}
+        ENV_VALUE_12: ${{ inputs.env_var_value_12 }}
+        ENV_NAME_13: ${{ inputs.env_var_name_13 }}
+        ENV_VALUE_13: ${{ inputs.env_var_value_13 }}
+        ENV_NAME_14: ${{ inputs.env_var_name_14 }}
+        ENV_VALUE_14: ${{ inputs.env_var_value_14 }}
+        ENV_NAME_15: ${{ inputs.env_var_name_15 }}
+        ENV_VALUE_15: ${{ inputs.env_var_value_15 }}
       run: |
-        $mapping = $env:ENV_VARS_MAPPING | ConvertFrom-Json
-        foreach ($prop in $mapping.PSObject.Properties) {
-          $envName = $prop.Name
-          $value = $prop.Value
+        foreach ($i in 1..15) {
+          $envName = [Environment]::GetEnvironmentVariable("ENV_NAME_$i")
+          if ([string]::IsNullOrEmpty($envName)) { continue }
+          $value = [Environment]::GetEnvironmentVariable("ENV_VALUE_$i")
           if ([string]::IsNullOrEmpty($value)) {
-            Write-Error "env_vars entry '$envName' has an empty value."
+            Write-Error "env_var_value_$i for '$envName' is empty."
             exit 1
           }
           Write-Output "::add-mask::$value"
-          Add-Content -Path $env:GITHUB_ENV -Value "$envName=$value"
+          $delimiter = "EOF_" + [guid]::NewGuid().ToString('N')
+          Add-Content -Path $env:GITHUB_ENV -Value "$envName<<$delimiter`n$value`n$delimiter"
         }
 
     # An alias is needed so that docker-compose works with the dash in between.
