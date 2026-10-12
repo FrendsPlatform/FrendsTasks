@@ -29,6 +29,10 @@ on:
         required: false
         type: boolean
         default: true
+      env_var_names:
+        required: false
+        type: string
+        description: 'Comma/semicolon/whitespace separated names of secrets to expose as environment variables in the test jobs, e.g. "FOO,BAR". Not secret itself.'
     secrets:
       badge_service_api_key:
         required: true
@@ -40,6 +44,7 @@ on:
         required: false
       env_vars:
         required: false
+        description: 'Pass the toJSON of the secrets context. Only the secrets listed in env_var_names are used.'
 
 env:
   BUILD_ARTIFACT_NAME: build-output
@@ -234,12 +239,13 @@ jobs:
           api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@secret-fix
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
           build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
+          env_var_names: ${{ inputs.env_var_names }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
 
@@ -260,12 +266,13 @@ jobs:
           api_key: ${{ secrets.source_nuget_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@secret-fix
         with:
           workdir: ${{ inputs.workdir }}
           build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
           build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
+          env_var_names: ${{ inputs.env_var_names }}
           env_vars: ${{ secrets.env_vars }}
           badge_service_api_key: ${{ secrets.badge_service_api_key }}
 

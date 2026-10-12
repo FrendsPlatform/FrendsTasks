@@ -15,12 +15,14 @@ inputs:
   pretest_command:
     required: false
     description: 'Optional PowerShell command to run before testing the project (e.g. starting test containers).'
+  env_var_names:
+    required: false
+    description: 'Comma/semicolon/whitespace separated names of secrets to export as environment variables, e.g. FOO,BAR.'
   env_vars:
     required: false
     description: >
-      JSON object mapping the environment variable name to set to its value, e.g.
-      '{"MY_KEY":"<resolved-value>"}'. Resolve secret values in the caller workflow (wrapping
-      each with the toJSON() function so special characters stay valid JSON).
+      JSON object of all available secrets (the caller passes the toJSON of the secrets context). Only the secrets named
+      in env_var_names are exported; each value is masked in the logs and written to GITHUB_ENV.
   badge_service_api_key:
     required: true
     description: 'API key used to publish the code coverage badge.'
@@ -34,24 +36,36 @@ runs:
         name: ${{ inputs.build_artifact_name }}
         path: ${{ inputs.workdir }}
 
-    - if: ${{ inputs.env_vars != '' }}
+    - if: ${{ inputs.env_var_names != '' || inputs.env_vars != '' }}
       name: Set dynamic environment variables
       shell: pwsh
       env:
-        ENV_VARS_MAPPING: ${{ inputs.env_vars }}
+        ENV_VARS_JSON: ${{ inputs.env_vars }}
+        ENV_VAR_NAMES: ${{ inputs.env_var_names }}
       run: |
-        $mapping = $env:ENV_VARS_MAPPING | ConvertFrom-Json
-        foreach ($prop in $mapping.PSObject.Properties) {
-          $envName = $prop.Name
-          $value = $prop.Value
-          if ([string]::IsNullOrEmpty($value)) {
-            Write-Error "env_vars entry '$envName' has an empty value."
-            exit 1
-          }
-          Write-Output "::add-mask::$value"
-          Add-Content -Path $env:GITHUB_ENV -Value "$envName=$value"
+        $names = @($env:ENV_VAR_NAMES -split '[,;\s]+' | Where-Object { $_ })
+        if ($names.Count -eq 0) {
+          throw "env_vars was provided but env_var_names is empty. List the secret names to export in env_var_names."
         }
-
+        if ([string]::IsNullOrEmpty($env:ENV_VARS_JSON)) {
+          throw "env_var_names was provided but env_vars is empty. Pass the toJSON of the secrets context as env_vars."
+        }
+        $all = $env:ENV_VARS_JSON | ConvertFrom-Json -AsHashtable
+        foreach ($name in $names) {
+          if ($name -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') {
+            throw "Invalid environment variable name '$name'."
+          }
+          $value = $all[$name]
+          if ([string]::IsNullOrEmpty($value)) {
+            throw "Secret '$name' is missing or empty."
+          }
+          # Masks are applied per line, because the runner cannot mask multi-line values as a whole.
+          foreach ($line in ($value -split "\r?\n")) {
+            if ($line) { Write-Output "::add-mask::$line" }
+          }
+          $delimiter = "EOF_$([guid]::NewGuid().ToString('N'))"
+          Add-Content -Path $env:GITHUB_ENV -Value "$name<<$delimiter`n$value`n$delimiter"
+        }
     # An alias is needed so that docker-compose works with the dash in between.
     - if: ${{ runner.os == 'Linux' }}
       name: Create alias for docker-compose
