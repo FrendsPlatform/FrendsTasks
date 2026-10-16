@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageType>Template</PackageType>
-        <PackageVersion>1.20.0</PackageVersion>
+        <PackageVersion>1.21.0</PackageVersion>
         <PackageId>frendstasktemplate</PackageId>
         <Title>Frends Task template</Title>
         <Authors>Frends</Authors>
