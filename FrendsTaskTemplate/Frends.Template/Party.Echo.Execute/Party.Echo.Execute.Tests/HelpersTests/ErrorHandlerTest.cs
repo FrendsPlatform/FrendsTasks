@@ -14,7 +14,7 @@ internal class ErrorHandlerTest : TestBase
     public void Should_Throw_Error_When_ThrowErrorOnFailure_Is_True()
     {
         var ex = Assert.Catch<Exception>((Action)(() =>
-           Tester.TestTask(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None)));
+           Echo.Execute(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None)));
         Assert.That(ex, Is.Not.Null);
     }
 
@@ -23,7 +23,7 @@ internal class ErrorHandlerTest : TestBase
     {
         var options = DefaultOptions();
         options.ThrowErrorOnFailure = false;
-        var result = Tester.TestTask(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
+        var result = Echo.Execute(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
         Assert.That(result.Success, Is.False);
     }
 
@@ -33,7 +33,7 @@ internal class ErrorHandlerTest : TestBase
         var options = DefaultOptions();
         options.ErrorMessageOnFailure = CustomErrorMessage;
         var ex = Assert.Throws<Exception>((Action)(() =>
-            Tester.TestTask(DefaultInput(), DefaultConnection(), options, CancellationToken.None)));
+            Echo.Execute(DefaultInput(), DefaultConnection(), options, CancellationToken.None)));
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
     }
