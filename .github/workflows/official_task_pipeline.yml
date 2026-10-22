@@ -154,6 +154,19 @@ jobs:
           feed_url: ${{ secrets.source_feed_url }}
           api_key: ${{ secrets.source_feed_api_key }}
 
+      - name: Add top-level .editorconfig
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # Placed at the repo root so any .editorconfig closer to the code (e.g. in workdir) still takes precedence.
+          $target = Join-Path $env:GITHUB_WORKSPACE '.editorconfig'
+          if (-not (Test-Path $target)) {
+            gh api 'repos/FrendsPlatform/FrendsTasks/contents/.editorconfig?ref=main' `
+                -H 'Accept: application/vnd.github.raw' > $target
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to download .editorconfig from FrendsPlatform/FrendsTasks.' }
+          }
+
       - name: Build
         shell: pwsh
         working-directory: ${{ inputs.workdir }}
@@ -249,7 +262,19 @@ jobs:
           Get-ChildItem -Path '.analyzers/tmp' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers' -Force
           Remove-Item -Path '.analyzers/tmp' -Recurse -Force
 
-      - name: Write .editorconfig
+      - name: Add top-level .editorconfig
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $target = Join-Path $env:GITHUB_WORKSPACE '.editorconfig'
+          if (-not (Test-Path $target)) {
+            gh api 'repos/FrendsPlatform/FrendsTasks/contents/.editorconfig?ref=main' `
+                -H 'Accept: application/vnd.github.raw' > $target
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to download .editorconfig from FrendsPlatform/FrendsTasks.' }
+          }
+
+      - name: Write task methods to .editorconfig
         shell: pwsh
         working-directory: ${{ inputs.workdir }}
         run: |
