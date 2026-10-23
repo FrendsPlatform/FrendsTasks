@@ -94,8 +94,10 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 ## 9. [REQUIRED] Project File Requirements
 
-- Every Task `.csproj` must include PackageReference for StyleCop.Analyzers and FrendsTaskAnalyzers as in #FrendsTaskTemplate
-- Check #FrendsTaskTemplate for actual versions of those we are using nowadays
+- Every `.csproj` file must include PackageReference for StyleCop.Analyzers as in #FrendsTaskTemplate
+- Task `.csproj` must include PackageReference for FrendsTaskAnalyzers as in #FrendsTaskTemplate
+- Check #FrendsTaskTemplate for actual versions of those packages we are using nowadays
+- Confirm that both .csproj files (Task and Unit Test) are using the same versions of StyleCop.Analyzers and FrendsTaskAnalyzers packages as in #FrendsTaskTemplate. If not, update them to match.
 
 ## 10. [OPTIONAL] Framework Upgrades
 
@@ -130,7 +132,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] `Result` has exactly one constructor (error defaults to `null` on success) — no duplicate/redundant constructor left in place
 - [ ] `ErrorHandlerTest` class added/updated, and its `TODO` placeholder replaced with a real invalid-input scenario
 - [ ] Every `<example>` tag shows a realistic value, not a null/empty placeholder (unless null/empty is genuinely the only sensible example)
-- [ ] `.csproj` has `StyleCop.Analyzers` and `FrendsTaskAnalyzers` package references
+- [ ] `.csproj` has `StyleCop.Analyzers` and `FrendsTaskAnalyzers` package references with correct versions
 - [ ] If framework was upgraded: unit test project upgraded too
 - [ ] Structure matches #FrendsTaskTemplate conventions
 - [ ] Any code that became obsolete, unused or otherwise unnecessary is removed
