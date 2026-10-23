@@ -1,7 +1,7 @@
 # Frends Task Harmonization — Agent Instructions
 
 - You are updating an existing Frends Task (C#/.NET) to bring it in line with current standards.
-- For #FrendsTemplateTask references you should **always** check code in `.tmp/FrendsTasks/FrendsTaskTemplate/Frends.Template/Party.Echo.Execute`
+- For #FrendsTaskTemplate references you should **always** check code in `.tmp/FrendsTasks/FrendsTaskTemplate/Frends.Template/Party.Echo.Execute`
 - Follow every section below.
 - Plan your work and execute it. 
 - Work through the checklist at the end before finishing.
@@ -29,7 +29,7 @@
 
 ## 3. Error Handling — Required Pattern
 
-- Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTemplateTask.
+- Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 
 ### 3a. You MUST actually call the Error Handler — do not reimplement it
@@ -58,7 +58,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 ## 4. Parameter Validation — Required Pattern
 
-- Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTemplateTask.
+- Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 - Validation should be handled by adding ValidationAttributes to class property You should use default .net attributes e.g. RequiredAttribue() RangeAttribute() etc. Alternatively you can create custom one if default ones are not sufficient, e.g.: see RequiredIfAttribute() in #FrendsTaskTemplate.
 
@@ -111,7 +111,10 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 ## 13. Build Warnings
 
-- Your solutions should be buildable. If any build warnings occurs, you should resolve them, but do not any additional suppressions after you've added GlobalSuppressions files.
+- Your solutions should be buildable. 
+- If any build warnings occurs, you should resolve them
+- DO NOT any additional suppressions after you've added GlobalSuppressions files.
+- DO NOT add inline #pragma or class-level warning suppressions
 
 # Before You Finish — Checklist
 
