@@ -6,7 +6,7 @@
 - Plan your work and execute it. 
 - Work through the checklist at the end before finishing.
 
-## 1. Versioning
+## 1. [REQUIRED] Versioning
 
 - The `.csproj` version has three numbers: `MAJOR.MINOR.PATCH`.
 - **Never change PATCH.** It stays fixed.
@@ -16,7 +16,7 @@
 - Any other change (fix, improvement, new optional parameter, etc.) → bump **MINOR**.
 - If you are unsure whether a change is breaking, treat it as breaking and bump MAJOR.
 
-## 2. CHANGELOG.md
+## 2. [REQUIRED] CHANGELOG.md
 
 - Add one new entry per change, at the top of the file, matching the version you just set.
 - Write it for the **Task's end user**, not for a developer reading a diff.
@@ -27,7 +27,7 @@
   - ❌ Bad example: "Refactored null-check branch in `Execute()` to short-circuit earlier."
   - ❌ Bad example: "- **BREAKING:** Renamed `InputFilePath` property to `SourceFilePath` to better reflect its purpose."
 
-## 3. Error Handling — Required Pattern
+## 3. [OPTIONAL] Error Handling — Required Pattern
 
 - Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
@@ -56,31 +56,31 @@ catch (Exception ex)
 
 Wire every catch block in code through `exception.Handle(options)`. Do not leave any catch block with hand-rolled error logic once `ErrorHandler` exists.
 
-## 4. Parameter Validation — Required Pattern
+## 4. [OPTIONAL] Parameter Validation — Required Pattern
 
 - Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 - Validation should be handled by adding ValidationAttributes to class property You should use default .net attributes e.g. RequiredAttribue() RangeAttribute() etc. Alternatively you can create custom one if default ones are not sufficient, e.g.: see RequiredIfAttribute() in #FrendsTaskTemplate.
 
-## 5. `Options` Class — Minimum Shape
+## 5. [REQUIRED] `Options` Class — Minimum Shape
 
 - If the Task is missing an `Options` parameter, add one based on Options.cs from #FrendsTaskTemplate code, with **at least** these properties. 
 - Treat `Delimiter` as an example of a task-specific setting, not a mandatory field — keep it only if it's relevant to this Task
 - `ThrowErrorOnFailure` and `ErrorMessageOnFailure` are **always** required.
 
-## 6. `Result` Class — One Constructor Only
+## 6. [OPTIONAL] `Result` Class — One Constructor Only
 
 - When adding error handling to a Task, you will typically need `Result` to be able to represent both success and failure. **Do not add a second constructor next to an existing parameterless/success one** — this leaves two ways to build the same object and Copilot-generated code tends to pick the wrong one inconsistently.
 - Instead, converge on a **single constructor** where `Error` defaults to `null` on success. Use Result.cs from #FrendsTaskTemplate as a starting point
 - If the Task already has an existing `Result` constructor in use elsewhere, **remove the redundant one you were about to add** and update call sites to the single-constructor form instead of leaving both.
 
-## 7. Error Handler Tests — Required
+## 7. [OPTIONAL] Error Handler Tests
 
 - Whenever `ErrorHandler` is added or modified, also add a matching test class.
 - Use #FrendsTaskTemplate ErrorHandlerTest.cs and TestBase.cs files as the template, adapting the namespace, class-under-test name, and the default helper methods to match this Task's actual test scaffolding.
 - **Before finishing, resolve the `TODO`**: replace it with an actual scenario that makes `DefaultInput()`/`DefaultConnection()` invalid for this specific Task (e.g., an empty required field, an unreachable endpoint, a malformed value) — don't leave the placeholder TODO comment in committed code.
 
-## 8. XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
+## 8. [REQUIRED] XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
 
 - Every public property's `<example>` tag must show a **realistic, meaningful value** a user would actually enter — not `null`, not `""`, not `0`, unless that literally is the only sensible example (e.g., a boolean flag, or `Error` which is genuinely `null` on success).
 - Examples:
@@ -92,29 +92,32 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - If you're unsure what a realistic value looks like, infer it from the property's name, type, and how it's used in `Execute()` — don't default to an empty placeholder just because it's easy.
 - In case of main task method xml doc <returns> tag should follow pattern from #FrendsTaskTemplate Party.Echo.Execute.cs
 
-## 9. Project File Requirements
+## 9. [REQUIRED] Project File Requirements
 
 - Every Task `.csproj` must include PackageReference for StyleCop.Analyzers and FrendsTaskAnalyzers as in #FrendsTaskTemplate
 - Check #FrendsTaskTemplate for actual versions of those we are using nowadays
 
-## 10. Framework Upgrades
+## 10. [OPTIONAL] Framework Upgrades
 
 - If you upgrade the main Task project to a new target framework, **you must also upgrade the unit test project** to match. Do not leave them on different target frameworks.
 
-## 11. Reference Template
+## 11. [OPTIONAL] Reference Template
 
 - Structure and conventions (folder layout, naming, test project setup) should follow the official template #FrendsTaskTemplate
 
-## 12. Suppressions
+## 12. [REQUIRED] Suppressions
 
 - Make sure solution has 2 GlobalSuppressions.cs files (one per project). They should match EXACTLY GlobalSuppressions.cs files from #FrendsTaskTemplate
+- This step is mandatory before you go to step 13.
 
-## 13. Build Warnings
+## 13. [REQUIRED] Build Warnings
 
-- Your solutions should be buildable. 
-- If any build warnings occurs, you should resolve them
+- Your solutions should be buildable.
+- Before you check build warnings, make sure you have added correct GlobalSuppressions.cs files to both projects.
+- If any build warnings occurs, you should resolve them.
 - DO NOT any additional suppressions after you've added GlobalSuppressions files.
 - DO NOT add inline #pragma or class-level warning suppressions
+- DO NOT add any additional suppressions to the .csproj file
 
 # Before You Finish — Checklist
 
