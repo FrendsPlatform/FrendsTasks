@@ -67,6 +67,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - If the Task is missing an `Options` parameter, add one based on Options.cs from #FrendsTaskTemplate code, with **at least** these properties. 
 - Treat `Delimiter` as an example of a task-specific setting, not a mandatory field — keep it only if it's relevant to this Task
 - `ThrowErrorOnFailure` and `ErrorMessageOnFailure` are **always** required.
+- New parameters should look **exactly** as in #FrendsTaskTemplate including default values, attributes etc.
 
 ## 6. [OPTIONAL] `Result` Class — One Constructor Only
 
