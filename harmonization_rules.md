@@ -75,7 +75,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - Instead, converge on a **single constructor** where `Error` defaults to `null` on success. Use Result.cs from #FrendsTaskTemplate as a starting point
 - If the Task already has an existing `Result` constructor in use elsewhere, **remove the redundant one you were about to add** and update call sites to the single-constructor form instead of leaving both.
 
-## 7. [OPTIONAL] Error Handler Tests
+## 7. [REQUIRED] Error Handler Tests
 
 - Whenever `ErrorHandler` is added or modified, also add a matching test class.
 - Use #FrendsTaskTemplate ErrorHandlerTest.cs and TestBase.cs files as the template, adapting the namespace, class-under-test name, and the default helper methods to match this Task's actual test scaffolding.
