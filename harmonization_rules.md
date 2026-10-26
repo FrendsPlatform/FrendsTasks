@@ -67,7 +67,6 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - If the Task is missing an `Options` parameter, add one based on Options.cs from #FrendsTaskTemplate code, with **at least** these properties. 
 - Treat `Delimiter` as an example of a task-specific setting, not a mandatory field — keep it only if it's relevant to this Task
 - `ThrowErrorOnFailure` and `ErrorMessageOnFailure` are **always** required.
-- New parameters should look **exactly** as in #FrendsTaskTemplate including default values, attributes etc.
 
 ## 6. [OPTIONAL] `Result` Class — One Constructor Only
 
@@ -77,6 +76,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 ## 7. [REQUIRED] Error Handler Tests
 
+- You should respect this rule only if you've added or modified `ErrorHandler`
 - Whenever `ErrorHandler` is added or modified, also add a matching test class.
 - Use #FrendsTaskTemplate ErrorHandlerTest.cs and TestBase.cs files as the template, adapting the namespace, class-under-test name, and the default helper methods to match this Task's actual test scaffolding.
 - **Before finishing, resolve the `TODO`**: replace it with an actual scenario that makes `DefaultInput()`/`DefaultConnection()` invalid for this specific Task (e.g., an empty required field, an unreachable endpoint, a malformed value) — don't leave the placeholder TODO comment in committed code.
