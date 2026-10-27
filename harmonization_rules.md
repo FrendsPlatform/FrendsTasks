@@ -30,7 +30,7 @@
 ## 3. [OPTIONAL] Error Handling — Required Pattern
 
 - Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTaskTemplate.
-- Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
+- Do not reimplement it, just copy/paste it and adapt only the namespace, class name, example docs  to match this Task. Remove TODO comment as well.
 
 ### 3a. You MUST actually call the Error Handler — do not reimplement it
 
