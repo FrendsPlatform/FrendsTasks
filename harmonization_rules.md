@@ -61,6 +61,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 - Validation should be handled by adding ValidationAttributes to class property You should use default .net attributes e.g. RequiredAttribue() RangeAttribute() etc. Alternatively you can create custom one if default ones are not sufficient, e.g.: see RequiredIfAttribute() in #FrendsTaskTemplate.
+- ValidationHandler makes sense only if any of checked class parameters have ValidationAttribute. DO NOT ADD ValidationHandler if none of the parameter has ValidationAttributes nor you didn't add any.
 
 ## 5. [REQUIRED] `Options` Class — Minimum Shape
 
