@@ -27,8 +27,9 @@
   - ❌ Bad example: "Refactored null-check branch in `Execute()` to short-circuit earlier."
   - ❌ Bad example: "- **BREAKING:** Renamed `InputFilePath` property to `SourceFilePath` to better reflect its purpose."
 
-## 3. [OPTIONAL] Error Handling — Required Pattern
+## 3. [REQUIRED] Error Handling — Required Pattern
 
+- Do this point only if you are touching error-handling code
 - Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace, class name, example docs  to match this Task. Remove TODO comment as well.
 
@@ -56,8 +57,9 @@ catch (Exception ex)
 
 Wire every catch block in code through `exception.Handle(options)`. Do not leave any catch block with hand-rolled error logic once `ErrorHandler` exists.
 
-## 4. [OPTIONAL] Parameter Validation — Required Pattern
+## 4. [REQUIRED] Parameter Validation — Required Pattern
 
+- Do this point only if you have touched validation-handling code
 - Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 - Validation should be handled by adding ValidationAttributes to class property You should use default .net attributes e.g. RequiredAttribue() RangeAttribute() etc. Alternatively you can create custom one if default ones are not sufficient, e.g.: see RequiredIfAttribute() in #FrendsTaskTemplate.
