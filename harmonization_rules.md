@@ -84,6 +84,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 ## 8. [REQUIRED] XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
 
 - Every public property's `<example>` tag must show a **realistic, meaningful value** a user would actually enter — not `null`, not `""`, not `0`, unless that literally is the only sensible example (e.g., a boolean flag, or `Error` which is genuinely `null` on success).
+- Examples must be logically coherent with task functionality. E.g. "Unable to join strings" is not a good example for error message in task for reading files.
 - Examples:
   - ❌ `/// <example></example>`
   - ❌ `/// <example>string.Empty</example>`
@@ -108,12 +109,15 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 - Structure and conventions (folder layout, naming, test project setup) should follow the official template #FrendsTaskTemplate
 
-## 12. [REQUIRED] Suppressions
+## 12. [REQUIRED] TODO's
+- Make sure you didn't introduce any new TODOs commentes or sections into codebase.
+
+## 13. [REQUIRED] Suppressions
 
 - Make sure solution has 2 GlobalSuppressions.cs files (one per project). They should match EXACTLY GlobalSuppressions.cs files from #FrendsTaskTemplate
 - This step is mandatory before you go to step 13.
 
-## 13. [REQUIRED] Build Warnings
+## 14. [REQUIRED] Build Warnings
 
 - Your solutions should be buildable.
 - Before you check build warnings, make sure you have added correct GlobalSuppressions.cs files to both projects.
@@ -139,6 +143,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] Any code that became obsolete, unused or otherwise unnecessary is removed
 - [ ] GlobalSuppressions files exist and match #FrendsTaskTemplate
 - [ ] Build succeed with 0 warning
+- [ ] Codebase doesn't have any new TODO comments
 
 # Acceptance criteria
 
