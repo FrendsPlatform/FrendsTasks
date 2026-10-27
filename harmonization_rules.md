@@ -27,10 +27,11 @@
   - ❌ Bad example: "Refactored null-check branch in `Execute()` to short-circuit earlier."
   - ❌ Bad example: "- **BREAKING:** Renamed `InputFilePath` property to `SourceFilePath` to better reflect its purpose."
 
-## 3. [OPTIONAL] Error Handling — Required Pattern
+## 3. [REQUIRED] Error Handling — Required Pattern
 
+- Do this point only if you are touching error-handling code
 - Whenever you touch error-handling code, it must match ErrorHandler.cs code from #FrendsTaskTemplate.
-- Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
+- Do not reimplement it, just copy/paste it and adapt only the namespace, class name, example docs  to match this Task. Remove TODO comment as well.
 
 ### 3a. You MUST actually call the Error Handler — do not reimplement it
 
@@ -56,17 +57,19 @@ catch (Exception ex)
 
 Wire every catch block in code through `exception.Handle(options)`. Do not leave any catch block with hand-rolled error logic once `ErrorHandler` exists.
 
-## 4. [OPTIONAL] Parameter Validation — Required Pattern
+## 4. [REQUIRED] Parameter Validation — Required Pattern
 
+- Do this point only if you have touched validation-handling code
 - Whenever you touch validation-handling code, it must match ValidationHandler.cs code from #FrendsTaskTemplate.
 - Do not reimplement it, just copy/paste it and adapt only the namespace and class name to match this Task.
 - Validation should be handled by adding ValidationAttributes to class property You should use default .net attributes e.g. RequiredAttribue() RangeAttribute() etc. Alternatively you can create custom one if default ones are not sufficient, e.g.: see RequiredIfAttribute() in #FrendsTaskTemplate.
+- ValidationHandler makes sense only if any of checked class parameters have ValidationAttribute. DO NOT ADD ValidationHandler if none of the parameter has ValidationAttributes nor you didn't add any.
 
 ## 5. [REQUIRED] `Options` Class — Minimum Shape
 
 - If the Task is missing an `Options` parameter, add one based on Options.cs from #FrendsTaskTemplate code, with **at least** these properties. 
 - Treat `Delimiter` as an example of a task-specific setting, not a mandatory field — keep it only if it's relevant to this Task
-- `ThrowErrorOnFailure` and `ErrorMessageOnFailure` are **always** required.
+- `ThrowErrorOnFailure` and `ErrorMessageOnFailure` are **always** required and must **always** be set as a last parameters in a class.
 
 ## 6. [OPTIONAL] `Result` Class — One Constructor Only
 
@@ -74,8 +77,9 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - Instead, converge on a **single constructor** where `Error` defaults to `null` on success. Use Result.cs from #FrendsTaskTemplate as a starting point
 - If the Task already has an existing `Result` constructor in use elsewhere, **remove the redundant one you were about to add** and update call sites to the single-constructor form instead of leaving both.
 
-## 7. [OPTIONAL] Error Handler Tests
+## 7. [REQUIRED] Error Handler Tests
 
+- You should respect this rule only if you've added or modified `ErrorHandler`
 - Whenever `ErrorHandler` is added or modified, also add a matching test class.
 - Use #FrendsTaskTemplate ErrorHandlerTest.cs and TestBase.cs files as the template, adapting the namespace, class-under-test name, and the default helper methods to match this Task's actual test scaffolding.
 - **Before finishing, resolve the `TODO`**: replace it with an actual scenario that makes `DefaultInput()`/`DefaultConnection()` invalid for this specific Task (e.g., an empty required field, an unreachable endpoint, a malformed value) — don't leave the placeholder TODO comment in committed code.
@@ -83,6 +87,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 ## 8. [REQUIRED] XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
 
 - Every public property's `<example>` tag must show a **realistic, meaningful value** a user would actually enter — not `null`, not `""`, not `0`, unless that literally is the only sensible example (e.g., a boolean flag, or `Error` which is genuinely `null` on success).
+- Examples must be logically coherent with task functionality. E.g. "Unable to join strings" is not a good example for error message in task for reading files.
 - Examples:
   - ❌ `/// <example></example>`
   - ❌ `/// <example>string.Empty</example>`
@@ -107,12 +112,15 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 - Structure and conventions (folder layout, naming, test project setup) should follow the official template #FrendsTaskTemplate
 
-## 12. [REQUIRED] Suppressions
+## 12. [REQUIRED] TODO's
+- Make sure you didn't introduce any new TODOs commentes or sections into codebase.
+
+## 13. [REQUIRED] Suppressions
 
 - Make sure solution has 2 GlobalSuppressions.cs files (one per project). They should match EXACTLY GlobalSuppressions.cs files from #FrendsTaskTemplate
 - This step is mandatory before you go to step 13.
 
-## 13. [REQUIRED] Build Warnings
+## 14. [REQUIRED] Build Warnings
 
 - Your solutions should be buildable.
 - Before you check build warnings, make sure you have added correct GlobalSuppressions.cs files to both projects.
@@ -138,6 +146,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] Any code that became obsolete, unused or otherwise unnecessary is removed
 - [ ] GlobalSuppressions files exist and match #FrendsTaskTemplate
 - [ ] Build succeed with 0 warning
+- [ ] Codebase doesn't have any new TODO comments
 
 # Acceptance criteria
 
