@@ -25,7 +25,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Run tests
-        run: dotnet test FrendsTaskTemplate/FrendsTaskTemplate.Tests/FrendsTaskTemplate.Tests.csproj --configuration Release
+        run: dotnet test FrendsTaskTemplate/FrendsTaskTemplate.Tests/FrendsTaskTemplate.Tests.csproj
 
   release:
     name: Release on ubuntu-latest
