@@ -1,4 +1,4 @@
-name: Release Task Template
+name: Task Template Pipeline
 permissions:
   contents: read
 
@@ -6,7 +6,7 @@ on:
   push:
     paths:
       - 'FrendsTaskTemplate/**'
-      - '.github/workflows/template_task_release.yml'
+      - '.github/workflows/task_template_pipeline.yml'
 
 env:
   azure_artifacts_feed_url: ${{ github.ref_name == 'main' && 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json' || 'https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/test/nuget/v3/index.json' }}
@@ -14,8 +14,22 @@ env:
   skip_duplicate: ${{ github.ref_name != 'main' }}
 
 jobs:
-  build:
-    name: Build on ubuntu-latest
+  test:
+    name: Test on ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.1
+
+      - uses: actions/setup-dotnet@v5.0.1
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run tests
+        run: dotnet test FrendsTaskTemplate/FrendsTaskTemplate.Tests/FrendsTaskTemplate.Tests.csproj --configuration Release
+
+  release:
+    name: Release on ubuntu-latest
+    needs: test
     runs-on: ubuntu-latest
     defaults:
       run:
