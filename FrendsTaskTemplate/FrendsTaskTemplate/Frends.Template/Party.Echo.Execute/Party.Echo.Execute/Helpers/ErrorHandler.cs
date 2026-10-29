@@ -1,9 +1,10 @@
-using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Party.Echo.Execute.Definitions;
 
 namespace Party.Echo.Execute.Helpers;
 
+[ExcludeFromCodeCoverage(Justification = "Untouched version already tested in template solution.")]
 internal static class ErrorHandler
 {
     /// <summary>

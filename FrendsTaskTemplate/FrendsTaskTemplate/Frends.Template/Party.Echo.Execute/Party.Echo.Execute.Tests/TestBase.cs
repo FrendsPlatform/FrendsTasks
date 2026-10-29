@@ -1,4 +1,3 @@
-using System;
 using dotenv.net;
 using Party.Echo.Execute.Definitions;
 
