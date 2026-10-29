@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Frends.PostgreSQL.ExecuteQueryToFile.Attributes;
-using Frends.PostgreSQL.ExecuteQueryToFile.Helpers;
-using NUnit.Framework;
+using Party.Echo.Execute.Attributes;
+using Party.Echo.Execute.Helpers;
 
-namespace Frends.PostgreSQL.ExecuteQueryToFile.Tests.HelpersTests;
+namespace Party.Echo.Execute.Tests.HelpersTests;
 
 [TestFixture]
 internal class ValidationHandlerTests

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <RootNamespace>Party.Echo.Execute.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="10.1.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0"/>
+        <PackageReference Include="NUnit" Version="5.0.0"/>
+        <PackageReference Include="NUnit.Analyzers" Version="4.15.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NUnit3TestAdapter" Version="6.3.1"/>
+        <PackageReference Include="dotenv.net" Version="4.2.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+        <Using Include="System.Collections"/>
+        <Using Include="System.Reflection"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\FrendsTaskTemplate\Frends.Template\Party.Echo.Execute\Party.Echo.Execute\**\*.cs" Exclude="..\FrendsTaskTemplate\Frends.Template\Party.Echo.Execute\Party.Echo.Execute\obj\**;..\FrendsTaskTemplate\Frends.Template\Party.Echo.Execute\Party.Echo.Execute\bin\**" LinkBase="TemplateSource"/>
+    </ItemGroup>
+
+</Project>
