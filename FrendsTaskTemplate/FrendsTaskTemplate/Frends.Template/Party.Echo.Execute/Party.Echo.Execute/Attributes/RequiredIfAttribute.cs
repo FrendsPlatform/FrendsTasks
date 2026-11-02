@@ -1,7 +1,6 @@
-using System;
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Party.Echo.Execute.Attributes;
 
@@ -10,6 +9,7 @@ namespace Party.Echo.Execute.Attributes;
 /// If a property is null, an empty collection, or an empty or white-space-only string, validation fails.
 /// </summary>
 // TODO : Remove this class if not used
+[ExcludeFromCodeCoverage(Justification = "Untouched version already tested in template solution.")]
 [AttributeUsage(AttributeTargets.Property)]
 internal class RequiredIfAttribute(string dependentProperty, params object[] targetValues) : ValidationAttribute
 {
