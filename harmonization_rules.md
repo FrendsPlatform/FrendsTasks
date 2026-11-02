@@ -126,6 +126,8 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 - Make sure any code file should be save with UTF-8 without BOM formatting
 - Make sure any .cs file ends with a single newline character
+- Make sure `using` directives in cs files are in correct order
+- Make sure there is no unused `using` directives in any .cs file
 
 # Before You Finish — Checklist
 
