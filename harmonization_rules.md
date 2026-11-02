@@ -77,14 +77,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - Instead, converge on a **single constructor** where `Error` defaults to `null` on success. Use Result.cs from #FrendsTaskTemplate as a starting point
 - If the Task already has an existing `Result` constructor in use elsewhere, **remove the redundant one you were about to add** and update call sites to the single-constructor form instead of leaving both.
 
-## 7. [REQUIRED] Error Handler Tests
-
-- You should respect this rule only if you've added or modified `ErrorHandler`
-- Whenever `ErrorHandler` is added or modified, also add a matching test class.
-- Use #FrendsTaskTemplate ErrorHandlerTest.cs and TestBase.cs files as the template, adapting the namespace, class-under-test name, and the default helper methods to match this Task's actual test scaffolding.
-- **Before finishing, resolve the `TODO`**: replace it with an actual scenario that makes `DefaultInput()`/`DefaultConnection()` invalid for this specific Task (e.g., an empty required field, an unreachable endpoint, a malformed value) — don't leave the placeholder TODO comment in committed code.
-
-## 8. [REQUIRED] XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
+## 7. [REQUIRED] XML Doc `<example>` Tags — Use Real Values, Never Null/Empty Placeholders
 
 - Every public property's `<example>` tag must show a **realistic, meaningful value** a user would actually enter — not `null`, not `""`, not `0`, unless that literally is the only sensible example (e.g., a boolean flag, or `Error` which is genuinely `null` on success).
 - Examples must be logically coherent with task functionality. E.g. "Unable to join strings" is not a good example for error message in task for reading files.
@@ -97,30 +90,30 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - If you're unsure what a realistic value looks like, infer it from the property's name, type, and how it's used in `Execute()` — don't default to an empty placeholder just because it's easy.
 - In case of main task method xml doc <returns> tag should follow pattern from #FrendsTaskTemplate Party.Echo.Execute.cs
 
-## 9. [REQUIRED] Project File Requirements
+## 8. [REQUIRED] Project File Requirements
 
 - Every `.csproj` file must include PackageReference for StyleCop.Analyzers as in #FrendsTaskTemplate
 - Task `.csproj` must include PackageReference for FrendsTaskAnalyzers as in #FrendsTaskTemplate
 - Check #FrendsTaskTemplate for actual versions of those packages we are using nowadays
 - Confirm that both .csproj files (Task and Unit Test) are using the same versions of StyleCop.Analyzers and FrendsTaskAnalyzers packages as in #FrendsTaskTemplate. If not, update them to match.
 
-## 10. [OPTIONAL] Framework Upgrades
+## 9. [OPTIONAL] Framework Upgrades
 
 - If you upgrade the main Task project to a new target framework, **you must also upgrade the unit test project** to match. Do not leave them on different target frameworks.
 
-## 11. [OPTIONAL] Reference Template
+## 10. [OPTIONAL] Reference Template
 
 - Structure and conventions (folder layout, naming, test project setup) should follow the official template #FrendsTaskTemplate
 
-## 12. [REQUIRED] TODO's
+## 11. [REQUIRED] TODO's
 - Make sure you didn't introduce any new TODOs commentes or sections into codebase.
 
-## 13. [REQUIRED] Suppressions
+## 12. [REQUIRED] Suppressions
 
 - Make sure solution has 2 GlobalSuppressions.cs files (one per project). They should match EXACTLY GlobalSuppressions.cs files from #FrendsTaskTemplate
 - This step is mandatory before you go to step 13.
 
-## 14. [REQUIRED] Build Warnings
+## 13. [REQUIRED] Build Warnings
 
 - Your solutions should be buildable.
 - Before you check build warnings, make sure you have added correct GlobalSuppressions.cs files to both projects.
@@ -128,6 +121,10 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - DO NOT any additional suppressions after you've added GlobalSuppressions files.
 - DO NOT add inline #pragma or class-level warning suppressions
 - DO NOT add any additional suppressions to the .csproj file
+
+## 14. [REQUIRED] File formatting
+
+- Make sure any code file should be save with UTF-8 without BOM formatting
 
 # Before You Finish — Checklist
 
@@ -138,7 +135,6 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] `ValidationHandler` matches the required pattern exactly (namespace adapted)
 - [ ] `Options` class has `ThrowErrorOnFailure` and `ErrorMessageOnFailure` at minimum
 - [ ] `Result` has exactly one constructor (error defaults to `null` on success) — no duplicate/redundant constructor left in place
-- [ ] `ErrorHandlerTest` class added/updated, and its `TODO` placeholder replaced with a real invalid-input scenario
 - [ ] Every `<example>` tag shows a realistic value, not a null/empty placeholder (unless null/empty is genuinely the only sensible example)
 - [ ] `.csproj` has `StyleCop.Analyzers` and `FrendsTaskAnalyzers` package references with correct versions
 - [ ] If framework was upgraded: unit test project upgraded too
@@ -147,6 +143,7 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] GlobalSuppressions files exist and match #FrendsTaskTemplate
 - [ ] Build succeed with 0 warning
 - [ ] Codebase doesn't have any new TODO comments
+- [ ] Files formatting is UTF-8 (without BOM)
 
 # Acceptance criteria
 
