@@ -1,6 +1,9 @@
 // Replace <TASK_NAME> with actual task full name eg. Frends.GraphQl.ExecuteQuery
+
 // Replace <BRANCH_NAME> witch actual branch name eg. main
+
 // Replace <FINDINGS> with Findings sections from taskmanager default input
+
 *Note: Lines starting with "//" in this file are for human, don't read it
 
 # Refactoring Task
