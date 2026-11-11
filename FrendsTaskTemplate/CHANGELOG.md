@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0] - 11.09.2026
+
+### Added
+
+- Add `ContinueOnFailure` option for tasks that process batches of files.
+- Add Testcontainers example to the tests.
+
 ## [2.0.0] - 10.29.2026
 
 ### Changed
