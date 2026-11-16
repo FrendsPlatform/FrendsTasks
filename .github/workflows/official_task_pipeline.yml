@@ -115,7 +115,6 @@ on:
         required: false
 
 env:
-  BUILD_ARTIFACT_NAME: build-output
   NUGET_ARTIFACT_NAME: nuget-packages
 
 jobs:
@@ -136,14 +135,7 @@ jobs:
     name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
     needs: validate_mode
     runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
-    outputs:
-      workspace: ${{ steps.workspace.outputs.path }}
     steps:
-      - id: workspace
-        name: Record build workspace
-        shell: pwsh
-        run: '"path=$env:GITHUB_WORKSPACE" >> $env:GITHUB_OUTPUT'
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
 
@@ -177,16 +169,6 @@ jobs:
         working-directory: ${{ inputs.workdir }}
         run: dotnet pack --configuration Release
 
-      - name: Upload build output
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: ${{ env.BUILD_ARTIFACT_NAME }}
-          path: |
-            ${{ inputs.workdir }}/**/bin/
-            ${{ inputs.workdir }}/**/obj/
-          if-no-files-found: error
-          retention-days: 1
-
       - name: Upload NuGet package(s)
         uses: actions/upload-artifact@v7.0.1
         with:
@@ -219,13 +201,6 @@ jobs:
           feed_url: ${{ secrets.source_feed_url }}
           api_key: ${{ secrets.source_feed_api_key }}
 
-      - name: Download build output
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: ${{ env.BUILD_ARTIFACT_NAME }}
-          path: ${{ inputs.workdir }}
-
-      # The build may come from a different OS, so restore regenerates obj/ with paths valid on this runner.
       - name: Restore
         shell: pwsh
         working-directory: ${{ inputs.workdir }}
@@ -332,11 +307,9 @@ jobs:
           api_key: ${{ secrets.source_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@workflow-fix
         with:
           workdir: ${{ inputs.workdir }}
-          build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
-          build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
           env_var_name_1: ${{ inputs.env_var_name_1 }}
           env_var_value_1: ${{ secrets.env_var_value_1 }}
@@ -387,11 +360,9 @@ jobs:
           api_key: ${{ secrets.source_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@workflow-fix
         with:
           workdir: ${{ inputs.workdir }}
-          build_artifact_name: ${{ env.BUILD_ARTIFACT_NAME }}
-          build_workspace: ${{ needs.build.outputs.workspace }}
           pretest_command: ${{ inputs.pretest_command }}
           env_var_name_1: ${{ inputs.env_var_name_1 }}
           env_var_value_1: ${{ secrets.env_var_value_1 }}
