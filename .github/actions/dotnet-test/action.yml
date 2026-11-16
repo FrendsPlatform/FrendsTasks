@@ -1,17 +1,11 @@
 name: 'Frends dotnet test'
-description: 'Runs tests against a previously built Official Frends Task (build artifact), checks coverage and reports the badge.'
+description: 'Builds and tests an Official Frends Task on the current runner, checks coverage and reports the badge.'
 
 inputs:
   workdir:
     required: false
     default: '.'
     description: 'Working directory containing the .NET task solution.'
-  build_artifact_name:
-    required: true
-    description: 'Name of the artifact containing the bin/obj output of the build job.'
-  build_workspace:
-    required: true
-    description: 'github.workspace of the build job, used to relocate Coverlet source mappings to this runner.'
   pretest_command:
     required: false
     description: 'Optional PowerShell command to run before testing the project (e.g. starting test containers).'
@@ -112,12 +106,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Download build output
-      uses: actions/download-artifact@v8.0.1
-      with:
-        name: ${{ inputs.build_artifact_name }}
-        path: ${{ inputs.workdir }}
-
     - name: Set dynamic environment variables
       shell: pwsh
       env:
@@ -180,31 +168,8 @@ runs:
       working-directory: ${{ inputs.workdir }}
       run: ${{ inputs.pretest_command }}
 
-    # The build may come from a different OS, so restore regenerates obj/ with paths valid on this runner.
-    - name: Restore
-      shell: pwsh
-      working-directory: ${{ inputs.workdir }}
-      run: dotnet restore
-
-    # Coverlet maps PDB source paths using CoverletSourceRootsMapping files written at build time.
-    # They contain the build runner's workspace path, so point them to this runner's checkout.
-    - name: Relocate coverage source mappings
-      shell: pwsh
-      working-directory: ${{ inputs.workdir }}
-      env:
-        BUILD_WORKSPACE: ${{ inputs.build_workspace }}
-      run: |
-        $buildRoot = $env:BUILD_WORKSPACE.Replace('\', '/').TrimEnd('/') + '/'
-        $localRoot = $env:GITHUB_WORKSPACE.Replace('\', '/').TrimEnd('/') + '/'
-        Get-ChildItem -Recurse -File -Filter 'CoverletSourceRootsMapping*' | ForEach-Object {
-          # Line format: <project>|<source roots>=<PDB path>; only the left side is relocated.
-          $lines = Get-Content $_.FullName | Where-Object { $_.Contains('=') } | ForEach-Object {
-            $left, $right = $_ -split '=', 2
-            $left.Replace('\', '/').Replace($buildRoot, $localRoot) + '=' + $right
-          }
-          Set-Content -Path $_.FullName -Value $lines -Encoding Unicode
-        }
-
+    # Build on the test runner itself. Reusing a bin/ built on another OS breaks the Windows test host,
+    # because deps.json / runtimeconfig.dev.json keep the build OS's paths.
     - name: Test
       shell: pwsh
       working-directory: ${{ inputs.workdir }}
@@ -212,10 +177,10 @@ runs:
         $settingsFile = ".runtestsettings"
         if (Test-Path $settingsFile) {
           Write-Host "Using $settingsFile found in workspace."
-          dotnet test --no-build --settings $settingsFile --collect:"XPlat Code Coverage"
+          dotnet test --settings $settingsFile --collect:"XPlat Code Coverage"
         } else {
           Write-Host "No $settingsFile file found. Running with default settings."
-          dotnet test --no-build --collect:"XPlat Code Coverage"
+          dotnet test --collect:"XPlat Code Coverage"
         }
 
     - id: code_coverage
