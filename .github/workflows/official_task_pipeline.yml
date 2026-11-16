@@ -307,7 +307,7 @@ jobs:
           api_key: ${{ secrets.source_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@workflow-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
         with:
           workdir: ${{ inputs.workdir }}
           pretest_command: ${{ inputs.pretest_command }}
@@ -360,7 +360,7 @@ jobs:
           api_key: ${{ secrets.source_feed_api_key }}
 
       - name: Test
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@workflow-fix
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
         with:
           workdir: ${{ inputs.workdir }}
           pretest_command: ${{ inputs.pretest_command }}
