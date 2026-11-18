@@ -16,6 +16,10 @@ minimum [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) i
 
 `dotnet new install frendstasktemplate --nuget-source https://pkgs.dev.azure.com/frends-platform/frends-tasks/_packaging/main/nuget/v3/index.json`
 
+After installing the template, consider placing an `.editorconfig` file in a parent folder shared by your
+repositories. The template intentionally does not include one, so it is not duplicated in every repository;
+an `.editorconfig` in a parent folder applies to repositories underneath it.
+
 ## Clone repository
 
 You need to clone the repository for the new Task. After cloning, move to that folder.
