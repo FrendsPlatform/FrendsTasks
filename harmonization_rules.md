@@ -110,15 +110,15 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 
 ## 12. [REQUIRED] Suppressions
 
-- Make sure solution has 2 GlobalSuppressions.cs files (one per project). They should match EXACTLY GlobalSuppressions.cs files from #FrendsTaskTemplate
+- Make sure solution has no GlobalSuppressions.cs files.
+- Any suppressions are covered by global .editorconfig from https://raw.githubusercontent.com/FrendsPlatform/FrendsTasks/refs/heads/main/.editorconfig which shouldn't be a part of a task source code
 - This step is mandatory before you go to step 13.
 
 ## 13. [REQUIRED] Build Warnings
 
 - Your solutions should be buildable.
-- Before you check build warnings, make sure you have added correct GlobalSuppressions.cs files to both projects.
 - If any build warnings occurs, you should resolve them.
-- DO NOT any additional suppressions after you've added GlobalSuppressions files.
+- DO NOT add any additional suppressions files.
 - DO NOT add inline #pragma or class-level warning suppressions
 - DO NOT add any additional suppressions to the .csproj file
 
@@ -143,7 +143,6 @@ Wire every catch block in code through `exception.Handle(options)`. Do not leave
 - [ ] If framework was upgraded: unit test project upgraded too
 - [ ] Structure matches #FrendsTaskTemplate conventions
 - [ ] Any code that became obsolete, unused or otherwise unnecessary is removed
-- [ ] GlobalSuppressions files exist and match #FrendsTaskTemplate
 - [ ] Build succeed with 0 warning
 - [ ] Codebase doesn't have any new TODO comments
 - [ ] Files formatting is UTF-8 (without BOM)
