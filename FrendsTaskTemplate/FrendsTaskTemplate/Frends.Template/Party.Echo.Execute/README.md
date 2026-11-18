@@ -29,6 +29,3 @@ Run the tests
 ### Create a NuGet package
 
 `dotnet pack --configuration Release`
-
-### StyleCop.Analyzers Version
-This project uses StyleCop.Analyzers 1.2.0-beta.556, as recommended by the author, to get the latest fixes and improvements not available in the last stable release.

@@ -15,13 +15,10 @@
         <RepositoryUrl>https://github.com/FrendsPlatform/Party.Echo/tree/main/Party.Echo.Execute</RepositoryUrl>
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <NoWarn>
-            CS1591, <!-- StyleCop SA1602 already enforces documentation for enum members -->
-        </NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+        <PackageReference Include="StyleCop.Analyzers" Version="1.3.180">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
