@@ -21,6 +21,20 @@ indent_size = 4
 # C# files
 [*.cs]
 indent_size = 4
+dotnet_diagnostic.CS1591.severity = none # RULE: Enumeration items should be documented. | REASON: Already checked by SA1602.
+stylecop.documentation.documentInternalElements = false
+dotnet_diagnostic.SA1101.severity = none # RULE: Prefix local calls with this. | REASON: Frends tasks guidelines.
+dotnet_diagnostic.SA1200.severity = none # RULE: Using directive should appear within a namespace declaration. REASON: Frends tasks guidelines.
+dotnet_diagnostic.SA1503.severity = none # RULE: Braces should not be omitted. | REASON: Frends tasks guidelines.
+dotnet_diagnostic.SA1600.severity = none # RULE: Elements must be documented | REASON: Documentation checked by custom analyzers.
+dotnet_diagnostic.SA1623.severity = none # RULE: Property summary documentation must match accessors. | REASON: Frends tasks guidelines.
+dotnet_diagnostic.SA1629.severity = none # RULE: Documentation text must end with a period. | REASON: Frends tasks guidelines.
+dotnet_diagnostic.SA1633.severity = none # RULE: The file header is missing or not located at the top of the file. | REASON: Frends tasks guidelines
+dotnet_diagnostic.SA1649.severity = none # RULE: File name must match type name. | REASON: Frends tasks guidelines.
+
+# C# files in test project
+[**/*.Tests/**.cs]
+dotnet_diagnostic.SA0001.severity = none
 
 # Organize usings
 dotnet_separate_import_directive_groups = false
