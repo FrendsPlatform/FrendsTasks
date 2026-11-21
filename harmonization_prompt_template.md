@@ -1,7 +1,5 @@
 // Replace <TASK_NAME> with actual task full name eg. Frends.GraphQl.ExecuteQuery
 
-// Replace <BRANCH_NAME> witch actual branch name eg. main
-
 // Replace <FINDINGS> with Findings sections from taskmanager default input
 
 *Note: Lines starting with "//" in this file are for human, don't read it
@@ -15,7 +13,7 @@
 ## Context
 - **Target Folder:** `<TASK_NAME>/`
 - **Template Repo:** `https://github.com/FrendsPlatform/FrendsTasks.git`
-- **Template Branch:** `<BRANCH_NAME>`
+- **Template Branch:** `main`
 - **Standards Document:** `.tmp/FrendsTasks/harmonization_rules.md`
 - **EditorConfig File:** `.tmp/FrendsTasks/.editorconfig`
 
@@ -26,7 +24,7 @@
 Execute the following shell command immediately in your terminal before doing anything else:
 
 ```bash
-git clone --depth 1 --branch <BRANCH_NAME> --single-branch https://github.com/FrendsPlatform/FrendsTasks.git .tmp/FrendsTasks
+git clone --depth 1 --branch main --single-branch https://github.com/FrendsPlatform/FrendsTasks.git .tmp/FrendsTasks
 ```
 
 *Note: If `.tmp/FrendsTasks` already exists, delete it first and run the command above to ensure you have fresh templates.*
