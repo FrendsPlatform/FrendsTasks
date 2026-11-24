@@ -116,6 +116,7 @@ on:
 
 env:
   NUGET_ARTIFACT_NAME: nuget-packages
+  EDITORCONFIG_ARTIFACT_NAME: editorconfig
 
 jobs:
   validate_mode:
@@ -131,20 +132,13 @@ jobs:
             throw 'workflow_mode must be one of: work, main, release.'
           }
 
-  build:
-    name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+  prepare_editorconfig:
+    name: Prepare .editorconfig
     needs: validate_mode
-    runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
-
-      - name: Setup
-        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
-        with:
-          dotnet_version: ${{ inputs.dotnet_version }}
-          feed_url: ${{ secrets.source_feed_url }}
-          api_key: ${{ secrets.source_feed_api_key }}
 
       - name: Add top-level .editorconfig
         shell: pwsh
@@ -158,6 +152,35 @@ jobs:
                 -H 'Accept: application/vnd.github.raw' > $target
             if ($LASTEXITCODE -ne 0) { throw 'Failed to download .editorconfig from FrendsPlatform/FrendsTasks.' }
           }
+
+      - name: Upload .editorconfig
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ${{ env.EDITORCONFIG_ARTIFACT_NAME }}
+          path: .editorconfig
+          include-hidden-files: true
+          if-no-files-found: error
+
+  build:
+    name: Build on ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    needs: [ validate_mode, prepare_editorconfig ]
+    runs-on: ${{ inputs.os == 'win' && 'windows-latest' || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup
+        uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-setup@main
+        with:
+          dotnet_version: ${{ inputs.dotnet_version }}
+          feed_url: ${{ secrets.source_feed_url }}
+          api_key: ${{ secrets.source_feed_api_key }}
+
+      - name: Download .editorconfig
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ${{ env.EDITORCONFIG_ARTIFACT_NAME }}
+          path: ${{ github.workspace }}
 
       - name: Build
         shell: pwsh
@@ -178,7 +201,7 @@ jobs:
 
   code_quality:
     name: Check Code Quality
-    needs: build
+    needs: [ build, prepare_editorconfig ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -237,17 +260,11 @@ jobs:
           Get-ChildItem -Path '.analyzers/tmp' -Filter '*.dll' -Recurse | Move-Item -Destination '.analyzers' -Force
           Remove-Item -Path '.analyzers/tmp' -Recurse -Force
 
-      - name: Add top-level .editorconfig
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          $target = Join-Path $env:GITHUB_WORKSPACE '.editorconfig'
-          if (-not (Test-Path $target)) {
-            gh api 'repos/FrendsPlatform/FrendsTasks/contents/.editorconfig?ref=main' `
-                -H 'Accept: application/vnd.github.raw' > $target
-            if ($LASTEXITCODE -ne 0) { throw 'Failed to download .editorconfig from FrendsPlatform/FrendsTasks.' }
-          }
+      - name: Download .editorconfig
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ${{ env.EDITORCONFIG_ARTIFACT_NAME }}
+          path: ${{ github.workspace }}
 
       - name: Write task methods to .editorconfig
         shell: pwsh
@@ -292,7 +309,7 @@ jobs:
 
   test_windows:
     name: Test on windows-latest
-    needs: build
+    needs: [ build, prepare_editorconfig ]
     if: ${{ (inputs.os == 'win' || inputs.os == 'all') && inputs.workflow_mode != 'release' }}
     runs-on: windows-latest
     steps:
@@ -305,6 +322,12 @@ jobs:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_feed_url }}
           api_key: ${{ secrets.source_feed_api_key }}
+
+      - name: Download .editorconfig
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ${{ env.EDITORCONFIG_ARTIFACT_NAME }}
+          path: ${{ github.workspace }}
 
       - name: Test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
@@ -345,7 +368,7 @@ jobs:
 
   test_linux:
     name: Test on ubuntu-latest
-    needs: build
+    needs: [ build, prepare_editorconfig ]
     if: ${{ (inputs.os == 'lin' || inputs.os == 'all') && inputs.workflow_mode != 'release' }}
     runs-on: ubuntu-latest
     steps:
@@ -358,6 +381,12 @@ jobs:
           dotnet_version: ${{ inputs.dotnet_version }}
           feed_url: ${{ secrets.source_feed_url }}
           api_key: ${{ secrets.source_feed_api_key }}
+
+      - name: Download .editorconfig
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: ${{ env.EDITORCONFIG_ARTIFACT_NAME }}
+          path: ${{ github.workspace }}
 
       - name: Test
         uses: FrendsPlatform/FrendsTasks/.github/actions/dotnet-test@main
