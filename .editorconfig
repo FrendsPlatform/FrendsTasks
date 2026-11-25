@@ -18,6 +18,10 @@ trim_trailing_whitespace = false
 [*.{sln,csproj}]
 indent_size = 4
 
+# C# files in test project
+[**/*.Tests/**.cs]
+dotnet_diagnostic.SA0001.severity = none
+
 # C# files
 [*.cs]
 indent_size = 4
@@ -31,10 +35,6 @@ dotnet_diagnostic.SA1623.severity = none # RULE: Property summary documentation 
 dotnet_diagnostic.SA1629.severity = none # RULE: Documentation text must end with a period. | REASON: Frends tasks guidelines.
 dotnet_diagnostic.SA1633.severity = none # RULE: The file header is missing or not located at the top of the file. | REASON: Frends tasks guidelines
 dotnet_diagnostic.SA1649.severity = none # RULE: File name must match type name. | REASON: Frends tasks guidelines.
-
-# C# files in test project
-[**/*.Tests/**.cs]
-dotnet_diagnostic.SA0001.severity = none
 
 # Organize usings
 dotnet_separate_import_directive_groups = false
